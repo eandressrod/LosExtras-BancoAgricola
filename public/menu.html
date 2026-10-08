@@ -8,16 +8,25 @@
     <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
     <script type="module" src="/js/menu.js"></script>
   </head>
-  <body>
+  <body data-session="pending">
     <header>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <p>Los Extras</p>
     </header>
     <main>
       <h1>Menú</h1>
+      <section class="profile-summary" aria-labelledby="profile-name">
+        <div id="profile-card-art" class="card-art" aria-hidden="true"><span class="card-art__chip"></span><span class="card-art__name"></span></div>
+        <div>
+          <p class="eyebrow">Sesión de prueba</p>
+          <h2 id="profile-name"></h2>
+          <p id="profile-card"></p>
+        </div>
+      </section>
       <div class="actions">
         <button id="open-promotions">Promociones</button>
         <button id="logout" class="secondary">Cerrar sesión</button>
+        <p id="logout-error" class="error" role="alert"></p>
       </div>
     </main>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>
