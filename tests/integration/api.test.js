@@ -12,6 +12,12 @@ test('API de perfiles integra handler y repositorio', async () => {
   assert.ok((await respuesta.json()).some(perfil => perfil.id === 'demo'));
 });
 
+test('API de perfiles incluye A y B sin exponer credenciales de acceso', async () => {
+  const lista = await (await perfiles.fetch(new Request('http://localhost/api/perfiles'))).json();
+  assert.ok(['A', 'B'].every(id => lista.some(perfil => perfil.id === id)));
+  assert.ok(lista.every(perfil => Object.keys(perfil).join() === 'id,nombre'));
+});
+
 test('API de listado y detalle devuelven la misma promoción', async () => {
   const lista = await promociones.fetch(new Request('http://localhost/api/promociones'));
   assert.equal(lista.status, 200);
