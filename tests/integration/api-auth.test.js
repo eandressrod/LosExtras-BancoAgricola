@@ -80,3 +80,22 @@ test('fuente de datos inválida: 503 controlado, sin sustituirla por mock', asyn
     assert.equal((await consultarSesion('sesion_extras=x.y')).status, 503);
   } finally { process.env.DATA_SOURCE = 'mock'; }
 });
+
+test('respuestas de sesión no se guardan en caché', async () => {
+  const { res, cookie } = await entrar('demo.basica', 'Basica2026');
+  const out = await logout.fetch(new Request(url('/api/auth/logout'), { method: 'POST' }));
+  for (const respuesta of [res, await consultarSesion(cookie), await consultarSesion(), out]) {
+    assert.equal(respuesta.headers.get('Cache-Control'), 'no-store');
+  }
+});
+
+test('sin SESSION_SECRET el login responde 503 controlado y sin cookie', async () => {
+  const anterior = process.env.SESSION_SECRET;
+  delete process.env.SESSION_SECRET;
+  try {
+    const { res } = await entrar('demo.black', 'Black2026');
+    assert.equal(res.status, 503);
+    assert.deepEqual(Object.keys(await res.json()), ['error']);
+    assert.equal(res.headers.getSetCookie().length, 0);
+  } finally { process.env.SESSION_SECRET = anterior; }
+});
