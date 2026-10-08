@@ -1,6 +1,6 @@
 import { requireSession, loadPreferences, getJSON } from './comun.js';
 
-async function loadPromotions() {
+async function loadPromotions(profile) {
   const status = document.querySelector('#list-status');
   const cards = document.querySelector('#cards');
   const retry = document.querySelector('#retry');
@@ -9,7 +9,7 @@ async function loadPromotions() {
   retry.hidden = true;
   cards.replaceChildren();
   try {
-    const preferences = loadPreferences();
+    const preferences = loadPreferences(profile.id);
     const promotions = await getJSON('/api/promociones');
     const visible = preferences.completed ? promotions.filter(item => preferences.categories.includes(item.category)) : promotions;
     document.querySelector('#list-description').textContent = preferences.completed ? 'Promociones según tus intereses.' : 'Promociones disponibles.';
@@ -31,7 +31,8 @@ async function loadPromotions() {
   }
 }
 
-if (requireSession()) {
-  document.querySelector('#retry').addEventListener('click', loadPromotions);
-  loadPromotions();
+const profile = await requireSession();
+if (profile) {
+  document.querySelector('#retry').addEventListener('click', () => loadPromotions(profile));
+  loadPromotions(profile);
 }
