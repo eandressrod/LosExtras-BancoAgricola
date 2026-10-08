@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 945 470" fill="none" aria-hidden="true">
+  <desc>Curvas decorativas reconstruidas a partir de la pantalla de inicio aportada. Colores aproximados de la captura.</desc>
+  <g stroke-linecap="round">
+    <path d="M-36 74 Q-2 100 42 134" stroke="#ff7e41" stroke-width="82"/>
+    <path d="M-30 60 Q110 158 298 282" stroke="#fdda24" stroke-width="54"/>
+    <path d="M155 223 C267 313 348 366 486 385" stroke="#9062cd" stroke-width="86"/>
+    <path d="M740 324 C839 282 916 230 978 141" stroke="#ff7e41" stroke-width="54"/>
+  </g>
+</svg>

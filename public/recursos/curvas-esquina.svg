@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 340" fill="none" aria-hidden="true">
+  <desc>Arcos decorativos de esquina reconstruidos a partir de la captura aportada.</desc>
+  <g stroke-linecap="round">
+    <path d="M-28 50 C209 9 398 101 515 275" stroke="#78c7e5" stroke-width="48"/>
+    <path d="M-18 20 Q48 10 120 20" stroke="#f7db53" stroke-width="64"/>
+    <path d="M316 71 Q452 142 528 244" stroke="#ff7e41" stroke-width="26"/>
+  </g>
+</svg>

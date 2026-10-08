@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Iniciar sesión · Los Extras</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
+    <script type="module" src="/js/login.js"></script>
+  </head>
+  <body>
+    <header>
+      <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
+      <p>Los Extras</p>
+    </header>
+    <main>
+      <h1>Iniciar sesión</h1>
+      <form id="login-form">
+        <label>Usuario<input name="username" autocomplete="off" autocapitalize="none" spellcheck="false" required></label>
+        <label>Contraseña<input name="password" type="password" autocomplete="off" required></label>
+        <p id="login-error" class="error" role="alert"></p>
+        <button type="submit">Entrar</button>
+      </form>
+    </main>
+    <img class="brand-curves" src="/recursos/curvas-inicio.svg" alt="" aria-hidden="true">
+    <noscript>Activa JavaScript para usar la aplicación.</noscript>
+  </body>
+</html>

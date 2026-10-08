@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Detalle · Los Extras</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
+    <script type="module" src="/js/detalle.js"></script>
+  </head>
+  <body>
+    <header>
+      <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
+      <p>Los Extras</p>
+    </header>
+    <main>
+      <h1>Detalle de promoción</h1>
+      <p id="detail-status" class="note" role="status">Cargando detalle…</p>
+      <button id="retry" class="secondary" hidden>Reintentar</button>
+      <div id="detail" hidden>
+        <p><strong id="benefit"></strong></p>
+        <p id="description"></p>
+        <h2>Vigencia</h2><p>Hasta el 6 de noviembre de 2026.</p>
+        <h2>Medio de pago</h2><p id="payment"></p>
+        <h2>Restricciones</h2><p id="restrictions"></p>
+        <div class="actions">
+          <button id="use-promotion">Usar promoción</button>
+          <div id="instructions" hidden>
+            <h2 tabindex="-1">Cómo usar la promoción</h2>
+            <p>Consulta el beneficio con el comercio y presenta el medio de pago indicado.</p>
+          </div>
+        </div>
+      </div>
+      <div class="actions"><a class="button secondary" href="/promociones.html">Volver al listado</a></div>
+    </main>
+    <noscript>Activa JavaScript para usar la aplicación.</noscript>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Para ti · Los Extras</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
+    <script type="module" src="/js/promociones.js"></script>
+  </head>
+  <body>
+    <header>
+      <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
+      <p>Los Extras</p>
+    </header>
+    <main>
+      <h1>Para ti</h1>
+      <p id="list-description"></p>
+      <p id="list-status" class="note" role="status">Cargando promociones…</p>
+      <button id="retry" class="secondary" hidden>Reintentar</button>
+      <div id="cards" class="cards"></div>
+      <template id="promotion-card">
+        <article>
+          <h2></h2>
+          <p><strong></strong></p>
+          <p class="description"></p>
+          <p class="note">Vigencia: hasta el 6 de noviembre de 2026.</p>
+          <a class="button">Ver promoción</a>
+        </article>
+      </template>
+      <div class="actions"><a class="button secondary" href="/menu.html">Volver al menú</a></div>
+    </main>
+    <noscript>Activa JavaScript para usar la aplicación.</noscript>
+  </body>
+</html>
