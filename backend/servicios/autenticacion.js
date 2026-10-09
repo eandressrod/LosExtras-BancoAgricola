@@ -1,7 +1,7 @@
 // Acceso simulado con perfiles fijos de prueba; no es autenticación bancaria.
 import { randomUUID } from 'node:crypto';
 import { generarHash, verificarContrasena } from './contrasenas.js';
-import { verificarToken } from './sesion.js';
+import { datosDeToken } from './sesion.js';
 
 const LONGITUD_MAXIMA = 100;
 const ERROR_CAMPOS = 'Escribe tu usuario y tu clave.';
@@ -37,6 +37,13 @@ export async function iniciarSesion(cuerpo, repo) {
  * @param {import('../repositorios/contrato.js').RepositorioAccesos} repo
  */
 export async function perfilDeSesion(token, repo) {
-  const perfilId = verificarToken(token);
-  return perfilId ? repo.buscarPerfilPorId(perfilId) : null;
+  const sesion = datosDeToken(token);
+  if (!sesion || await repo.sesionRevocada(sesion.id)) return null;
+  return repo.buscarPerfilPorId(sesion.perfilId);
+}
+
+/** Revoca solo la sesión actual. Un fallo del repositorio impide anunciar su cierre. */
+export async function cerrarSesion(token, repo) {
+  const sesion = datosDeToken(token);
+  if (sesion) await repo.revocarSesion(sesion);
 }

@@ -2,6 +2,10 @@ import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
+import { crearToken } from '../../backend/servicios/sesion.js';
+import * as autenticacion from '../../backend/servicios/autenticacion.js';
+import { crearRepositorioAccesosSupabase } from '../../backend/repositorios/accesos.supabase.js';
+import { crearRepositorioEstadoEncuestaSupabase } from '../../backend/repositorios/estado-encuesta.supabase.js';
 import { verificarContrasena } from '../../backend/servicios/contrasenas.js';
 
 let db;
@@ -15,11 +19,11 @@ before(async () => {
 });
 after(async () => { await db?.close(); });
 
-test('existen las siete tablas persistentes necesarias', async () => {
+test('existen las tablas persistentes de catálogo y revocación de sesiones', async () => {
   const { rows } = await db.query("select tablename from pg_tables where schemaname = 'public' order by tablename");
   assert.deepEqual(rows.map(fila => fila.tablename), [
-    'beneficios_tarjeta', 'comercios', 'perfiles', 'preferencias_usuario',
-    'promociones', 'promociones_guardadas', 'sucursales'
+    'beneficios_tarjeta', 'comercios', 'cuentas', 'perfiles', 'preferencias_usuario',
+    'promociones', 'promociones_guardadas', 'sesiones_revocadas', 'sucursales'
   ]);
 });
 
@@ -95,7 +99,7 @@ test('sucursales necesitan un comercio existente y coordenadas válidas', async 
 
 test('tablas protegidas: RLS activo y sin privilegios directos de navegador', async () => {
   const { rows } = await db.query("select relname, relrowsecurity from pg_class join pg_namespace on pg_namespace.oid = relnamespace where nspname = 'public' and relkind = 'r'");
-  assert.equal(rows.length, 7);
+  assert.equal(rows.length, 9);
   assert.ok(rows.every(fila => fila.relrowsecurity));
   for (const rol of ['anon', 'authenticated']) {
     await db.exec(`set role ${rol}`);
@@ -114,4 +118,89 @@ test('backend tiene los permisos de escritura necesarios para preferencias y gua
       assert.equal(rows[0].permitido, true, `${tabla}: ${permiso}`);
     }
   }
+});
+
+test('revocación persistida en PostgreSQL se respeta desde otra instancia del repositorio', async () => {
+  process.env.SESSION_SECRET = 'p'.repeat(40);
+  // Adaptador del transporte para probar servicio → repositorio → PostgreSQL real en memoria.
+  const client = { from(tabla) {
+    assert.ok(['perfiles', 'sesiones_revocadas'].includes(tabla));
+    let campos;
+    let filtro;
+    return {
+      select(valor) { campos = valor; return this; },
+      eq(campo, valor) { assert.equal(campo, 'id'); filtro = valor; return this; },
+      async maybeSingle() {
+        const { rows } = await db.query(`select ${campos} from public.${tabla} where id = $1`, [filtro]);
+        return { data: rows[0] ?? null, error: null };
+      },
+      async upsert(fila, opciones) {
+        assert.equal(tabla, 'sesiones_revocadas');
+        assert.equal(opciones.ignoreDuplicates, true);
+        await db.query('insert into public.sesiones_revocadas (id, usuario_id, expira_en) values ($1, $2, $3) on conflict (id) do nothing', [fila.id, fila.usuario_id, fila.expira_en]);
+        return { error: null };
+      }
+    };
+  } };
+  const repoA = crearRepositorioAccesosSupabase(client);
+  const repoB = crearRepositorioAccesosSupabase(client);
+  const token = crearToken('A');
+  const otro = crearToken('A');
+  assert.equal((await autenticacion.perfilDeSesion(token, repoA)).id, 'A');
+  await autenticacion.cerrarSesion(token, repoA);
+  await autenticacion.cerrarSesion(token, repoB);
+  assert.equal(await autenticacion.perfilDeSesion(token, repoB), null);
+  assert.equal((await autenticacion.perfilDeSesion(otro, repoB)).id, 'A');
+  const { rows } = await db.query('select count(*)::integer as cantidad from public.sesiones_revocadas');
+  assert.equal(rows[0].cantidad, 1);
+  for (const permiso of ['SELECT', 'INSERT']) {
+    const { rows } = await db.query('select has_table_privilege($1, $2, $3) as permitido', ['service_role', 'sesiones_revocadas', permiso]);
+    assert.equal(rows[0].permitido, true);
+  }
+});
+
+test('cuentas tienen propietario, números enmascarados y permiten añadir filas sin cambiar el menú', async () => {
+  const { rows } = await db.query('select perfil_id, count(*)::integer as total from public.cuentas group by perfil_id order by perfil_id');
+  assert.deepEqual(rows, [{ perfil_id: 'A', total: 2 }, { perfil_id: 'B', total: 2 }, { perfil_id: 'demo', total: 2 }]);
+  await db.query("insert into public.cuentas (id, perfil_id, nombre, tipo, numero_enmascarado) values ('extra-a', 'A', 'Cuenta adicional', 'Ahorro', '•••• 4567')");
+  const extra = await db.query("select count(*)::integer as total from public.cuentas where perfil_id='A'");
+  assert.equal(extra.rows[0].total, 3);
+  await assert.rejects(db.query("insert into public.cuentas (id, perfil_id, nombre, tipo, numero_enmascarado) values ('sin-dueno', 'inexistente', 'Prueba', 'Ahorro', '•••• 4567')"), error => error.code === '23503');
+  for (const rol of ['anon', 'authenticated']) {
+    await db.exec(`set role ${rol}`);
+    try {
+      await assert.rejects(db.query('select * from public.cuentas'), error => error.code === '42501');
+    } finally { await db.exec('reset role'); }
+  }
+});
+
+test('la migración de cuentas es aditiva y no sobrescribe datos existentes al registrar la base', async () => {
+  const carpeta = new URL('../../supabase/migrations/', import.meta.url);
+  const archivo = (await readdir(carpeta)).find(nombre => nombre.endsWith('_cuentas_menu.sql'));
+  assert.ok(archivo, 'falta migración reproducible de cuentas');
+  await db.query("update public.cuentas set saldo=99 where id='cta-a-1'");
+  await db.exec(await readFile(new URL(archivo, carpeta), 'utf8'));
+  const actual = await db.query("select saldo from public.cuentas where id='cta-a-1'");
+  assert.equal(Number(actual.rows[0].saldo), 99);
+});
+
+test('estado de encuesta usa el booleano real de PostgreSQL y mantiene aislamiento por usuario', async () => {
+  const client = { from(tabla) {
+    assert.equal(tabla, 'preferencias_usuario');
+    let usuario;
+    return {
+      select(campos) { assert.equal(campos, 'encuesta_completada'); return this; },
+      eq(campo, valor) { assert.equal(campo, 'usuario_id'); usuario = valor; return this; },
+      async maybeSingle() {
+        const { rows } = await db.query('select encuesta_completada from public.preferencias_usuario where usuario_id=$1', [usuario]);
+        return { data: rows[0] ?? null, error: null };
+      }
+    };
+  } };
+  const repo = crearRepositorioEstadoEncuestaSupabase(client);
+  assert.equal(await repo.estaCompletada('A'), false);
+  assert.equal(await repo.estaCompletada('demo'), false);
+  await db.query("update public.preferencias_usuario set encuesta_completada=true where usuario_id='B'");
+  assert.equal(await repo.estaCompletada('B'), true);
+  assert.equal(await repo.estaCompletada('A'), false);
 });

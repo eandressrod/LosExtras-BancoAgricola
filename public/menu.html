@@ -1,34 +1,63 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Menú · Los Extras</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
-    <script type="module" src="/js/menu.js"></script>
-  </head>
-  <body data-session="pending">
-    <header>
-      <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
-      <p>Los Extras</p>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Menú · Los Extras</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/menu.css">
+</head>
+<body data-session="pending">
+  <div class="app-wrapper">
+    <header class="ba-header">
+      <img class="menu-brand" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
+      <button class="action-btn-header" id="btn-logout">Cerrar sesión</button>
     </header>
-    <main>
-      <h1>Menú</h1>
-      <section class="profile-summary" aria-labelledby="profile-name">
-        <div id="profile-card-art" class="card-art" aria-hidden="true"><span class="card-art__chip"></span><span class="card-art__name"></span></div>
-        <div>
-          <p class="eyebrow">Sesión de prueba</p>
-          <h2 id="profile-name"></h2>
-          <p id="profile-card"></p>
-        </div>
+    <p id="alerta-logout" class="alerta-logout-fallido" role="alert" hidden></p>
+    <main class="menu-main">
+      <p id="menu-loading" class="menu-state" role="status">Cargando tus cuentas…</p>
+      <section id="menu-error" class="menu-state" role="alert" hidden>
+        <p id="menu-error-text"></p>
+        <button id="btn-reintentar">Reintentar</button>
       </section>
-      <div class="actions">
-        <button id="open-promotions">Promociones</button>
-        <button id="logout" class="secondary">Cerrar sesión</button>
-        <p id="logout-error" class="error" role="alert"></p>
+      <div id="menu-content" hidden>
+        <section class="user-greeting-section">
+          <div class="greeting-info">
+            <h1 id="greeting-title"></h1>
+            <p id="greeting-perfil"></p>
+          </div>
+        </section>
+        <section aria-labelledby="cuentas-title">
+          <div class="section-header-row">
+            <div class="section-header-left">
+              <h2 id="cuentas-title" class="section-title">Mis cuentas</h2>
+              <button class="btn-eye-toggle" id="btn-eye-toggle" aria-label="Ocultar o mostrar saldos" aria-pressed="false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+            <button id="btn-ver-todas" class="link-ver-todas" aria-expanded="false">Ver todas</button>
+          </div>
+          <div class="cuentas-carousel" id="cuentas-carousel"></div>
+        </section>
+        <button class="tarjetas-entry-card" id="btn-mis-tarjetas" aria-pressed="false">
+          <span class="tarjetas-entry-left">Mis tarjetas · <span id="tarjeta-tipo"></span></span>
+          <span aria-hidden="true">›</span>
+        </button>
+        <button class="promociones-entry-card" id="btn-promociones">
+          <span class="promociones-entry-left">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" aria-hidden="true"><path d="M20 12v10H4V12"></path><path d="M2 7h20v5H2z"></path><path d="M12 22V7"></path></svg>
+            <span>Beneficios para tu tarjeta</span>
+          </span>
+          <span>Promociones ›</span>
+        </button>
       </div>
     </main>
-    <noscript>Activa JavaScript para usar la aplicación.</noscript>
-  </body>
+    <nav class="bottom-nav-bar" aria-label="Navegación del menú">
+      <button class="nav-tab-item active" id="btn-nav-inicio">Inicio</button>
+      <button class="nav-tab-item" id="btn-tab-parati" disabled>Para ti</button>
+    </nav>
+  </div>
+  <script type="module" src="/js/menu.js"></script>
+  <noscript>Activa JavaScript para usar la aplicación.</noscript>
+</body>
 </html>

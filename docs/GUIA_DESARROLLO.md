@@ -96,7 +96,7 @@ Abrir **http://127.0.0.1:3000**. Mantener la terminal abierta y detener el servi
 
 El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones`, `/api/promocion?id=restaurante` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
 
-El acceso es simulado (H1). Los usuarios de prueba están guardados en la tabla `perfiles` de Supabase y el login los muestra plegados en **Usuarios de prueba**, al pie del formulario:
+Los usuarios de prueba de H1 están guardados en la tabla `perfiles` de Supabase. Sus credenciales se entregan desde esta guía al verificador, fuera de la pantalla de login:
 
 | Perfil | Tarjeta | Usuario | Clave |
 | --- | --- | --- | --- |
@@ -104,9 +104,13 @@ El acceso es simulado (H1). Los usuarios de prueba están guardados en la tabla 
 | B | Black | `demo.black` | `Black2026` |
 | demo (general) | Básica | `demo` | `demo123` |
 
-El formulario envía usuario y clave a `/api/auth/login`; el backend busca el usuario en la base y compara la clave con su hash. Con `DATA_SOURCE=supabase` (Vercel y `.env`) se usa la base; `mock` solo sirve para pruebas automáticas y desarrollo sin claves, con los mismos usuarios en `backend/datos.js`. No hay registro, recuperación, MFA ni autenticación bancaria. Al entrar, el backend envía una cookie `HttpOnly` firmada que dura 2 horas. Cada página privada consulta `/api/auth/sesion` para conocer el perfil (`id`, `nombre`, `tipoTarjeta`); el navegador no guarda la identidad. Si cambian los datos de prueba: `npm run hash -- "NuevaClave"`, una migración nueva, `backend/datos.js` y la lista de `public/index.html`. Las preferencias remotas y las guardadas se implementan en sus historias; mientras tanto, la encuesta se guarda localmente separada por perfil.
+El formulario envía usuario y clave a `/api/auth/login`; el backend busca el usuario en la base y compara la clave con su hash. Con `DATA_SOURCE=supabase` (Vercel y `.env`) se usa la base; `mock` solo sirve para pruebas automáticas y desarrollo sin claves, con los mismos usuarios en `backend/datos.js`. No hay registro, recuperación, MFA ni autenticación bancaria. Al entrar, el backend envía una cookie `HttpOnly` firmada que dura 2 horas. Cada página privada consulta `/api/auth/sesion` para conocer el perfil (`id`, `nombre`, `tipoTarjeta`); el navegador no guarda la identidad. Si cambian los datos de prueba: `npm run hash -- "NuevaClave"`, una migración nueva, `backend/datos.js` y esta guía. La escritura de preferencias remotas y guardadas se implementa en sus historias; mientras tanto, la encuesta existente guarda elecciones localmente por perfil.
 
 ## 5. Ubicar archivos y trabajar con TDD
+
+Revisión de H1: cada cookie nueva incluye un identificador único de sesión. El backend consulta `sesiones_revocadas` antes de autorizar y guarda la revocación antes de borrar la cookie al cerrar sesión. Una copia de la cookie cerrada deja de funcionar, sin cerrar otras sesiones del mismo usuario. Si falla la base, el cierre responde 503 y el frontend debe mostrar el error; reutilizar `logout()` de `public/js/comun.js` y comprobar su éxito.
+
+Antes de desplegar esta revisión con Supabase, aplicar la migración nueva `20261009232447_revocacion_sesiones.sql`; no volver a ejecutar las anteriores. La tabla tiene RLS y solo permite SELECT/INSERT al backend con clave privada. Las cookies del formato anterior requerirán iniciar sesión otra vez. Los registros de revocación conservan su vencimiento; se pueden retirar cuando la sesión ya haya expirado, sin reactivar cookies vigentes.
 
 | Carpeta | Contenido |
 | --- | --- |
@@ -126,7 +130,11 @@ npm run test:integration
 npm test
 ```
 
-Las 53 pruebas locales no necesitan claves ni modifican la base compartida. Las tres pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si las migraciones `accesos_prueba` y `acceso_demo` no están aplicadas. Agregar pruebas después de desarrollar no acredita TDD.
+Las pruebas locales no necesitan claves ni modifican la base compartida. Las pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si las migraciones `accesos_prueba`, `acceso_demo` y `revocacion_sesiones` no están aplicadas. Agregar pruebas después de desarrollar no acredita TDD.
+
+H2: `/api/menu` valida sesión y consulta cuentas por `perfil_id` y estado de encuesta por `preferencias_usuario.usuario_id`. Una fila existente no implica encuesta completada: se utiliza `encuesta_completada`. Login abre el menú; solo el clic en Promociones/Para ti decide entre encuesta pendiente y listado. El cliente relee `/api/menu` al clic y, si la consulta falla, muestra Reintentar sin inventar destino. H3 deberá persistir ese booleano al completar la encuesta: H2 no añade un endpoint de escritura de preferencias.
+
+La migración `20261009232449_cuentas_menu.sql` registra tabla, índice, permisos y seis cuentas de prueba. También se puede aplicar donde Sam creó `cuentas` manualmente: no sobrescribe filas existentes. Aplicar ambas migraciones nuevas antes de publicar la revisión H1/H2 y verificar con Supabase real.
 
 La base compartida contiene `perfiles`, `comercios`, `promociones`, `beneficios_tarjeta`, `sucursales`, `preferencias_usuario` y `promociones_guardadas`. Administrar tablas/filas desde Table Editor o SQL Editor con la cuenta propia. Registrar cambios de estructura necesarios en una migración nueva y probarla antes de aplicarla; no modificar migraciones ya aplicadas ni volver a ejecutar la carga inicial en la base compartida.
 
