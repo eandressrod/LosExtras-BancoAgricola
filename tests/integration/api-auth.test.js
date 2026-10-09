@@ -99,3 +99,9 @@ test('sin SESSION_SECRET el login responde 503 controlado y sin cookie', async (
     assert.equal(res.headers.getSetCookie().length, 0);
   } finally { process.env.SESSION_SECRET = anterior; }
 });
+
+test('demo/demo123 sigue entrando por la API y la sesión conserva su perfil', async () => {
+  const { res, cookie } = await entrar('demo', 'demo123');
+  assert.equal(res.status, 200);
+  assert.deepEqual((await (await consultarSesion(cookie)).json()).perfil, { id: 'demo', nombre: 'Usuario', tipoTarjeta: 'basica' });
+});

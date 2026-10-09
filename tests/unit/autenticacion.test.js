@@ -13,6 +13,11 @@ test('credenciales de A devuelven perfil básica sin hash', async () => {
 test('credenciales de B devuelven perfil Black', async () => {
   assert.equal((await iniciarSesion({ usuario: 'demo.black', contrasena: 'Black2026' }, repo)).perfil.tipoTarjeta, 'black');
 });
+test('el usuario general demo/demo123 se conserva con tarjeta básica', async () => {
+  const r = await iniciarSesion({ usuario: 'demo', contrasena: 'demo123' }, repo);
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.perfil, { id: 'demo', nombre: 'Usuario', tipoTarjeta: 'basica' });
+});
 test('contraseña errónea y usuario inexistente dan el mismo error 401', async () => {
   const a = await iniciarSesion({ usuario: 'demo.black', contrasena: 'mala' }, repo);
   const b = await iniciarSesion({ usuario: 'nadie', contrasena: 'mala' }, repo);

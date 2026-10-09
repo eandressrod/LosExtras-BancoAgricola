@@ -38,16 +38,20 @@ test('perfiles básica y Black existen y no admiten tarjetas desconocidas', asyn
     error => error.code === '23514');
 });
 
-test('A y B tienen acceso de prueba con hash verificable; demo queda sin acceso', async () => {
-  const { rows } = await db.query('select id, usuario_acceso, contrasena_hash from perfiles order by id');
+test('A, B y demo tienen acceso de prueba con hash verificable', async () => {
+  const { rows } = await db.query('select id, tipo_tarjeta, usuario_acceso, contrasena_hash from perfiles order by id');
   const perfil = Object.fromEntries(rows.map(fila => [fila.id, fila]));
   assert.equal(perfil.A.usuario_acceso, 'demo.basica');
   assert.equal(verificarContrasena('Basica2026', perfil.A.contrasena_hash), true);
   assert.equal(perfil.B.usuario_acceso, 'demo.black');
   assert.equal(verificarContrasena('Black2026', perfil.B.contrasena_hash), true);
   assert.equal(verificarContrasena('Basica2026', perfil.B.contrasena_hash), false);
-  assert.equal(perfil.demo.usuario_acceso, null);
-  assert.ok(rows.every(fila => !String(fila.contrasena_hash).includes('2026')));
+  assert.equal(perfil.demo.usuario_acceso, 'demo');
+  assert.equal(perfil.demo.tipo_tarjeta, 'basica');
+  assert.equal(verificarContrasena('demo123', perfil.demo.contrasena_hash), true);
+  for (const contrasena of ['Basica2026', 'Black2026', 'demo123']) {
+    assert.ok(rows.every(fila => !fila.contrasena_hash.includes(contrasena)), 'la base no guarda contraseñas en texto');
+  }
 });
 
 test('usuario de acceso único y siempre acompañado de su hash', async () => {
@@ -55,7 +59,7 @@ test('usuario de acceso único y siempre acompañado de su hash', async () => {
     error => error.code === '23505');
   await assert.rejects(db.query("update perfiles set contrasena_hash = null where id = 'A'"),
     error => error.code === '23514');
-  await assert.rejects(db.query("update perfiles set usuario_acceso = 'nuevo' where id = 'demo'"),
+  await assert.rejects(db.query("insert into perfiles (id, nombre, usuario_acceso) values ('C', 'Prueba', 'nuevo')"),
     error => error.code === '23514');
 });
 
