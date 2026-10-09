@@ -96,14 +96,15 @@ Abrir **http://127.0.0.1:3000**. Mantener la terminal abierta y detener el servi
 
 El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones`, `/api/promocion?id=restaurante` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
 
-El acceso es simulado, con dos perfiles fijos de prueba que el login muestra con un botón cada uno (H1):
+El acceso es simulado (H1). Los usuarios de prueba están guardados en la tabla `perfiles` de Supabase y el login los muestra plegados en **Usuarios de prueba**, al pie del formulario:
 
-| Perfil | Tarjeta | Usuario | Contraseña |
+| Perfil | Tarjeta | Usuario | Clave |
 | --- | --- | --- | --- |
 | A | Básica | `demo.basica` | `Basica2026` |
 | B | Black | `demo.black` | `Black2026` |
+| demo (general) | Básica | `demo` | `demo123` |
 
-No hay registro, recuperación, MFA ni autenticación bancaria. El backend guarda solo el hash de cada contraseña y, al entrar, envía una cookie `HttpOnly` firmada que dura 2 horas. Cada página privada consulta `/api/auth/sesion` para conocer el perfil (`id`, `nombre`, `tipoTarjeta`); el navegador no guarda la identidad. Si cambian los datos de prueba: `npm run hash -- "NuevaContraseña"`, una migración nueva, `backend/datos.js` y `public/index.html`. Las preferencias remotas y las guardadas se implementan en sus historias; mientras tanto, la encuesta se guarda localmente separada por perfil.
+El formulario envía usuario y clave a `/api/auth/login`; el backend busca el usuario en la base y compara la clave con su hash. Con `DATA_SOURCE=supabase` (Vercel y `.env`) se usa la base; `mock` solo sirve para pruebas automáticas y desarrollo sin claves, con los mismos usuarios en `backend/datos.js`. No hay registro, recuperación, MFA ni autenticación bancaria. Al entrar, el backend envía una cookie `HttpOnly` firmada que dura 2 horas. Cada página privada consulta `/api/auth/sesion` para conocer el perfil (`id`, `nombre`, `tipoTarjeta`); el navegador no guarda la identidad. Si cambian los datos de prueba: `npm run hash -- "NuevaClave"`, una migración nueva, `backend/datos.js` y la lista de `public/index.html`. Las preferencias remotas y las guardadas se implementan en sus historias; mientras tanto, la encuesta se guarda localmente separada por perfil.
 
 ## 5. Ubicar archivos y trabajar con TDD
 
@@ -125,7 +126,7 @@ npm run test:integration
 npm test
 ```
 
-Las 51 pruebas locales no necesitan claves ni modifican la base compartida. Las tres pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si la migración `accesos_prueba` no está aplicada. Agregar pruebas después de desarrollar no acredita TDD.
+Las 53 pruebas locales no necesitan claves ni modifican la base compartida. Las tres pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si la migración `accesos_prueba` no está aplicada. Agregar pruebas después de desarrollar no acredita TDD.
 
 La base compartida contiene `perfiles`, `comercios`, `promociones`, `beneficios_tarjeta`, `sucursales`, `preferencias_usuario` y `promociones_guardadas`. Administrar tablas/filas desde Table Editor o SQL Editor con la cuenta propia. Registrar cambios de estructura necesarios en una migración nueva y probarla antes de aplicarla; no modificar migraciones ya aplicadas ni volver a ejecutar la carga inicial en la base compartida.
 
@@ -154,7 +155,7 @@ vercel project inspect --non-interactive
 
 En el enlace, seleccionar el **proyecto existente** y comprobar que el propietario es `idk-bro6` y el proyecto `los-extras-banco-agricola`. Si no aparece o se deniega el acceso, detenerse y solicitarlo; no enlazar otro proyecto. [Vercel link](https://vercel.com/docs/cli/link).
 
-Las variables del backend son las mismas cuatro de `.env.example`. En Vercel se configuran desde Settings → Environment Variables para el entorno que corresponda. La clave privada y `SESSION_SECRET` deben guardarse como **Secret**; no incluirlas en archivos públicos. Sin `SESSION_SECRET` (Production y Preview) el login responde 503. Cambiar variables no modifica deployments anteriores: el siguiente despliegue debe usar la configuración nueva. No es necesario desplegar para ejecutar el servidor local.
+Las variables del backend son las mismas cuatro de `.env.example`. En Vercel se configuran desde Settings → Environment Variables para el entorno que corresponda. La clave privada y `SESSION_SECRET` deben guardarse como **Secret**; no incluirlas en archivos públicos. Sin `SESSION_SECRET` (Production y Preview) el login responde 503. Para que el login valide contra la base, Vercel necesita `DATA_SOURCE=supabase` con `SUPABASE_URL` y `SUPABASE_SECRET_KEY`, y la migración `accesos_prueba` aplicada. Cambiar variables no modifica deployments anteriores: el siguiente despliegue debe usar la configuración nueva. No es necesario desplegar para ejecutar el servidor local.
 
 Si existen variables de **Development**, se pueden descargar a un archivo aparte para revisarlas sin sobrescribir `.env`:
 
