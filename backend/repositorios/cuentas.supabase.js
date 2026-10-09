@@ -8,7 +8,7 @@
         .order('orden', { ascending: true });
 
       if (error) {
-        throw new Error('Error al consultar cuentas en Supabase: ' + error.message);
+        throw new Error('No se pudieron consultar las cuentas.');
       }
 
       return (data || []).map(row => ({

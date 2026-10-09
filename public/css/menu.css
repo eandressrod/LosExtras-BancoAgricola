@@ -395,5 +395,17 @@ body {
   background-color: #fee2e2;
   color: #991b1b;
   font-size: 13px;
-  display: none;
 }
+
+.menu-brand { display: block; width: min(65%, 220px); height: auto; }
+.menu-main { width: 100%; padding: 0; }
+.menu-state { margin: 20px; padding: 16px; }
+.menu-empty { margin: 0; padding: 16px; color: var(--ba-text-muted); }
+.greeting-info h1 { margin: 0; font-size: 20px; }
+.tarjetas-entry-card, .promociones-entry-card { width: calc(100% - 40px); color: var(--ba-text-dark); }
+.link-ver-todas { min-height: 44px; background: transparent; border: 0; border-radius: 0; padding: 4px; }
+.action-btn-header { min-height: 44px; justify-content: center; padding: 8px; }
+.btn-eye-toggle { min-width: 44px; min-height: 44px; justify-content: center; }
+.cuenta-item-card p { margin: 4px 0; }
+.promociones-entry-card { flex-wrap: wrap; gap: 12px; text-align: left; }
+.cuenta-item-card { max-width: 100%; }

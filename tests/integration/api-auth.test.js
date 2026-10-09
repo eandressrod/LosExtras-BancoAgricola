@@ -105,3 +105,26 @@ test('demo/demo123 sigue entrando por la API y la sesión conserva su perfil', a
   assert.equal(res.status, 200);
   assert.deepEqual((await (await consultarSesion(cookie)).json()).perfil, { id: 'demo', nombre: 'Usuario', tipoTarjeta: 'basica' });
 });
+
+test('logout invalida la cookie copiada, conserva otra sesión y permite nuevo login', async () => {
+  const { cookie } = await entrar('demo.basica', 'Basica2026');
+  const { cookie: otraCookie } = await entrar('demo.basica', 'Basica2026');
+  const request = () => new Request(url('/api/auth/logout'), { method: 'POST', headers: { cookie } });
+  assert.equal((await logout.fetch(request())).status, 204);
+  assert.equal((await consultarSesion(cookie)).status, 401);
+  assert.equal((await consultarSesion(otraCookie)).status, 200);
+  assert.equal((await logout.fetch(request())).status, 204);
+  const { cookie: nuevaCookie } = await entrar('demo.basica', 'Basica2026');
+  assert.equal((await consultarSesion(nuevaCookie)).status, 200);
+});
+
+test('si no se puede revocar, logout devuelve 503 y no borra la cookie', async () => {
+  const { cookie } = await entrar('demo.basica', 'Basica2026');
+  process.env.DATA_SOURCE = 'invalida';
+  try {
+    const response = await logout.fetch(new Request(url('/api/auth/logout'), { method: 'POST', headers: { cookie } }));
+    assert.equal(response.status, 503);
+    assert.equal(response.headers.getSetCookie().length, 0);
+    assert.match((await response.json()).error, /cerrar la sesión/);
+  } finally { process.env.DATA_SOURCE = 'mock'; }
+});
