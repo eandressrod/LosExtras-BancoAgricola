@@ -1,6 +1,7 @@
-// Sesión sin estado: cookie HttpOnly con { pid, exp } firmado con HMAC-SHA256.
+// Cookie HttpOnly con { sid, pid, exp } firmado con HMAC-SHA256.
+// La autenticación también consulta las revocaciones persistidas en el repositorio.
 // Solo el backend conoce SESSION_SECRET; un identificador escrito a mano no autentica.
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 export const NOMBRE_COOKIE = 'sesion_extras';
 export const DURACION_SESION_SEGUNDOS = 2 * 60 * 60;
@@ -27,22 +28,29 @@ function mismaFirma(recibida, esperada) {
 
 export function crearToken(perfilId, ahora = Date.now()) {
   const exp = Math.floor(ahora / 1000) + DURACION_SESION_SEGUNDOS;
-  const cuerpo = Buffer.from(JSON.stringify({ pid: perfilId, exp })).toString('base64url');
+  const cuerpo = Buffer.from(JSON.stringify({ sid: randomUUID(), pid: perfilId, exp })).toString('base64url');
   return `${cuerpo}.${firmar(cuerpo)}`;
 }
 
-/** Devuelve el id del perfil si el token es auténtico y vigente; si no, null. */
-export function verificarToken(token, ahora = Date.now()) {
+/** Verifica firma y vigencia; la revocación se consulta aparte en el repositorio. */
+export function datosDeToken(token, ahora = Date.now()) {
   if (typeof token !== 'string') return null;
   const [cuerpo, firma, ...resto] = token.split('.');
   if (!cuerpo || !firma || resto.length > 0) return null;
   if (!mismaFirma(firma, firmar(cuerpo))) return null;
   try {
-    const { pid, exp } = JSON.parse(Buffer.from(cuerpo, 'base64url').toString('utf8'));
-    return typeof pid === 'string' && Number.isInteger(exp) && exp * 1000 > ahora ? pid : null;
+    const { sid, pid, exp } = JSON.parse(Buffer.from(cuerpo, 'base64url').toString('utf8'));
+    const idValido = typeof sid === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sid);
+    return idValido && typeof pid === 'string' && pid !== '' && Number.isSafeInteger(exp) && exp * 1000 > ahora
+      ? { id: sid, perfilId: pid, expiraEn: exp } : null;
   } catch {
     return null;
   }
+}
+
+/** Solo valida el token: para autorizar usar perfilDeSesion, que comprueba revocación. */
+export function verificarToken(token, ahora = Date.now()) {
+  return datosDeToken(token, ahora)?.perfilId ?? null;
 }
 
 export function leerCookie(request) {

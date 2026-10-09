@@ -18,6 +18,17 @@ export function crearRepositorioAccesosSupabase(client) {
       const { data, error } = await client.from('perfiles').select(CAMPOS_PERFIL).eq('id', id).maybeSingle();
       if (error) throw new Error('No se pudo consultar el perfil.');
       return data && aPerfil(data);
+    },
+    async sesionRevocada(id) {
+      const { data, error } = await client.from('sesiones_revocadas').select('id').eq('id', id).maybeSingle();
+      if (error) throw new Error('No se pudo verificar la revocación de la sesión.');
+      return data !== null;
+    },
+    async revocarSesion({ id, perfilId, expiraEn }) {
+      const { error } = await client.from('sesiones_revocadas').upsert({
+        id, usuario_id: perfilId, expira_en: new Date(expiraEn * 1000).toISOString()
+      }, { onConflict: 'id', ignoreDuplicates: true });
+      if (error) throw new Error('No se pudo revocar la sesión.');
     }
   };
 }

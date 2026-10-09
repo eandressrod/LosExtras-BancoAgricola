@@ -108,6 +108,10 @@ El formulario envía usuario y clave a `/api/auth/login`; el backend busca el us
 
 ## 5. Ubicar archivos y trabajar con TDD
 
+Revisión de H1: cada cookie nueva incluye un identificador único de sesión. El backend consulta `sesiones_revocadas` antes de autorizar y guarda la revocación antes de borrar la cookie al cerrar sesión. Una copia de la cookie cerrada deja de funcionar, sin cerrar otras sesiones del mismo usuario. Si falla la base, el cierre responde 503 y el frontend debe mostrar el error; reutilizar `logout()` de `public/js/comun.js` y comprobar su éxito.
+
+Antes de desplegar esta revisión con Supabase, aplicar la migración nueva `20261009192140_revocacion_sesiones.sql`; no volver a ejecutar las anteriores. La tabla tiene RLS y solo permite SELECT/INSERT al backend con clave privada. Las cookies del formato anterior requerirán iniciar sesión otra vez. Los registros de revocación conservan su vencimiento; se pueden retirar cuando la sesión ya haya expirado, sin reactivar cookies vigentes.
+
 | Carpeta | Contenido |
 | --- | --- |
 | `public/` | HTML, JavaScript de pantallas, CSS y recursos |
@@ -126,7 +130,7 @@ npm run test:integration
 npm test
 ```
 
-Las 53 pruebas locales no necesitan claves ni modifican la base compartida. Las tres pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si las migraciones `accesos_prueba` y `acceso_demo` no están aplicadas. Agregar pruebas después de desarrollar no acredita TDD.
+Las 63 pruebas locales no necesitan claves ni modifican la base compartida. Las tres pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si las migraciones `accesos_prueba`, `acceso_demo` y `revocacion_sesiones` no están aplicadas. Agregar pruebas después de desarrollar no acredita TDD.
 
 La base compartida contiene `perfiles`, `comercios`, `promociones`, `beneficios_tarjeta`, `sucursales`, `preferencias_usuario` y `promociones_guardadas`. Administrar tablas/filas desde Table Editor o SQL Editor con la cuenta propia. Registrar cambios de estructura necesarios en una migración nueva y probarla antes de aplicarla; no modificar migraciones ya aplicadas ni volver a ejecutar la carga inicial en la base compartida.
 
