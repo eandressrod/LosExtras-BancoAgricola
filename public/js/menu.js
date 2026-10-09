@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnLogout = document.getElementById('btn-logout');
   const alertaLogout = document.getElementById('alerta-logout');
   const btnEyeToggle = document.getElementById('btn-eye-toggle');
+  const btnMisTarjetas = document.getElementById('btn-mis-tarjetas');
 
   let saldosVisibles = true;
   let destinoPromocionesUrl = '/encuesta.html';
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const perfil = await requireSession();
     if (!perfil) return;
 
-    greetingTitle.innerHTML = `Hola ${perfil.nombre || 'Samuel'} <span class="arrow">&gt;</span>`;
+    greetingTitle.innerHTML = `Hola ${perfil.nombre || 'Usuario'} <span class="arrow">&gt;</span>`;
     
     const ahora = new Date();
     const fechaStr = ahora.toLocaleDateString('es-SV', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -31,6 +32,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const data = await res.json();
     cuentasData = data.cuentas || [];
     destinoPromocionesUrl = data.destinoPromociones || '/encuesta.html';
+
+    // Configurar detalle de "Mis Tarjetas" según el perfil
+    if (btnMisTarjetas) {
+      const tipoT = (perfil.tipoTarjeta || 'Básica').toUpperCase();
+      btnMisTarjetas.querySelector('.tarjetas-entry-left span').textContent = `Mis Tarjetas (${tipoT})`;
+    }
 
     renderizarCuentas();
   } catch (err) {
@@ -78,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Ocultar/mostrar saldos con el icono de ojo
+  // Ocultar/mostrar saldos
   btnEyeToggle.addEventListener('click', () => {
     saldosVisibles = !saldosVisibles;
     renderizarCuentas();
@@ -102,5 +109,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
       alertaLogout.style.display = 'block';
     }
+  });
+
+  // Manejo de controles visuales sin operaciones financieras en H2 (Pendiente 5)
+  const botonesSinAlcance = document.querySelectorAll('.action-circle-item, .action-btn-header[aria-label="Mensajería"], .floating-qr-btn');
+  botonesSinAlcance.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('Esta función no forma parte del alcance de la versión actual.');
+    });
   });
 });
