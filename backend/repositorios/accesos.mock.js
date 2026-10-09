@@ -2,6 +2,7 @@ import { perfiles } from '../datos.js';
 
 // Repositorio de accesos con datos locales; mismo contrato que accesos.supabase.js.
 const aPerfil = ({ id, nombre, tipoTarjeta }) => ({ id, nombre, tipoTarjeta });
+const sesionesRevocadas = new Set();
 
 /** @type {import('./contrato.js').RepositorioAccesos['buscarAccesoPorUsuario']} */
 export async function buscarAccesoPorUsuario(usuario) {
@@ -13,4 +14,13 @@ export async function buscarAccesoPorUsuario(usuario) {
 export async function buscarPerfilPorId(id) {
   const perfil = perfiles.find(item => item.id === id);
   return perfil ? aPerfil(perfil) : null;
+}
+
+// Solo pruebas/desarrollo mock. Supabase conserva revocaciones entre instancias.
+export async function sesionRevocada(id) {
+  return sesionesRevocadas.has(id);
+}
+
+export async function revocarSesion({ id }) {
+  sesionesRevocadas.add(id);
 }

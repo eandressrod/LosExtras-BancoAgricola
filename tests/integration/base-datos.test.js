@@ -2,6 +2,9 @@ import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
+import { crearToken } from '../../backend/servicios/sesion.js';
+import * as autenticacion from '../../backend/servicios/autenticacion.js';
+import { crearRepositorioAccesosSupabase } from '../../backend/repositorios/accesos.supabase.js';
 import { verificarContrasena } from '../../backend/servicios/contrasenas.js';
 
 let db;
@@ -15,11 +18,11 @@ before(async () => {
 });
 after(async () => { await db?.close(); });
 
-test('existen las siete tablas persistentes necesarias', async () => {
+test('existen las tablas persistentes de catálogo y revocación de sesiones', async () => {
   const { rows } = await db.query("select tablename from pg_tables where schemaname = 'public' order by tablename");
   assert.deepEqual(rows.map(fila => fila.tablename), [
     'beneficios_tarjeta', 'comercios', 'perfiles', 'preferencias_usuario',
-    'promociones', 'promociones_guardadas', 'sucursales'
+    'promociones', 'promociones_guardadas', 'sesiones_revocadas', 'sucursales'
   ]);
 });
 
@@ -95,7 +98,7 @@ test('sucursales necesitan un comercio existente y coordenadas válidas', async 
 
 test('tablas protegidas: RLS activo y sin privilegios directos de navegador', async () => {
   const { rows } = await db.query("select relname, relrowsecurity from pg_class join pg_namespace on pg_namespace.oid = relnamespace where nspname = 'public' and relkind = 'r'");
-  assert.equal(rows.length, 7);
+  assert.equal(rows.length, 8);
   assert.ok(rows.every(fila => fila.relrowsecurity));
   for (const rol of ['anon', 'authenticated']) {
     await db.exec(`set role ${rol}`);
@@ -113,5 +116,44 @@ test('backend tiene los permisos de escritura necesarios para preferencias y gua
       const { rows } = await db.query('select has_table_privilege($1, $2, $3) as permitido', ['service_role', tabla, permiso]);
       assert.equal(rows[0].permitido, true, `${tabla}: ${permiso}`);
     }
+  }
+});
+
+test('revocación persistida en PostgreSQL se respeta desde otra instancia del repositorio', async () => {
+  process.env.SESSION_SECRET = 'p'.repeat(40);
+  // Adaptador del transporte para probar servicio → repositorio → PostgreSQL real en memoria.
+  const client = { from(tabla) {
+    assert.ok(['perfiles', 'sesiones_revocadas'].includes(tabla));
+    let campos;
+    let filtro;
+    return {
+      select(valor) { campos = valor; return this; },
+      eq(campo, valor) { assert.equal(campo, 'id'); filtro = valor; return this; },
+      async maybeSingle() {
+        const { rows } = await db.query(`select ${campos} from public.${tabla} where id = $1`, [filtro]);
+        return { data: rows[0] ?? null, error: null };
+      },
+      async upsert(fila, opciones) {
+        assert.equal(tabla, 'sesiones_revocadas');
+        assert.equal(opciones.ignoreDuplicates, true);
+        await db.query('insert into public.sesiones_revocadas (id, usuario_id, expira_en) values ($1, $2, $3) on conflict (id) do nothing', [fila.id, fila.usuario_id, fila.expira_en]);
+        return { error: null };
+      }
+    };
+  } };
+  const repoA = crearRepositorioAccesosSupabase(client);
+  const repoB = crearRepositorioAccesosSupabase(client);
+  const token = crearToken('A');
+  const otro = crearToken('A');
+  assert.equal((await autenticacion.perfilDeSesion(token, repoA)).id, 'A');
+  await autenticacion.cerrarSesion(token, repoA);
+  await autenticacion.cerrarSesion(token, repoB);
+  assert.equal(await autenticacion.perfilDeSesion(token, repoB), null);
+  assert.equal((await autenticacion.perfilDeSesion(otro, repoB)).id, 'A');
+  const { rows } = await db.query('select count(*)::integer as cantidad from public.sesiones_revocadas');
+  assert.equal(rows[0].cantidad, 1);
+  for (const permiso of ['SELECT', 'INSERT']) {
+    const { rows } = await db.query('select has_table_privilege($1, $2, $3) as permitido', ['service_role', 'sesiones_revocadas', permiso]);
+    assert.equal(rows[0].permitido, true);
   }
 });
