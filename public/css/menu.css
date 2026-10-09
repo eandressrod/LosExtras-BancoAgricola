@@ -1,161 +1,399 @@
-﻿/* Estilos específicos del Dashboard / Menú móvil */
-.menu-header {
+﻿/* Paleta y tipografía Banco Agrícola */
+:root {
+  --ba-primary: #002f6c;
+  --ba-yellow: #fcd116;
+  --ba-bg: #f5f6f9;
+  --ba-card-bg: #ffffff;
+  --ba-text-dark: #1f242e;
+  --ba-text-muted: #6b7280;
+  --ba-cyan-border: #38bdf8;
+  --ba-bottom-h: 70px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--ba-bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ba-text-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-wrapper {
+  max-width: 440px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: var(--ba-bg);
+  position: relative;
+  padding-bottom: calc(var(--ba-bottom-h) + 20px);
+}
+
+/* Header superior */
+.ba-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  background: #002f6c;
-  color: #ffffff;
+  padding: 14px 20px 8px 20px;
 }
 
-.menu-header h1 {
-  font-size: 1.15rem;
-  margin: 0;
-  font-weight: 600;
+.ba-logo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.btn-logout {
+.ba-logo-bar {
+  height: 4.5px;
+  background-color: #1f242e;
+  border-radius: 3px;
+  transform: skewX(-20deg);
+}
+.ba-logo-bar.b1 { width: 22px; }
+.ba-logo-bar.b2 { width: 30px; }
+.ba-logo-bar.b3 { width: 26px; }
+
+.ba-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.action-btn-header {
   background: transparent;
-  border: 1px solid #ffffff;
-  color: #ffffff;
-  padding: 0.35rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.btn-logout:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.menu-container {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-.welcome-card {
-  margin-bottom: 1.25rem;
-  padding: 1rem;
-  background: #f4f6f9;
-  border-radius: 8px;
-}
-
-.welcome-card h2 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.1rem;
-  color: #1a1a1a;
-}
-
-.badge-perfil {
-  display: inline-block;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.75rem;
-  font-weight: bold;
-  border-radius: 12px;
-  text-transform: uppercase;
-  background: #e2e8f0;
-  color: #334155;
-}
-
-.badge-black {
-  background: #1e293b;
-  color: #f8fafc;
-}
-
-.banner-promociones {
-  background: linear-gradient(135deg, #004b93 0%, #002855 100%);
-  color: white;
-  padding: 1.25rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.banner-promociones h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.15rem;
-}
-
-.banner-promociones p {
-  font-size: 0.85rem;
-  margin: 0 0 1rem 0;
-  opacity: 0.9;
-}
-
-.btn-promociones {
-  background-color: #ffd100;
-  color: #002855;
   border: none;
-  font-weight: bold;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   cursor: pointer;
-  font-size: 0.95rem;
-  width: 100%;
+  position: relative;
+  color: var(--ba-text-dark);
 }
 
-.btn-promociones:hover {
-  background-color: #e6bc00;
+.action-btn-header span {
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.badge-counter {
+  position: absolute;
+  top: -4px;
+  right: 14px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+}
+
+/* Saludo de usuario */
+.user-greeting-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 18px 20px;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid #8b5cf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b5cf6;
+}
+
+.greeting-info h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.greeting-info h2 .arrow {
+  font-size: 16px;
+  color: #4b5563;
+}
+
+.greeting-info p {
+  margin: 3px 0 0 0;
+  font-size: 12px;
+  color: var(--ba-text-muted);
+}
+
+/* Sección Mis Cuentas */
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px 10px 20px;
+}
+
+.section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .section-title {
-  font-size: 1rem;
-  color: #333;
-  margin: 1rem 0 0.75rem 0;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 500;
+  margin: 0;
 }
 
-.cuentas-list {
+.btn-eye-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  color: #4b5563;
 }
 
-.cuenta-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 1rem;
+.link-ver-todas {
+  font-size: 14px;
+  color: var(--ba-text-dark);
+  text-decoration: underline;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Carrusel de Cuentas */
+.cuentas-carousel {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px 20px 16px 20px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cuentas-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.cuenta-item-card {
+  flex: 0 0 270px;
   background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  border-right: 4px solid var(--ba-cyan-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  scroll-snap-align: start;
+  position: relative;
 }
 
-.cuenta-header {
+.cuenta-item-top {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  align-items: flex-start;
+  font-size: 13px;
+  color: #374151;
 }
 
-.cuenta-nombre {
+.cuenta-item-subtitle {
+  font-size: 16px;
   font-weight: 600;
-  color: #1e293b;
-  font-size: 0.95rem;
+  margin: 8px 0 12px 0;
+  color: #111827;
 }
 
-.cuenta-numero {
-  color: #64748b;
-  font-size: 0.85rem;
+.cuenta-saldo-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
-.cuenta-saldo {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #002f6c;
-  margin-top: 0.25rem;
+.cuenta-saldo-monto {
+  font-size: 20px;
+  font-weight: 500;
+  color: #111827;
 }
 
-.estado-box {
-  text-align: center;
-  padding: 2rem 1rem;
+.cuenta-saldo-monto sup {
+  font-size: 12px;
 }
 
-.estado-box button {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background: #002f6c;
-  color: white;
-  border: none;
-  border-radius: 4px;
+.cuenta-saldo-label {
+  font-size: 13px;
+  color: var(--ba-text-muted);
+}
+
+/* Fila Mis Tarjetas */
+.tarjetas-entry-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin: 8px 20px 22px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
   cursor: pointer;
+}
+
+.tarjetas-entry-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* ¿Qué necesitas hacer hoy? */
+.section-actions-container {
+  padding: 0 20px;
+  margin-bottom: 22px;
+}
+
+.actions-subtitle {
+  font-size: 17px;
+  font-weight: 400;
+  margin: 0 0 14px 0;
+}
+
+.quick-actions-grid {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px 12px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.action-circle-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.action-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.action-circle.pink { background-color: #fce7f3; color: #be185d; }
+.action-circle.teal { background-color: #ccfbf1; color: #0f766e; }
+.action-circle.yellow { background-color: #fef3c7; color: #b45309; }
+.action-circle.gray { background-color: #f3f4f6; color: #374151; }
+
+.action-label {
+  font-size: 12px;
+  line-height: 1.25;
+  color: #374151;
+}
+
+/* Banner Promociones y descuentos (Destacado para la H2) */
+.promociones-entry-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin: 0 20px 24px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  border: 1.5px solid #fed7aa;
+}
+
+.promociones-entry-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.promociones-entry-left span {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Bottom Navigation Fijo */
+.bottom-nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 440px;
+  height: var(--ba-bottom-h);
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+
+.nav-tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  color: #4b5563;
+  cursor: pointer;
+  flex: 1;
+  height: 100%;
+}
+
+.nav-tab-item.active {
+  background-color: var(--ba-yellow);
+  color: #111827;
+  font-weight: 600;
+}
+
+.nav-tab-item span {
+  margin-top: 4px;
+}
+
+.floating-qr-wrapper {
+  position: relative;
+  top: -18px;
+  display: flex;
+  justify-content: center;
+}
+
+.floating-qr-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 4px solid var(--ba-yellow);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Mensajes de error */
+.alerta-logout-fallido {
+  margin: 12px 20px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-size: 13px;
+  display: none;
 }
