@@ -2,6 +2,7 @@
 import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
 import { leerCookie } from '../backend/servicios/sesion.js';
 import { responderJson, metodoNoPermitido } from '../backend/http.js';
+import { obtenerClienteSupabase } from '../backend/config/supabase.js';
 
 export default {
   async fetch(request) {
@@ -15,12 +16,32 @@ export default {
         return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
       }
 
-      // 1. Obtener cuentas del propietario asegurando aislamiento
+      // 1. Cuentas del propietario filtradas estrictamente
       const repoCuentas = obtenerRepositorioCuentas();
-      const cuentas = await repoCuentas.listarPorPerfil(perfil.id, perfil.tipoTarjeta);
+      const cuentas = await repoCuentas.listarPorPerfil(perfil.id);
 
-      // 2. Determinar estado de la encuesta (H3): si tiene preferencias completas
-      const encuestaCompletada = Boolean(perfil.preferencias && perfil.preferencias.length > 0);
+      // 2. Consulta del estado real de encuesta
+      let encuestaCompletada = false;
+      const fuente = (process.env.DATA_SOURCE || 'mock').toLowerCase();
+
+      if (fuente === 'supabase') {
+        try {
+          const cliente = obtenerClienteSupabase();
+          const { data: prefs } = await cliente
+            .from('preferencias_usuario')
+            .select('perfil_id')
+            .eq('perfil_id', perfil.id);
+          encuestaCompletada = Boolean(prefs && prefs.length > 0);
+        } catch {
+          encuestaCompletada = false;
+        }
+      } else {
+        // En mock: el perfil B / Black tiene preferencias completas de prueba
+        const pid = String(perfil.id || '').toUpperCase();
+        const tipo = String(perfil.tipoTarjeta || '').toLowerCase();
+        encuestaCompletada = pid === 'B' || tipo === 'black';
+      }
+
       const encuestaPendiente = !encuestaCompletada;
 
       return responderJson({

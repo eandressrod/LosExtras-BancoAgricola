@@ -10,16 +10,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const alertaLogout = document.getElementById('alerta-logout');
   const btnEyeToggle = document.getElementById('btn-eye-toggle');
   const btnMisTarjetas = document.getElementById('btn-mis-tarjetas');
+  const linkVerTodas = document.querySelector('.link-ver-todas');
 
   let saldosVisibles = true;
   let destinoPromocionesUrl = '/encuesta.html';
   let cuentasData = [];
+  let perfilActual = null;
+  let vistaExpandida = false;
 
   try {
     const perfil = await requireSession();
     if (!perfil) return;
+    perfilActual = perfil;
 
-    greetingTitle.innerHTML = `Hola ${perfil.nombre || 'Usuario'} <span class="arrow">&gt;</span>`;
+    greetingTitle.innerHTML = `Hola ${perfil.nombre || perfil.usuario || 'Usuario'} <span class="arrow">&gt;</span>`;
     
     const ahora = new Date();
     const fechaStr = ahora.toLocaleDateString('es-SV', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -33,7 +37,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     cuentasData = data.cuentas || [];
     destinoPromocionesUrl = data.destinoPromociones || '/encuesta.html';
 
-    // Configurar detalle de "Mis Tarjetas" según el perfil
     if (btnMisTarjetas) {
       const tipoT = (perfil.tipoTarjeta || 'Básica').toUpperCase();
       btnMisTarjetas.querySelector('.tarjetas-entry-left span').textContent = `Mis Tarjetas (${tipoT})`;
@@ -50,18 +53,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnReintentar) btnReintentar.addEventListener('click', () => location.reload());
   }
 
-  function renderizarCuentas() {
+  function renderizarCuentas(soloTarjetas = false) {
     cuentasCarousel.innerHTML = '';
-    if (cuentasData.length === 0) {
+    const lista = soloTarjetas 
+      ? cuentasData.filter(c => c.tipo.toLowerCase().includes('tarjeta') || c.tipo.toLowerCase().includes('crédito'))
+      : cuentasData;
+
+    if (lista.length === 0) {
       cuentasCarousel.innerHTML = `
         <div class="cuenta-item-card">
-          <p style="color: #6b7280; margin: 0;">No tienes cuentas registradas.</p>
+          <p style="color: #6b7280; margin: 0;">${soloTarjetas ? 'No tienes tarjetas activas asociadas.' : 'No tienes cuentas registradas.'}</p>
         </div>
       `;
       return;
     }
 
-    cuentasData.forEach(c => {
+    cuentasCarousel.style.flexWrap = vistaExpandida ? 'wrap' : 'nowrap';
+
+    lista.forEach(c => {
       const card = document.createElement('div');
       card.className = 'cuenta-item-card';
 
@@ -91,19 +100,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderizarCuentas();
   });
 
-  // Navegación hacia Promociones y descuentos
+  // «Ver todas» alterna vista
+  if (linkVerTodas) {
+    linkVerTodas.addEventListener('click', (e) => {
+      e.preventDefault();
+      vistaExpandida = !vistaExpandida;
+      linkVerTodas.textContent = vistaExpandida ? 'Ver menos <' : 'Ver todas >';
+      renderizarCuentas();
+    });
+  }
+
+  // «Mis Tarjetas» filtra tarjetas del usuario
+  if (btnMisTarjetas) {
+    let filtrandoTarjetas = false;
+    btnMisTarjetas.addEventListener('click', () => {
+      filtrandoTarjetas = !filtrandoTarjetas;
+      renderizarCuentas(filtrandoTarjetas);
+    });
+  }
+
+  // Navegación hacia Promociones evaluando estado de encuesta
   const navegarPromociones = () => { window.location.href = destinoPromocionesUrl; };
   if (btnPromociones) btnPromociones.addEventListener('click', navegarPromociones);
   if (btnTabParaTi) btnTabParaTi.addEventListener('click', navegarPromociones);
 
-  // Manejo de Logout con control de error (Requisito DoD)
+  // Logout con error visible si falla
   btnLogout.addEventListener('click', async () => {
     alertaLogout.style.display = 'none';
     try {
       const res = await fetch('/api/auth/logout', { method: 'POST' });
-      if (!res.ok) {
-        throw new Error('Fallo al cerrar sesión en el servidor');
-      }
+      if (!res.ok) throw new Error('Fallo al cerrar sesión en el servidor');
       forgetLogin();
       window.location.href = '/index.html';
     } catch (err) {
@@ -111,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Manejo de controles visuales sin operaciones financieras en H2 (Pendiente 5)
+  // Notificación en botones fuera de alcance
   const botonesSinAlcance = document.querySelectorAll('.action-circle-item, .action-btn-header[aria-label="Mensajería"], .floating-qr-btn');
   botonesSinAlcance.forEach(btn => {
     btn.addEventListener('click', (e) => {
