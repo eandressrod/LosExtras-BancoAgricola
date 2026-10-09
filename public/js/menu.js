@@ -1,98 +1,106 @@
-﻿import { requireSession, forgetLogin, cardName } from './comun.js';
+﻿import { requireSession, forgetLogin } from './comun.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const cargando = document.getElementById('estado-cargando');
-  const errorBox = document.getElementById('estado-error');
-  const errorTexto = document.getElementById('error-texto');
-  const btnReintentar = document.getElementById('btn-reintentar');
-  const contenido = document.getElementById('contenido-menu');
-
-  const usuarioNombre = document.getElementById('usuario-nombre');
-  const badgeTarjeta = document.getElementById('badge-tarjeta');
-  const cuentasList = document.getElementById('cuentas-list');
-  const cuentasVacias = document.getElementById('cuentas-vacias');
-
+  const greetingTitle = document.getElementById('greeting-title');
+  const greetingVisita = document.getElementById('greeting-visita');
+  const cuentasCarousel = document.getElementById('cuentas-carousel');
   const btnPromociones = document.getElementById('btn-promociones');
+  const btnTabParaTi = document.getElementById('btn-tab-parati');
   const btnLogout = document.getElementById('btn-logout');
+  const alertaLogout = document.getElementById('alerta-logout');
+  const btnEyeToggle = document.getElementById('btn-eye-toggle');
 
+  let saldosVisibles = true;
   let destinoPromocionesUrl = '/encuesta.html';
+  let cuentasData = [];
 
-  async function cargarMenu() {
-    cargando.style.display = 'block';
-    errorBox.style.display = 'none';
-    contenido.style.display = 'none';
+  try {
+    const perfil = await requireSession();
+    if (!perfil) return;
 
-    try {
-      // 1. Proteger la página mediante la función estándar del proyecto
-      const perfil = await requireSession();
-      if (!perfil) return; // requireSession redirige a index.html si no hay sesión
+    greetingTitle.innerHTML = `Hola ${perfil.nombre || 'Samuel'} <span class="arrow">&gt;</span>`;
+    
+    const ahora = new Date();
+    const fechaStr = ahora.toLocaleDateString('es-SV', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const horaStr = ahora.toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit', hour12: false });
+    greetingVisita.textContent = `Última visita: ${fechaStr} | ${horaStr}`;
 
-      // 2. Consultar datos y cuentas
-      const res = await fetch('/api/menu');
-      if (!res.ok) {
-        throw new Error('No se pudo consultar el menú. Código ' + res.status);
-      }
+    const res = await fetch('/api/menu');
+    if (!res.ok) throw new Error('No se pudo cargar el menú');
 
-      const data = await res.json();
-      mostrarDatos(data);
-    } catch (err) {
-      cargando.style.display = 'none';
-      errorBox.style.display = 'block';
-      errorTexto.textContent = err.message || 'Error al cargar la información del menú.';
-    }
+    const data = await res.json();
+    cuentasData = data.cuentas || [];
+    destinoPromocionesUrl = data.destinoPromociones || '/encuesta.html';
+
+    renderizarCuentas();
+  } catch (err) {
+    cuentasCarousel.innerHTML = `
+      <div class="cuenta-item-card">
+        <p style="color: #ef4444; margin: 0;">Error al cargar tus cuentas. <button id="btn-reintentar" style="background: none; border: underline; color: #002f6c; cursor: pointer;">Reintentar</button></p>
+      </div>
+    `;
+    const btnReintentar = document.getElementById('btn-reintentar');
+    if (btnReintentar) btnReintentar.addEventListener('click', () => location.reload());
   }
 
-  function mostrarDatos(data) {
-    const { perfil, cuentas, destinoPromociones } = data;
-    destinoPromocionesUrl = destinoPromociones || '/encuesta.html';
-
-    usuarioNombre.textContent = `Hola, ${perfil.nombre || perfil.usuario || 'Cliente'}`;
-    const tipo = (perfil.tipoTarjeta || 'basica').toLowerCase();
-    badgeTarjeta.textContent = cardName(perfil);
-    if (tipo === 'black') {
-      badgeTarjeta.classList.add('badge-black');
+  function renderizarCuentas() {
+    cuentasCarousel.innerHTML = '';
+    if (cuentasData.length === 0) {
+      cuentasCarousel.innerHTML = `
+        <div class="cuenta-item-card">
+          <p style="color: #6b7280; margin: 0;">No tienes cuentas registradas.</p>
+        </div>
+      `;
+      return;
     }
 
-    cuentasList.innerHTML = '';
-    if (!cuentas || cuentas.length === 0) {
-      cuentasVacias.style.display = 'block';
-    } else {
-      cuentasVacias.style.display = 'none';
-      cuentas.forEach(cuenta => {
-        const card = document.createElement('div');
-        card.className = 'cuenta-card';
-        card.innerHTML = `
-          <div class="cuenta-header">
-            <span class="cuenta-nombre">${cuenta.nombre}</span>
-            <span class="cuenta-numero">${cuenta.numeroEnmascarado}</span>
-          </div>
-          <div class="cuenta-tipo" style="font-size: 0.8rem; color: #64748b;">${cuenta.tipo} · ${cuenta.segmento || ''}</div>
-          <div class="cuenta-saldo">${cuenta.moneda} $${Number(cuenta.saldo).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
-        `;
-        cuentasList.appendChild(card);
-      });
-    }
+    cuentasData.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'cuenta-item-card';
 
-    cargando.style.display = 'none';
-    contenido.style.display = 'block';
+      const partes = Number(c.saldo).toFixed(2).split('.');
+      const enteros = partes[0];
+      const centavos = partes[1];
+      const saldoTexto = saldosVisibles ? `$${enteros}<sup>${centavos}</sup>` : '••••••';
+
+      card.innerHTML = `
+        <div class="cuenta-item-top">
+          <span>${c.numeroEnmascarado} ${c.tipo}</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+        </div>
+        <div class="cuenta-item-subtitle">${c.nombre}</div>
+        <div class="cuenta-saldo-wrapper">
+          <div class="cuenta-saldo-monto">${saldoTexto}</div>
+          <div class="cuenta-saldo-label">Saldo disponible</div>
+        </div>
+      `;
+      cuentasCarousel.appendChild(card);
+    });
   }
 
-  btnPromociones.addEventListener('click', () => {
-    window.location.href = destinoPromocionesUrl;
+  // Ocultar/mostrar saldos con el icono de ojo
+  btnEyeToggle.addEventListener('click', () => {
+    saldosVisibles = !saldosVisibles;
+    renderizarCuentas();
   });
 
+  // Navegación hacia Promociones y descuentos
+  const navegarPromociones = () => { window.location.href = destinoPromocionesUrl; };
+  if (btnPromociones) btnPromociones.addEventListener('click', navegarPromociones);
+  if (btnTabParaTi) btnTabParaTi.addEventListener('click', navegarPromociones);
+
+  // Manejo de Logout con control de error (Requisito DoD)
   btnLogout.addEventListener('click', async () => {
+    alertaLogout.style.display = 'none';
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (e) {
-      console.warn('Error al llamar logout:', e);
-    } finally {
+      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      if (!res.ok) {
+        throw new Error('Fallo al cerrar sesión en el servidor');
+      }
       forgetLogin();
       window.location.href = '/index.html';
+    } catch (err) {
+      alertaLogout.style.display = 'block';
     }
   });
-
-  btnReintentar.addEventListener('click', cargarMenu);
-
-  cargarMenu();
 });

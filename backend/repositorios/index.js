@@ -1,13 +1,15 @@
-import { repositorioMock } from './mock.js';
+﻿import { repositorioMock } from './mock.js';
 import { crearRepositorioSupabase } from './supabase.js';
 import * as accesosMock from './accesos.mock.js';
 import { crearRepositorioAccesosSupabase } from './accesos.supabase.js';
+import { crearRepositorioCuentasMock } from './cuentas.mock.js';
+import { crearRepositorioCuentasSupabase } from './cuentas.supabase.js';
 import { obtenerClienteSupabase } from '../config/supabase.js';
 
 let repositorioSupabase;
 let accesosSupabase;
+let cuentasSupabase;
 
-// Una fuente inválida es un error de configuración: nunca se sustituye por mock.
 function fuenteDeDatos() {
   const source = process.env.DATA_SOURCE || 'mock';
   if (source !== 'mock' && source !== 'supabase') throw new Error('DATA_SOURCE debe ser mock o supabase.');
@@ -26,4 +28,10 @@ export function obtenerRepositorioAccesos() {
   if (fuenteDeDatos() === 'mock') return accesosMock;
   accesosSupabase ??= crearRepositorioAccesosSupabase(obtenerClienteSupabase());
   return accesosSupabase;
+}
+
+export function obtenerRepositorioCuentas() {
+  if (fuenteDeDatos() === 'mock') return crearRepositorioCuentasMock();
+  cuentasSupabase ??= crearRepositorioCuentasSupabase(obtenerClienteSupabase());
+  return cuentasSupabase;
 }
