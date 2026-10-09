@@ -8,10 +8,13 @@
     <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
     <script type="module" src="/js/promociones.js"></script>
   </head>
-  <body>
+  <body data-session="pending">
     <header>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
-      <p>Los Extras</p>
+      <div class="header-row">
+        <p>Los Extras</p>
+        <p id="session-profile" class="session-profile" hidden></p>
+      </div>
     </header>
     <main>
       <h1>Para ti</h1>

@@ -15,9 +15,39 @@
     </header>
     <main>
       <h1>Iniciar sesión</h1>
-      <form id="login-form">
-        <label>Usuario<input name="username" autocomplete="off" autocapitalize="none" spellcheck="false" required></label>
-        <label>Contraseña<input name="password" type="password" autocomplete="off" required></label>
+      <p class="notice">Simulación con perfiles ficticios. No ingreses datos bancarios reales.</p>
+
+      <!-- Accesos de prueba fijos (H1). Si cambian, actualizar también backend/datos.js y una migración nueva. -->
+      <section class="test-profiles" aria-labelledby="test-profiles-title">
+        <h2 id="test-profiles-title">Elige un perfil de prueba</h2>
+        <article class="test-profile" aria-labelledby="profile-a-title">
+          <div class="card-art card-art--basica" aria-hidden="true"><span class="card-art__chip"></span><span class="card-art__name">Básica</span></div>
+          <div>
+            <h3 id="profile-a-title">Perfil A <span class="card-type">Tarjeta Básica</span></h3>
+            <dl class="credentials">
+              <div><dt>Usuario</dt><dd>demo.basica</dd></div>
+              <div><dt>Contraseña</dt><dd>Basica2026</dd></div>
+            </dl>
+          </div>
+          <button type="button" data-usuario="demo.basica" data-contrasena="Basica2026">Entrar como Perfil A</button>
+        </article>
+        <article class="test-profile" aria-labelledby="profile-b-title">
+          <div class="card-art card-art--black" aria-hidden="true"><span class="card-art__chip"></span><span class="card-art__name">Black</span></div>
+          <div>
+            <h3 id="profile-b-title">Perfil B <span class="card-type">Tarjeta Black</span></h3>
+            <dl class="credentials">
+              <div><dt>Usuario</dt><dd>demo.black</dd></div>
+              <div><dt>Contraseña</dt><dd>Black2026</dd></div>
+            </dl>
+          </div>
+          <button type="button" data-usuario="demo.black" data-contrasena="Black2026">Entrar como Perfil B</button>
+        </article>
+      </section>
+
+      <form id="login-form" novalidate aria-labelledby="manual-login-title">
+        <h2 id="manual-login-title" class="divider">o escribe los datos de prueba</h2>
+        <label>Usuario<input name="username" autocomplete="off" autocapitalize="none" spellcheck="false" required aria-describedby="login-error"></label>
+        <label>Contraseña<input name="password" type="password" autocomplete="off" required aria-describedby="login-error"></label>
         <p id="login-error" class="error" role="alert"></p>
         <button type="submit">Entrar</button>
       </form>

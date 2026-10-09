@@ -23,7 +23,7 @@ async function loadDetail() {
   }
 }
 
-if (requireSession()) {
+if (await requireSession()) {
   document.querySelector('#retry').addEventListener('click', loadDetail);
   document.querySelector('#use-promotion').addEventListener('click', () => {
     const instructions = document.querySelector('#instructions');
