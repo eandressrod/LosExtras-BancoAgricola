@@ -2,6 +2,7 @@ import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
+import { verificarContrasena } from '../../backend/servicios/contrasenas.js';
 
 let db;
 before(async () => {
@@ -34,6 +35,27 @@ test('perfiles básica y Black existen y no admiten tarjetas desconocidas', asyn
   const { rows } = await db.query("select id, tipo_tarjeta from perfiles where id in ('A', 'B') order by id");
   assert.deepEqual(rows, [{ id: 'A', tipo_tarjeta: 'basica' }, { id: 'B', tipo_tarjeta: 'black' }]);
   await assert.rejects(db.query("insert into perfiles (id, nombre, tipo_tarjeta) values ('invalido', 'Prueba', 'otra')"),
+    error => error.code === '23514');
+});
+
+test('A y B tienen acceso de prueba con hash verificable; demo queda sin acceso', async () => {
+  const { rows } = await db.query('select id, usuario_acceso, contrasena_hash from perfiles order by id');
+  const perfil = Object.fromEntries(rows.map(fila => [fila.id, fila]));
+  assert.equal(perfil.A.usuario_acceso, 'demo.basica');
+  assert.equal(verificarContrasena('Basica2026', perfil.A.contrasena_hash), true);
+  assert.equal(perfil.B.usuario_acceso, 'demo.black');
+  assert.equal(verificarContrasena('Black2026', perfil.B.contrasena_hash), true);
+  assert.equal(verificarContrasena('Basica2026', perfil.B.contrasena_hash), false);
+  assert.equal(perfil.demo.usuario_acceso, null);
+  assert.ok(rows.every(fila => !String(fila.contrasena_hash).includes('2026')));
+});
+
+test('usuario de acceso único y siempre acompañado de su hash', async () => {
+  await assert.rejects(db.query("update perfiles set usuario_acceso = 'demo.black' where id = 'A'"),
+    error => error.code === '23505');
+  await assert.rejects(db.query("update perfiles set contrasena_hash = null where id = 'A'"),
+    error => error.code === '23514');
+  await assert.rejects(db.query("update perfiles set usuario_acceso = 'nuevo' where id = 'demo'"),
     error => error.code === '23514');
 });
 
