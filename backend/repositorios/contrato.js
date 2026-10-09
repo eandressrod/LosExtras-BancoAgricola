@@ -31,5 +31,7 @@
  * @typedef {Object} RepositorioAccesos
  * @property {(usuario: string) => Promise<AccesoPerfil | null>} buscarAccesoPorUsuario
  * @property {(id: string) => Promise<PerfilSesion | null>} buscarPerfilPorId
+ * @property {(id: string) => Promise<boolean>} sesionRevocada
+ * @property {(sesion: { id: string, perfilId: string, expiraEn: number }) => Promise<void>} revocarSesion
  */
 export {};

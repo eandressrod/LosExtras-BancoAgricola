@@ -1,4 +1,4 @@
-// Servidor local del producto: usa los mismos handlers HTTP que Vercel.
+﻿// Servidor local del producto: usa los mismos handlers HTTP que Vercel.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
@@ -10,13 +10,28 @@ import promocion from '../api/promocion.js';
 import login from '../api/auth/login.js';
 import sesion from '../api/auth/sesion.js';
 import logout from '../api/auth/logout.js';
+import menu from '../api/menu.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const routes = {
-  '/api/perfiles': perfiles, '/api/promociones': promociones, '/api/promocion': promocion,
-  '/api/auth/login': login, '/api/auth/sesion': sesion, '/api/auth/logout': logout
+  '/api/perfiles': perfiles,
+  '/api/promociones': promociones,
+  '/api/promocion': promocion,
+  '/api/auth/login': login,
+  '/api/auth/sesion': sesion,
+  '/api/auth/logout': logout,
+  '/api/menu': menu
 };
-const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
+const types = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon'
+};
 
 // Solo en local: sin SESSION_SECRET en .env se usa una clave temporal. En Vercel es obligatoria.
 if (!process.env.SESSION_SECRET) {
