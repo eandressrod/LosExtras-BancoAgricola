@@ -1,7 +1,9 @@
-// Datos ficticios locales (DATA_SOURCE=mock); reflejan las migraciones de supabase/.
-// Las contraseñas de prueba se muestran en el login (public/index.html); aquí solo su hash.
+// Datos ficticios locales (DATA_SOURCE=mock) para pruebas y desarrollo sin claves.
+// Reflejan las migraciones de supabase/; con DATA_SOURCE=supabase los usuarios se leen de la base.
+// Las claves de prueba se muestran en el login (public/index.html); aquí solo su hash.
 export const perfiles = [
-  { id: 'demo', nombre: 'Usuario', tipoTarjeta: 'basica' }, // perfil del esqueleto, sin acceso desde H1
+  { id: 'demo', nombre: 'Usuario', tipoTarjeta: 'basica', usuarioAcceso: 'demo',
+    contrasenaHash: 'scrypt$M_MND_a1ICaA2pU6QnSwzA$BNLN7do9LjccyV3SmkWh7skSGfQrAhi_BVL7zD4nlFo' },
   { id: 'A', nombre: 'Usuario A', tipoTarjeta: 'basica', usuarioAcceso: 'demo.basica',
     contrasenaHash: 'scrypt$VW3bG4vYSj3byjANg1dRfw$jqBaaGdi3tPIScvjLFHTy8vMfktpLmCbRhjxMlPBcIE' },
   { id: 'B', nombre: 'Usuario B', tipoTarjeta: 'black', usuarioAcceso: 'demo.black',
