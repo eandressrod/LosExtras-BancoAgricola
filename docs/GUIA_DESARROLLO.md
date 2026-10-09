@@ -110,7 +110,7 @@ El formulario envía usuario y clave a `/api/auth/login`; el backend busca el us
 
 Revisión de H1: cada cookie nueva incluye un identificador único de sesión. El backend consulta `sesiones_revocadas` antes de autorizar y guarda la revocación antes de borrar la cookie al cerrar sesión. Una copia de la cookie cerrada deja de funcionar, sin cerrar otras sesiones del mismo usuario. Si falla la base, el cierre responde 503 y el frontend debe mostrar el error; reutilizar `logout()` de `public/js/comun.js` y comprobar su éxito.
 
-Antes de desplegar esta revisión con Supabase, aplicar la migración nueva `20261009192140_revocacion_sesiones.sql`; no volver a ejecutar las anteriores. La tabla tiene RLS y solo permite SELECT/INSERT al backend con clave privada. Las cookies del formato anterior requerirán iniciar sesión otra vez. Los registros de revocación conservan su vencimiento; se pueden retirar cuando la sesión ya haya expirado, sin reactivar cookies vigentes.
+Antes de desplegar esta revisión con Supabase, aplicar la migración nueva `20261009232447_revocacion_sesiones.sql`; no volver a ejecutar las anteriores. La tabla tiene RLS y solo permite SELECT/INSERT al backend con clave privada. Las cookies del formato anterior requerirán iniciar sesión otra vez. Los registros de revocación conservan su vencimiento; se pueden retirar cuando la sesión ya haya expirado, sin reactivar cookies vigentes.
 
 | Carpeta | Contenido |
 | --- | --- |
@@ -134,7 +134,7 @@ Las pruebas locales no necesitan claves ni modifican la base compartida. Las pru
 
 H2: `/api/menu` valida sesión y consulta cuentas por `perfil_id` y estado de encuesta por `preferencias_usuario.usuario_id`. Una fila existente no implica encuesta completada: se utiliza `encuesta_completada`. Login abre el menú; solo el clic en Promociones/Para ti decide entre encuesta pendiente y listado. El cliente relee `/api/menu` al clic y, si la consulta falla, muestra Reintentar sin inventar destino. H3 deberá persistir ese booleano al completar la encuesta: H2 no añade un endpoint de escritura de preferencias.
 
-La migración `20261009224701_cuentas_menu.sql` registra tabla, índice, permisos y seis cuentas de prueba. También se puede aplicar donde Sam creó `cuentas` manualmente: no sobrescribe filas existentes. Aplicar ambas migraciones nuevas antes de publicar la revisión H1/H2 y verificar con Supabase real.
+La migración `20261009232449_cuentas_menu.sql` registra tabla, índice, permisos y seis cuentas de prueba. También se puede aplicar donde Sam creó `cuentas` manualmente: no sobrescribe filas existentes. Aplicar ambas migraciones nuevas antes de publicar la revisión H1/H2 y verificar con Supabase real.
 
 La base compartida contiene `perfiles`, `comercios`, `promociones`, `beneficios_tarjeta`, `sucursales`, `preferencias_usuario` y `promociones_guardadas`. Administrar tablas/filas desde Table Editor o SQL Editor con la cuenta propia. Registrar cambios de estructura necesarios en una migración nueva y probarla antes de aplicarla; no modificar migraciones ya aplicadas ni volver a ejecutar la carga inicial en la base compartida.
 
