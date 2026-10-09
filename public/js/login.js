@@ -3,8 +3,7 @@ import { fetchSession, mayHaveSession, rememberLogin, forgetLogin } from './comu
 const form = document.querySelector('#login-form');
 const { username, password } = form.elements;
 const errorBox = document.querySelector('#login-error');
-const buttons = [...document.querySelectorAll('main button')];
-let busyButton = null;
+const submitButton = form.querySelector('[type="submit"]');
 
 // Entrar siempre lleva primero al menú: con una sesión vigente no se muestra el login.
 async function redirectIfLoggedIn() {
@@ -27,33 +26,27 @@ function showError(message, invalidFields = []) {
     else input.removeAttribute('aria-invalid');
   }
   if (invalidFields.length) invalidFields[0].focus();
-  else if (message) errorBox.scrollIntoView({ block: 'nearest' });
 }
 
 function missingFieldsError() {
   const missing = [username.value.trim() ? null : username, password.value ? null : password].filter(Boolean);
-  if (missing.length === 2) return ['Escribe el usuario y la contraseña de prueba.', missing];
-  if (missing[0] === username) return ['Escribe el usuario de prueba.', missing];
-  if (missing[0] === password) return ['Escribe la contraseña de prueba.', missing];
+  if (missing.length === 2) return ['Escribe tu usuario y tu clave.', missing];
+  if (missing[0] === username) return ['Escribe tu usuario.', missing];
+  if (missing[0] === password) return ['Escribe tu clave.', missing];
   return null;
 }
 
-function setBusy(button) {
-  for (const item of buttons) item.disabled = Boolean(button);
-  if (button) {
-    button.dataset.label = button.textContent;
-    button.textContent = 'Entrando…';
-  } else if (busyButton) {
-    busyButton.textContent = busyButton.dataset.label;
-  }
-  busyButton = button;
+function setBusy(busy) {
+  submitButton.disabled = busy;
+  submitButton.textContent = busy ? 'Ingresando…' : 'Ingresar';
 }
 
-async function enter(trigger) {
+// El backend valida usuario y clave contra la base de datos y, si coinciden, crea la sesión.
+async function enter() {
   const missing = missingFieldsError();
   if (missing) return showError(...missing);
   showError('');
-  setBusy(trigger);
+  setBusy(true);
   try {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
@@ -71,23 +64,14 @@ async function enter(trigger) {
   } catch {
     showError('No hay conexión con el servidor. Revisa tu conexión e intenta de nuevo.');
   }
-  setBusy(null);
+  setBusy(false);
 }
 
 form.addEventListener('submit', event => {
   event.preventDefault();
-  enter(event.submitter ?? form.querySelector('[type="submit"]'));
+  enter();
 });
 form.addEventListener('input', event => event.target.removeAttribute('aria-invalid'));
-
-// Accesos de prueba: completan el formulario con los datos visibles del perfil y entran.
-for (const button of document.querySelectorAll('[data-usuario]')) {
-  button.addEventListener('click', () => {
-    username.value = button.dataset.usuario;
-    password.value = button.dataset.contrasena;
-    enter(button);
-  });
-}
 
 addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
 redirectIfLoggedIn();

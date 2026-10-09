@@ -4,9 +4,9 @@ import { generarHash, verificarContrasena } from './contrasenas.js';
 import { verificarToken } from './sesion.js';
 
 const LONGITUD_MAXIMA = 100;
-const ERROR_CAMPOS = 'Escribe el usuario y la contraseña de prueba.';
-// Mismo mensaje para usuario inexistente y contraseña errónea: no revela qué dato falló.
-const ERROR_CREDENCIALES = 'Usuario o contraseña incorrectos. Revisa los datos de prueba.';
+const ERROR_CAMPOS = 'Escribe tu usuario y tu clave.';
+// Mismo mensaje para usuario inexistente y clave errónea: no revela qué dato falló.
+const ERROR_CREDENCIALES = 'Usuario o clave incorrectos. Revisa los usuarios de prueba.';
 
 let hashDeReferencia;
 
