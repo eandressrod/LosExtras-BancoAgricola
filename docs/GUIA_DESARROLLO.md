@@ -126,7 +126,7 @@ npm run test:integration
 npm test
 ```
 
-Las 53 pruebas locales no necesitan claves ni modifican la base compartida. Las tres pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si la migración `accesos_prueba` no está aplicada. Agregar pruebas después de desarrollar no acredita TDD.
+Las 53 pruebas locales no necesitan claves ni modifican la base compartida. Las tres pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si las migraciones `accesos_prueba` y `acceso_demo` no están aplicadas. Agregar pruebas después de desarrollar no acredita TDD.
 
 La base compartida contiene `perfiles`, `comercios`, `promociones`, `beneficios_tarjeta`, `sucursales`, `preferencias_usuario` y `promociones_guardadas`. Administrar tablas/filas desde Table Editor o SQL Editor con la cuenta propia. Registrar cambios de estructura necesarios en una migración nueva y probarla antes de aplicarla; no modificar migraciones ya aplicadas ni volver a ejecutar la carga inicial en la base compartida.
 
@@ -155,7 +155,7 @@ vercel project inspect --non-interactive
 
 En el enlace, seleccionar el **proyecto existente** y comprobar que el propietario es `idk-bro6` y el proyecto `los-extras-banco-agricola`. Si no aparece o se deniega el acceso, detenerse y solicitarlo; no enlazar otro proyecto. [Vercel link](https://vercel.com/docs/cli/link).
 
-Las variables del backend son las mismas cuatro de `.env.example`. En Vercel se configuran desde Settings → Environment Variables para el entorno que corresponda. La clave privada y `SESSION_SECRET` deben guardarse como **Secret**; no incluirlas en archivos públicos. Sin `SESSION_SECRET` (Production y Preview) el login responde 503. Para que el login valide contra la base, Vercel necesita `DATA_SOURCE=supabase` con `SUPABASE_URL` y `SUPABASE_SECRET_KEY`, y la migración `accesos_prueba` aplicada. Cambiar variables no modifica deployments anteriores: el siguiente despliegue debe usar la configuración nueva. No es necesario desplegar para ejecutar el servidor local.
+Las variables del backend son las mismas cuatro de `.env.example`. En Vercel se configuran desde Settings → Environment Variables para el entorno que corresponda. La clave privada y `SESSION_SECRET` deben guardarse como **Secret**; no incluirlas en archivos públicos. Sin `SESSION_SECRET` (Production y Preview) el login responde 503. Para que el login valide contra la base, Vercel necesita `DATA_SOURCE=supabase` con `SUPABASE_URL` y `SUPABASE_SECRET_KEY`, y las migraciones `accesos_prueba` y `acceso_demo` aplicadas. Cambiar variables no modifica deployments anteriores: el siguiente despliegue debe usar la configuración nueva. No es necesario desplegar para ejecutar el servidor local.
 
 Si existen variables de **Development**, se pueden descargar a un archivo aparte para revisarlas sin sobrescribir `.env`:
 
@@ -172,7 +172,7 @@ Completar manualmente las tres variables necesarias en `.env`. Nuestro servidor 
 | `npm.ps1` bloqueado en PowerShell | Usar `npm.cmd ci` o `npm.cmd run dev`, sin cambiar políticas del sistema. |
 | `EADDRINUSE` | Detener el servidor anterior que usa el puerto 3000. |
 | API responde 503 | Revisar las variables y reiniciar el servidor. |
-| Login responde 503 | En Vercel, comprobar `SESSION_SECRET`; con Supabase, que la migración `accesos_prueba` esté aplicada. |
+| Login responde 503 | En Vercel, comprobar `SESSION_SECRET`; con Supabase, que las migraciones `accesos_prueba` y `acceso_demo` estén aplicadas. |
 | `Invalid API key` | Copiar la clave privada completa, sin puntos de ocultación. |
 | Las pruebas locales pasan pero no conecta Supabase | Ejecutar `npm run test:remote`; comprueba la conexión real por separado. |
 | No aparece el proyecto en Supabase/Vercel | Confirmar cuenta, invitación y permisos de acceso. |
