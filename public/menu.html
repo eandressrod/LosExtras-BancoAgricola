@@ -1,34 +1,53 @@
-<!doctype html>
+﻿<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Menú · Los Extras</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
-    <script type="module" src="/js/menu.js"></script>
-  </head>
-  <body data-session="pending">
-    <header>
-      <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
-      <p>Los Extras</p>
-    </header>
-    <main>
-      <h1>Menú</h1>
-      <section class="profile-summary" aria-labelledby="profile-name">
-        <div id="profile-card-art" class="card-art" aria-hidden="true"><span class="card-art__chip"></span><span class="card-art__name"></span></div>
-        <div>
-          <p class="eyebrow">Sesión de prueba</p>
-          <h2 id="profile-name"></h2>
-          <p id="profile-card"></p>
-        </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Banco Agrícola - Menú Principal</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/menu.css">
+</head>
+<body>
+  <header class="menu-header">
+    <h1>Banco Agrícola</h1>
+    <button id="btn-logout" class="btn-logout">Cerrar sesión</button>
+  </header>
+
+  <main class="menu-container">
+    <!-- Estado de Carga -->
+    <div id="estado-cargando" class="estado-box">
+      <p>Cargando información de tus cuentas...</p>
+    </div>
+
+    <!-- Estado de Error -->
+    <div id="estado-error" class="estado-box" style="display: none;">
+      <p id="error-texto" style="color: #b91c1c;">No se pudieron cargar los datos.</p>
+      <button id="btn-reintentar">Reintentar</button>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div id="contenido-menu" style="display: none;">
+      <section class="welcome-card">
+        <h2 id="usuario-nombre">Bienvenido</h2>
+        <span id="badge-tarjeta" class="badge-perfil">Básica</span>
       </section>
-      <div class="actions">
-        <button id="open-promotions">Promociones</button>
-        <button id="logout" class="secondary">Cerrar sesión</button>
-        <p id="logout-error" class="error" role="alert"></p>
+
+      <!-- Botón visible hacia Promociones -->
+      <section class="banner-promociones">
+        <h3>Módulo de Promociones</h3>
+        <p>Descubre los beneficios y descuentos diseñados para ti</p>
+        <button id="btn-promociones" class="btn-promociones">Ver Promociones</button>
+      </section>
+
+      <!-- Listado de Cuentas -->
+      <h3 class="section-title">Mis Cuentas y Tarjetas</h3>
+      <div id="cuentas-vacias" class="estado-box" style="display: none;">
+        <p style="color: #64748b;">No tienes cuentas registradas en este perfil.</p>
       </div>
-    </main>
-    <noscript>Activa JavaScript para usar la aplicación.</noscript>
-  </body>
+      <div id="cuentas-list" class="cuentas-list"></div>
+    </div>
+  </main>
+
+  <script type="module" src="/js/menu.js"></script>
+</body>
 </html>
