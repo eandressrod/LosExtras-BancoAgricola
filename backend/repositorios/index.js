@@ -4,11 +4,14 @@ import * as accesosMock from './accesos.mock.js';
 import { crearRepositorioAccesosSupabase } from './accesos.supabase.js';
 import { crearRepositorioCuentasMock } from './cuentas.mock.js';
 import { crearRepositorioCuentasSupabase } from './cuentas.supabase.js';
+import { crearRepositorioEstadoEncuestaMock } from './estado-encuesta.mock.js';
+import { crearRepositorioEstadoEncuestaSupabase } from './estado-encuesta.supabase.js';
 import { obtenerClienteSupabase } from '../config/supabase.js';
 
 let repositorioSupabase;
 let accesosSupabase;
 let cuentasSupabase;
+let estadoEncuestaSupabase;
 
 function fuenteDeDatos() {
   const source = process.env.DATA_SOURCE || 'mock';
@@ -34,4 +37,10 @@ export function obtenerRepositorioCuentas() {
   if (fuenteDeDatos() === 'mock') return crearRepositorioCuentasMock();
   cuentasSupabase ??= crearRepositorioCuentasSupabase(obtenerClienteSupabase());
   return cuentasSupabase;
+}
+
+export function obtenerRepositorioEstadoEncuesta() {
+  if (fuenteDeDatos() === 'mock') return crearRepositorioEstadoEncuestaMock();
+  estadoEncuestaSupabase ??= crearRepositorioEstadoEncuestaSupabase(obtenerClienteSupabase());
+  return estadoEncuestaSupabase;
 }
