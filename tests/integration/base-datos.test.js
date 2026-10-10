@@ -27,9 +27,9 @@ test('existen las tablas persistentes de catálogo y revocación de sesiones', a
   ]);
 });
 
-test('catálogo original conserva campos y datos para la API existente', async () => {
+test('catálogo ampliado conserva identificadores y campos para la API existente', async () => {
   const { rows } = await db.query('select id, merchant, category, benefit, description, payment, restrictions from promociones order by orden');
-  assert.equal(rows.length, 3);
+  assert.equal(rows.length, 5);
   assert.equal(rows[0].id, 'restaurante');
   assert.equal(rows[0].benefit, '10 % de descuento');
   assert.ok(rows.every(fila => Object.values(fila).every(valor => typeof valor === 'string')));
@@ -88,7 +88,7 @@ test('beneficios distintos por tarjeta no duplican la promoción', async () => {
   assert.equal(rows[0].cantidad, 2);
   const beneficios = await db.query("select beneficio from beneficios_tarjeta where promocion_id = 'restaurante' order by tipo_tarjeta");
   assert.deepEqual(beneficios.rows.map(item => item.beneficio), ['10 %', '20 %']);
-  await assert.rejects(db.query("insert into beneficios_tarjeta values ('no-existe', 'black', '20 %', 'Black', 'Prueba')"),
+  await assert.rejects(db.query("insert into beneficios_tarjeta (promocion_id, tipo_tarjeta, beneficio, medio_pago, restricciones) values ('no-existe', 'black', '20 %', 'Black', 'Prueba')"),
     error => error.code === '23503');
 });
 

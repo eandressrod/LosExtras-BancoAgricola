@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Mis preferencias · Los Extras</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/promociones.css">
+    <script type="module" src="/js/preferencias.js"></script>
+  </head>
+  <body class="preferences-page" data-session="pending">
+    <header>
+      <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
+      <p id="session-profile" class="session-profile" hidden></p>
+    </header>
+    <main>
+      <h1>Mis preferencias</h1>
+      <nav class="module-nav" aria-label="Promociones">
+        <a href="/promociones.html">Para ti</a>
+        <a href="/preferencias.html" aria-current="page">Mis preferencias</a>
+      </nav>
+      <p id="preferences-status" class="note" role="status">Cargando preferencias…</p>
+      <button id="retry" class="secondary" type="button" hidden>Reintentar</button>
+      <form id="preferences-form" hidden>
+        <fieldset>
+          <legend>Elige una o varias categorías</legend>
+          <label class="option"><input type="checkbox" name="category" value="Restaurantes">Restaurantes</label>
+          <label class="option"><input type="checkbox" name="category" value="Compras">Compras</label>
+          <label class="option"><input type="checkbox" name="category" value="Entretenimiento">Entretenimiento</label>
+        </fieldset>
+        <p id="preferences-error" class="error" role="alert"></p>
+        <button id="save-preferences" type="submit">Guardar cambios</button>
+        <a id="cancel-preferences" class="button secondary" href="/promociones.html">Cancelar</a>
+      </form>
+    </main>
+    <noscript>Activa JavaScript para usar la aplicación.</noscript>
+  </body>
+</html>

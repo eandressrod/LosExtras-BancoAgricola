@@ -14,6 +14,20 @@
  * @property {string} description
  * @property {string} payment
  * @property {string} restrictions
+ * @property {string | null} imageUrl
+ * @property {string | null} imageAlt
+ * @property {string | null} logoUrl
+ * @property {string} detailDescription
+ * @property {string | null} validFrom Fecha YYYY-MM-DD
+ * @property {string | null} validUntil Fecha YYYY-MM-DD
+ * @property {number[] | null} usageDays Domingo=0, sábado=6
+ * @property {'basica' | 'black'} applicableCard
+ * @property {boolean} exclusive
+ * @property {number | null} minimumPurchase
+ * @property {number | null} discountCap
+ * @property {boolean} expired
+ * @property {boolean} upcoming
+ * @property {boolean} canUse Solo vigencia; días/restricciones se muestran aparte.
  *
  * @typedef {Object} RepositorioCatalogo
  * @property {() => Promise<Perfil[]>} listarPerfiles
