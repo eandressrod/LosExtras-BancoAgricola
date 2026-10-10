@@ -1,0 +1,49 @@
+.promotions-page, .preferences-page, .detail-page { background: #f7f7f7; }
+.promotions-page header, .preferences-page header, .detail-page header { background: white; border-bottom: 0; padding-bottom: 16px; }
+.promotions-page header .brand-logo, .preferences-page header .brand-logo, .detail-page header .brand-logo { width: 200px; }
+.promotions-page main, .preferences-page main, .detail-page main { padding-top: 12px; }
+.promotions-page h1, .preferences-page h1 { font-size: 1.8rem; margin-bottom: 16px; }
+.module-nav { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; gap: 4px; border-radius: 14px; background: #eaeaea; margin-bottom: 22px; }
+.module-nav a { display: grid; place-items: center; min-height: 44px; padding: 8px; border-radius: 10px; text-align: center; color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 600; }
+.module-nav a[aria-current] { background: var(--primary); }
+.promo-list { display: grid; gap: 22px; }
+.promo-card { display: block; overflow: hidden; border: 1px solid #e0e0e0; border-radius: 20px; color: var(--text); background: white; text-decoration: none; box-shadow: 0 3px 12px rgb(0 0 0 / .04); }
+.promo-card:hover { border-color: #b4b4b4; }
+.promo-media { position: relative; min-height: 160px; aspect-ratio: 16 / 9; background: #e9e7e0; }
+.promo-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
+.merchant-mark { position: absolute; left: 16px; bottom: 14px; display: grid; place-items: center; width: 96px; height: 52px; padding: 10px; border-radius: 10px; background: white; box-shadow: 0 2px 6px rgb(0 0 0 / .1); }
+.merchant-mark:has(img[hidden]) { display: none; }
+.merchant-logo { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; }
+.promo-exclusive, .exclusive-label { border-radius: 7px; background: #202020; color: var(--primary); padding: 5px 9px; font-size: .75rem; font-weight: 700; }
+.promo-exclusive { position: absolute; right: 12px; top: 12px; }
+.exclusive-label { display: inline-block; margin-bottom: 10px; }
+.promo-content { padding: 19px 20px 18px; }
+.promo-category { margin: 0 0 5px; color: #656565; font-size: .75rem; font-weight: 600; }
+.promo-content h2 { font-size: 1.1rem; margin: 0 0 5px; }
+.promo-benefit { margin: 0 0 8px; font-size: 1.5rem; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; }
+.promo-description { margin: 0 0 13px; font-size: .9rem; color: #575757; }
+.promo-applicability { margin: 8px 0; font-size: .8rem; font-weight: 600; }
+.promo-validity { margin: 8px 0; font-size: .85rem; }
+.promo-card--inactive .promo-validity { color: var(--error); font-weight: 600; }
+.promo-conditions { margin: 10px 0; padding-left: 17px; font-size: .8rem; color: #575757; }
+.promo-conditions li + li { margin-top: 4px; }
+.promo-open { display: flex; justify-content: space-between; align-items: center; min-height: 44px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #eee; font-size: .9rem; font-weight: 700; }
+.promo-open span { display: grid; place-items: center; width: 30px; height: 30px; background: var(--primary); border-radius: 50%; font-size: 1.1rem; }
+.detail-page #detail { overflow: hidden; border-radius: 20px; background: white; }
+.detail-media { aspect-ratio: 4 / 3; }
+.detail-content { padding: 24px; }
+.detail-content h1 { margin: 0 0 10px; font-size: 1.8rem; }
+.detail-benefit { font-size: 2rem; line-height: 1.15; letter-spacing: -.035em; font-weight: 800; margin: 0 0 20px; }
+.detail-description { font-size: 1rem; line-height: 1.65; margin-bottom: 20px; }
+.detail-content .promo-applicability, .detail-content .promo-validity, .detail-content .promo-conditions { font-size: .9rem; }
+.preferences-page fieldset { border: 0; padding: 0; }
+.preferences-page legend { margin-bottom: 16px; font-size: .9rem; }
+.preferences-page .option { min-height: 62px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; padding: 12px 16px; background: white; }
+.preferences-page .option:has(input:checked) { border-color: #292929; background: #fffbea; }
+.preferences-page #preferences-error:empty { display: none; }
+.preferences-page a[aria-disabled] { opacity: .5; cursor: progress; }
+@media (max-width: 359px) {
+  .promo-content { padding: 16px; }
+  .detail-content { padding: 20px; }
+  .detail-benefit { font-size: 1.8rem; }
+}

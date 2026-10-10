@@ -93,7 +93,13 @@ export function loadPreferences(profileId) {
 }
 
 export async function getJSON(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');
-  return response.json();
+  const errorCarga = 'No se pudieron cargar los datos. Intenta de nuevo.';
+  const response = await fetch(url, { cache: 'no-store' }).catch(() => { throw new Error(errorCarga); });
+  if (response.status === 401) {
+    forgetLogin();
+    location.replace('/index.html');
+    throw new Error('Inicia sesión para continuar.');
+  }
+  if (!response.ok) throw new Error(errorCarga);
+  return response.json().catch(() => { throw new Error(errorCarga); });
 }

@@ -31,6 +31,7 @@ const types = {
   '.json': 'application/json',
   '.webmanifest': 'application/manifest+json',
   '.png': 'image/png',
+  '.jpg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon'
 };
