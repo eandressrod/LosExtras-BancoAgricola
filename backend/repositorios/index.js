@@ -1,4 +1,4 @@
-﻿import { repositorioMock } from './mock.js';
+import { repositorioMock } from './mock.js';
 import { crearRepositorioSupabase } from './supabase.js';
 import * as accesosMock from './accesos.mock.js';
 import { crearRepositorioAccesosSupabase } from './accesos.supabase.js';
@@ -6,6 +6,7 @@ import { crearRepositorioCuentasMock } from './cuentas.mock.js';
 import { crearRepositorioCuentasSupabase } from './cuentas.supabase.js';
 import { crearRepositorioEstadoEncuestaMock } from './estado-encuesta.mock.js';
 import { crearRepositorioEstadoEncuestaSupabase } from './estado-encuesta.supabase.js';
+import { crearRepositorioPreferenciasUsuario } from './preferencias.usuario.js';
 import { obtenerClienteSupabase } from '../config/supabase.js';
 
 let repositorioSupabase;
@@ -43,4 +44,12 @@ export function obtenerRepositorioEstadoEncuesta() {
   if (fuenteDeDatos() === 'mock') return crearRepositorioEstadoEncuestaMock();
   estadoEncuestaSupabase ??= crearRepositorioEstadoEncuestaSupabase(obtenerClienteSupabase());
   return estadoEncuestaSupabase;
+}
+
+let preferenciasUsuarioSupabase;
+
+/** Repositorio para guardar categorías de interés (H3). Las pruebas unitarias inyectan un mock directamente. */
+export function obtenerRepositorioPreferencias() {
+  preferenciasUsuarioSupabase ??= crearRepositorioPreferenciasUsuario(obtenerClienteSupabase());
+  return preferenciasUsuarioSupabase;
 }
