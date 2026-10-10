@@ -9,10 +9,12 @@ import { crearRepositorioEstadoEncuestaSupabase } from './estado-encuesta.supaba
 import { crearRepositorioPreferenciasUsuario } from './preferencias.usuario.js';
 import { obtenerClienteSupabase } from '../config/supabase.js';
 
+
 let repositorioSupabase;
 let accesosSupabase;
 let cuentasSupabase;
 let estadoEncuestaSupabase;
+let preferenciasSupabase;
 
 function fuenteDeDatos() {
   const source = process.env.DATA_SOURCE || 'mock';
@@ -50,6 +52,9 @@ let preferenciasUsuarioSupabase;
 
 /** Repositorio para guardar categorías de interés (H3). Las pruebas unitarias inyectan un mock directamente. */
 export function obtenerRepositorioPreferencias() {
-  preferenciasUsuarioSupabase ??= crearRepositorioPreferenciasUsuario(obtenerClienteSupabase());
-  return preferenciasUsuarioSupabase;
+  if (fuenteDeDatos() === 'mock') {
+  return null; // O el mock si lo tuvieran
+  }
+  preferenciasSupabase ??= crearRepositorioPreferenciasUsuario(obtenerClienteSupabase());
+  return preferenciasSupabase;
 }
