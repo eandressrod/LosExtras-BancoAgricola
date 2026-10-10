@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import preferencias from '../../api/preferencias.js';
 import login from '../../api/auth/login.js';
+import menu from '../../api/menu.js';
 
 process.env.SESSION_SECRET = 'x'.repeat(40);
 process.env.DATA_SOURCE = 'mock'; // Usamos el mock que acabamos de crear
@@ -57,4 +58,15 @@ test('POST y GET /api/preferencias guardan y recuperan datos exitosamente (200)'
   const data = await resGet.json();
   assert.equal(data.completed, true);
   assert.deepEqual(data.categories, ['Restaurantes', 'Compras']);
+  const estadoMenu = await (await menu.fetch(new Request(url('/api/menu'), { headers: { cookie } }))).json();
+  assert.equal(estadoMenu.encuestaPendiente, false);
+  assert.equal(estadoMenu.destinoPromociones, '/promociones.html');
+});
+
+test('JSON null es una entrada inválida, no una caída del servicio', async () => {
+  const cookie = await obtenerCookieValida();
+  const res = await preferencias.fetch(new Request(url('/api/preferencias'), {
+    method: 'POST', headers: { cookie, 'Content-Type': 'application/json' }, body: 'null'
+  }));
+  assert.equal(res.status, 400);
 });

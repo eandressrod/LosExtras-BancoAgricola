@@ -32,7 +32,7 @@ export default {
         return responderJson({ error: 'Formato de datos inválido.' }, 400);
       }
       
-      await validarYGuardarPreferencias(perfil.id, cuerpo.categorias, repoPreferencias);
+      await validarYGuardarPreferencias(perfil.id, cuerpo?.categorias, repoPreferencias);
       return responderJson({ ok: true });
 
     } catch (error) {

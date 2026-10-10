@@ -9,15 +9,10 @@ export async function buscarPromocion(id) {
 }
 
 export function filtrarPromociones(promociones, tipoTarjeta, categoriasPreferidas) {
-  if (!promociones) return [];
-  
-  return promociones.filter(promo => {
-    // Si no tiene categorías guardadas, le mostramos todo, si no, filtramos.
-    const aplicaCategoria = categoriasPreferidas.length === 0 || categoriasPreferidas.includes(promo.category);
-    
-    // Verificamos si la tarjeta del usuario está en el arreglo de tarjetas aplicables
-    const aplicaTarjeta = promo.applicable_cards && promo.applicable_cards.includes(tipoTarjeta);
-    
-    return aplicaCategoria && aplicaTarjeta;
+  return (promociones ?? []).flatMap(({ beneficios, ...promo }) => {
+    if (categoriasPreferidas.length && !categoriasPreferidas.includes(promo.category)) return [];
+    const beneficio = beneficios?.find(item => item.tipo_tarjeta === tipoTarjeta);
+    if (!beneficio) return [];
+    return [{ ...promo, benefit: beneficio.beneficio, payment: beneficio.medio_pago, restrictions: beneficio.restricciones }];
   });
 }

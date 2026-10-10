@@ -83,9 +83,11 @@ test('guardadas impiden duplicados y referencias inexistentes', async () => {
 });
 
 test('beneficios distintos por tarjeta no duplican la promoción', async () => {
-  await db.query("insert into beneficios_tarjeta (promocion_id, tipo_tarjeta, beneficio, medio_pago, restricciones) values ('restaurante', 'basica', '10 %', 'Tarjeta básica', 'Prueba'), ('restaurante', 'black', '20 %', 'Tarjeta Black', 'Prueba')");
+  await db.query("insert into beneficios_tarjeta (promocion_id, tipo_tarjeta, beneficio, medio_pago, restricciones) values ('restaurante', 'basica', '10 %', 'Tarjeta básica', 'Prueba'), ('restaurante', 'black', '20 %', 'Tarjeta Black', 'Prueba') on conflict (promocion_id, tipo_tarjeta) do update set beneficio = excluded.beneficio");
   const { rows } = await db.query("select count(*)::integer as cantidad from beneficios_tarjeta where promocion_id = 'restaurante'");
   assert.equal(rows[0].cantidad, 2);
+  const beneficios = await db.query("select beneficio from beneficios_tarjeta where promocion_id = 'restaurante' order by tipo_tarjeta");
+  assert.deepEqual(beneficios.rows.map(item => item.beneficio), ['10 %', '20 %']);
   await assert.rejects(db.query("insert into beneficios_tarjeta values ('no-existe', 'black', '20 %', 'Black', 'Prueba')"),
     error => error.code === '23503');
 });
