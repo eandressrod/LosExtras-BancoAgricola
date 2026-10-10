@@ -21,18 +21,23 @@ export default {
 
       // Si es GET, devolvemos las preferencias guardadas
       if (request.method === 'GET') {
-        const preferencias = await repoPreferencias.obtenerPreferencias(perfil.id);
-        return responderJson(preferencias);
+        return responderJson(await repoPreferencias.obtenerPreferencias(perfil.id));
       }
 
       // Si es POST, guardamos las preferencias
-      const cuerpo = await request.json();
-      await validarYGuardarPreferencias(perfil.id, cuerpo.categorias, repoPreferencias);
+      let cuerpo; 
+      try {
+        cuerpo = await request.json();
+      } catch {
+        return responderJson({ error: 'Formato de datos inválido.' }, 400);
+      }
       
+      await validarYGuardarPreferencias(perfil.id, cuerpo.categorias, repoPreferencias);
       return responderJson({ ok: true });
 
     } catch (error) {
-      if (error.message.includes('categoría') || error.message.includes('Selecciona')) {
+      // Validaciones de negocio devuelven 400
+      if (error.message.includes('categoría') || error.message.includes('Selecciona') || error.message.includes('inválida')) {
          return responderJson({ error: error.message }, 400);
       }
       return responderJson({ error: 'Servicio no disponible.' }, 503);
