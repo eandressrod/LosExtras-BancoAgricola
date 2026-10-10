@@ -1,4 +1,5 @@
 const CAMPOS_PROMOCION = 'id, merchant, category, benefit, description, payment, restrictions';
+const CAMPOS_CATALOGO = `${CAMPOS_PROMOCION}, imageUrl:imagen_url, imageAlt:imagen_alt, detailDescription:descripcion_detalle, validFrom:vigencia_desde, validUntil:vigencia_hasta, usageDays:dias_uso, comercio:comercios(nombre, logoUrl:logo_url), beneficios:beneficios_tarjeta(tipo_tarjeta, beneficio, medio_pago, restricciones, compra_minima, tope_descuento)`;
 
 /**
  * @param {import('@supabase/supabase-js').SupabaseClient} client
@@ -18,7 +19,7 @@ export function crearRepositorioSupabase(client) {
     },
     async listarPromocionesConBeneficios() {
       const { data, error } = await client.from('promociones')
-        .select(`${CAMPOS_PROMOCION}, beneficios:beneficios_tarjeta(tipo_tarjeta, beneficio, medio_pago, restricciones)`)
+        .select(CAMPOS_CATALOGO)
         .order('orden').order('id');
       if (error) throw new Error('No se pudieron consultar los beneficios.');
       return data;

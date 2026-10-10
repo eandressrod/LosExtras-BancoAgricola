@@ -14,7 +14,7 @@ const catalogo = [
 
 test('tarjeta y categorías eligen solo ofertas elegibles y su beneficio correspondiente', () => {
   const lista = filtrarPromociones(catalogo, 'basica', ['Compras']);
-  assert.deepEqual(lista, [{ id: 'uno', category: 'Compras', benefit: '10 %', payment: 'Débito', restrictions: 'Una compra' }]);
+  assert.deepEqual(lista.map(({ id, category, benefit, payment, restrictions }) => ({ id, category, benefit, payment, restrictions })), [{ id: 'uno', category: 'Compras', benefit: '10 %', payment: 'Débito', restrictions: 'Una compra' }]);
   assert.equal(filtrarPromociones(catalogo, 'black', ['Compras'])[0].benefit, '20 %');
   assert.deepEqual(filtrarPromociones(catalogo, 'basica', ['Restaurantes']), []);
 });
