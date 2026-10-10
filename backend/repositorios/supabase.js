@@ -16,6 +16,13 @@ export function crearRepositorioSupabase(client) {
       if (error) throw new Error('No se pudieron consultar las promociones.');
       return data;
     },
+    async listarPromocionesConBeneficios() {
+      const { data, error } = await client.from('promociones')
+        .select(`${CAMPOS_PROMOCION}, beneficios:beneficios_tarjeta(tipo_tarjeta, beneficio, medio_pago, restricciones)`)
+        .order('orden').order('id');
+      if (error) throw new Error('No se pudieron consultar los beneficios.');
+      return data;
+    },
     async buscarPromocion(id) {
       const { data, error } = await client.from('promociones').select(CAMPOS_PROMOCION).eq('id', id).maybeSingle();
       if (error) throw new Error('No se pudo consultar la promoción.');

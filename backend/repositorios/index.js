@@ -15,7 +15,8 @@ let repositorioSupabase;
 let accesosSupabase;
 let cuentasSupabase;
 let estadoEncuestaSupabase;
-let preferenciasRepo;
+let preferenciasMock;
+let preferenciasSupabase;
 
 function fuenteDeDatos() {
   const source = process.env.DATA_SOURCE || 'mock';
@@ -52,9 +53,9 @@ export function obtenerRepositorioEstadoEncuesta() {
 /** Repositorio para guardar categorías de interés (H3). Las pruebas unitarias inyectan un mock directamente. */
 export function obtenerRepositorioPreferencias() {
   if (fuenteDeDatos() === 'mock') {
-    preferenciasRepo ??= crearRepositorioPreferenciasMock();
-    return preferenciasRepo;
+    preferenciasMock ??= crearRepositorioPreferenciasMock();
+    return preferenciasMock;
   }
-  preferenciasRepo ??= crearRepositorioPreferenciasUsuario(obtenerClienteSupabase());
-  return preferenciasRepo;
+  preferenciasSupabase ??= crearRepositorioPreferenciasUsuario(obtenerClienteSupabase());
+  return preferenciasSupabase;
 }
