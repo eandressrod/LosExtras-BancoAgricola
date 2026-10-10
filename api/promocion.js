@@ -1,18 +1,25 @@
-import { buscarPromocion } from '../backend/promociones.js';
+import { filtrarPromociones } from '../backend/promociones.js';
+import { obtenerRepositorio, obtenerRepositorioAccesos } from '../backend/repositorios/index.js';
+import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
+import { leerCookie } from '../backend/servicios/sesion.js';
+import { responderJson, metodoNoPermitido } from '../backend/http.js';
 
 export default {
   async fetch(request) {
     if (request.method !== 'GET') {
-      return Response.json({ error: 'Método no permitido.' }, { status: 405, headers: { Allow: 'GET' } });
+      return metodoNoPermitido('GET');
     }
     const id = new URL(request.url).searchParams.get('id');
-    if (!id) return Response.json({ error: 'Falta el identificador de la promoción.' }, { status: 400 });
+    if (!id) return responderJson({ error: 'Falta el identificador de la promoción.' }, 400);
     try {
-      const promocion = await buscarPromocion(id);
-      if (!promocion) return Response.json({ error: 'Promoción no encontrada.' }, { status: 404 });
-      return Response.json(promocion);
+      const perfil = await perfilDeSesion(leerCookie(request), obtenerRepositorioAccesos());
+      if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
+      const catalogo = await obtenerRepositorio().listarPromocionesConBeneficios();
+      const promocion = filtrarPromociones(catalogo, perfil.tipoTarjeta, []).find(item => item.id === id);
+      if (!promocion) return responderJson({ error: 'Promoción no encontrada.' }, 404);
+      return responderJson(promocion);
     } catch {
-      return Response.json({ error: 'No se pudo cargar la promoción.' }, { status: 503 });
+      return responderJson({ error: 'No se pudo cargar la promoción.' }, 503);
     }
   }
 };

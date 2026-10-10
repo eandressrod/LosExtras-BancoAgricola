@@ -92,10 +92,6 @@ export function loadPreferences(profileId) {
   return { completed: false, categories: [] };
 }
 
-export function savePreferences(profileId, selected) {
-  return saveStorage(localStorage, preferencesKey(profileId), JSON.stringify({ completed: true, categories: selected }));
-}
-
 export async function getJSON(url) {
   const response = await fetch(url);
   if (!response.ok) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');

@@ -11,6 +11,7 @@ import login from '../api/auth/login.js';
 import sesion from '../api/auth/sesion.js';
 import logout from '../api/auth/logout.js';
 import menu from '../api/menu.js';
+import preferencias from '../api/preferencias.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const routes = {
@@ -20,7 +21,8 @@ const routes = {
   '/api/auth/login': login,
   '/api/auth/sesion': sesion,
   '/api/auth/logout': logout,
-  '/api/menu': menu
+  '/api/menu': menu,
+  '/api/preferencias': preferencias
 };
 const types = {
   '.html': 'text/html; charset=utf-8',
