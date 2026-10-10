@@ -18,6 +18,7 @@
  * @typedef {Object} RepositorioCatalogo
  * @property {() => Promise<Perfil[]>} listarPerfiles
  * @property {() => Promise<Promocion[]>} listarPromociones
+ * @property {() => Promise<Array<Promocion & { beneficios: Array<{ tipo_tarjeta: string, beneficio: string, medio_pago: string, restricciones: string }> }>>} listarPromocionesConBeneficios
  * @property {(id: string) => Promise<Promocion | null>} buscarPromocion
  *
  * Perfil de la sesión (H1). Nunca incluye credenciales.
