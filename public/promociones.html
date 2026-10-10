@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Para ti · Los Extras</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/promociones.css">
     <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
     <script type="module" src="/js/promociones.js"></script>
   </head>
-  <body data-session="pending">
+  <body class="promotions-page" data-session="pending">
     <header>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <div class="header-row">
@@ -18,18 +19,32 @@
     </header>
     <main>
       <h1>Para ti</h1>
-      <p id="list-description"></p>
+      <nav class="module-nav" aria-label="Promociones">
+        <a href="/promociones.html" aria-current="page">Para ti</a>
+        <a href="/preferencias.html">Mis preferencias</a>
+      </nav>
       <p id="list-status" class="note" role="status">Cargando promociones…</p>
       <button id="retry" class="secondary" hidden>Reintentar</button>
-      <div id="cards" class="cards"></div>
+      <div id="cards" class="promo-list"></div>
+      <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>
       <template id="promotion-card">
-        <article>
-          <h2></h2>
-          <p><strong></strong></p>
-          <p class="description"></p>
-          <p class="note">Vigencia: hasta el 6 de noviembre de 2026.</p>
-          <a class="button">Ver promoción</a>
-        </article>
+        <a class="promo-card">
+          <div class="promo-media">
+            <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
+            <div class="merchant-mark"><img class="merchant-logo" alt="" loading="lazy"></div>
+            <span class="promo-exclusive" hidden></span>
+          </div>
+          <div class="promo-content">
+            <p class="promo-category"></p>
+            <h2></h2>
+            <p class="promo-benefit"></p>
+            <p class="promo-description"></p>
+            <p class="promo-applicability"></p>
+            <p class="promo-validity"></p>
+            <ul class="promo-conditions"></ul>
+            <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
+          </div>
+        </a>
       </template>
       <div class="actions"><a class="button secondary" href="/menu.html">Volver al menú</a></div>
     </main>
