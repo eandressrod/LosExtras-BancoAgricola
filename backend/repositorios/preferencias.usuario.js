@@ -22,5 +22,19 @@ export function crearRepositorioPreferenciasUsuario(cliente) {
 
       if (error) throw new Error('No se pudieron guardar las preferencias. Intenta de nuevo.');
     }
+      
+    ,async obtenerPreferencias(usuarioId) {
+      const { data, error } = await cliente
+        .from('preferencias_usuario')
+        .select('categorias, encuesta_completada')
+        .eq('usuario_id', usuarioId)
+        .maybeSingle();
+
+      if (error) throw new Error('No se pudieron obtener las preferencias.');
+      
+      return data 
+        ? { completed: data.encuesta_completada, categories: data.categorias } 
+        : { completed: false, categories: [] };
+    }
   };
 }

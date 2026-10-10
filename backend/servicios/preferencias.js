@@ -1,6 +1,5 @@
 // Lógica de negocio para guardar las categorías de interés del usuario (H3).
 // Aplica las reglas de validación antes de delegar la persistencia al repositorio.
-
 const CATEGORIAS_PERMITIDAS = new Set(['Restaurantes', 'Compras', 'Entretenimiento']);
 
 /**

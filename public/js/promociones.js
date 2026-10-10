@@ -1,4 +1,4 @@
-import { requireSession, loadPreferences, getJSON } from './comun.js';
+import { requireSession, getJSON } from './comun.js';
 
 async function loadPromotions(profile) {
   const status = document.querySelector('#list-status');
@@ -9,7 +9,7 @@ async function loadPromotions(profile) {
   retry.hidden = true;
   cards.replaceChildren();
   try {
-    const preferences = loadPreferences(profile.id);
+    const preferences = await getJSON(`/api/preferencias`);
     const promotions = await getJSON('/api/promociones');
     const visible = preferences.completed ? promotions.filter(item => preferences.categories.includes(item.category)) : promotions;
     document.querySelector('#list-description').textContent = preferences.completed ? 'Promociones según tus intereses.' : 'Promociones disponibles.';
