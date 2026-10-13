@@ -1,6 +1,6 @@
 # Guía de desarrollo — Los Extras
 
-Actualizada el 8 de octubre de 2026. Los comandos se ejecutan desde la carpeta del repositorio, donde está `package.json`.
+Actualizada el 13 de octubre de 2026. Los comandos se ejecutan desde la carpeta del repositorio, donde está `package.json`.
 
 ## 1. Requisitos y acceso
 
@@ -186,3 +186,40 @@ Completar manualmente las tres variables necesarias en `.env`. Nuestro servidor 
 | No aparece el proyecto en Supabase/Vercel | Confirmar cuenta, invitación y permisos de acceso. |
 
 Referencia operativa del equipo: [SCRUM-63](https://somos-agilistas.atlassian.net/browse/SCRUM-63). Consultar también los criterios de aceptación y la DoD en la historia que se esté desarrollando.
+
+## 8. Midi: administrar los datos localmente
+
+Desde la raíz del repositorio, con Node 24, `npm ci` y el `.env` configurado:
+
+```powershell
+npm run midi
+```
+
+Abrir `http://127.0.0.1:3001`. La herramienta está en `hola/`; no se publica con las pantallas de `public/`. `SUPABASE_URL` y `SUPABASE_SECRET_KEY` permanecen en Node. Midi administra Supabase real independientemente de `DATA_SOURCE`; no utiliza el catálogo mock.
+
+El proyecto destino necesita las migraciones `midi_administracion` y `midi_borrado_revocaciones`, que preparan lectura conjunta, guardado transaccional y permisos del backend. Fueron aplicadas al proyecto compartido el 13 de octubre de 2026. Un proyecto distinto necesita aplicar las migraciones en orden mediante su flujo autorizado; no ejecutar de nuevo las cargas iniciales sobre la base compartida.
+
+El árbol lateral contiene perfiles, cuentas, preferencias, comercios, promociones y beneficios. Se puede editar directamente la cuadrícula o usar Propiedades. Las claves existentes están bloqueadas. Contraseña vacía en una edición conserva la actual; `NULL` en usuario de acceso retira también su hash. Al crear perfiles se requieren usuario y contraseña.
+
+Perfil rápido agrega un usuario ficticio único, contraseña `123` editable, Básica/Black, cero a tres cuentas y encuesta pendiente. Generar, editar, cambiar de sección o aceptar Propiedades solo cambia el borrador. Guardar aplica el conjunto; Cancelar lo descarta. Actualizar conserva los campos editados, trae los demás valores y exige revisar los registros que cambiaron externamente. Ante un alta ya existente o una edición eliminada, se conserva el borrador y se informa del conflicto.
+
+Al eliminar un perfil se retiran sus cuentas, preferencias, guardadas y revocaciones. Al eliminar promociones se retiran beneficios y guardadas. Los comercios con promociones o sucursales no se eliminan mientras existan esas referencias. Midi muestra las dependencias y pide confirmación antes de guardar las bajas.
+
+Límites por proceso: una RPC para leer todo, caché compartida de 30 segundos y agrupación de lecturas concurrentes; ninguna consulta por celda, pestaña o generación. Cada Guardar hace una RPC y devuelve la lectura actualizada. Se admiten hasta 200 cambios/1 MB por lote, con intervalo mínimo de dos segundos y máximo de diez guardados por minuto. El identificador de petición deduplica reintentos durante diez minutos. Un fallo de lectura aplica enfriamiento de cinco segundos. Si se pierde la respuesta de un guardado, comprobar su resultado antes de iniciar otra petición; la deduplicación local se pierde al reiniciar el servidor.
+
+Pruebas aisladas, incluidas también en `npm test`:
+
+```powershell
+npm run test:midi
+npm test
+```
+
+Comprobación remota explícita:
+
+```powershell
+npm run test:midi:remote
+```
+
+La prueba remota crea sus propios registros UUID, comprueba login/cuentas/encuesta/promociones, edición y rollback, y elimina exclusivamente esos registros al finalizar. No modifica A, B o demo ni vacía tablas compartidas. Hace como máximo seis RPC de Midi, además de las consultas de los endpoints del producto. Requiere `DATA_SOURCE=supabase` y las migraciones aplicadas; los errores de red o permisos pueden impedir la limpieza, que debe revisarse si falla.
+
+Para probar el perfil desde la aplicación, ejecutar `npm run dev` en otra terminal y abrir `http://127.0.0.1:3000`. Si el puerto 3001 está ocupado, cerrar la instancia anterior o definir `MIDI_PORT` en `.env`.
