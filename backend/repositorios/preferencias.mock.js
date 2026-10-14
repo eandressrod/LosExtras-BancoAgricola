@@ -3,6 +3,7 @@ const guardadas = new Map();
 
 export function crearRepositorioPreferenciasMock() {
   return {
+    async obtenerCategorias() { return ['Restaurantes','Compras','Entretenimiento'].map((id, orden) => ({ id, nombre: id, imagen_url: null, orden })); },
     async guardarPreferencias(usuarioId, categorias) {
       guardadas.set(usuarioId, categorias);
     },
