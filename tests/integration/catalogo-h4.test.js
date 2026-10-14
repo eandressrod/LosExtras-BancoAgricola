@@ -52,6 +52,7 @@ test('H4 recursos locales existen y el catálogo mock coincide con el catálogo 
 
 test('H4 permite otro comercio y promoción mediante datos y rechaza fechas/condiciones inválidas', async () => {
   await db.query("insert into comercios (id,nombre) values ('nuevo','Nuevo comercio')");
+  await db.query("insert into categoria_comercios values ('Compras','nuevo')");
   await db.query("insert into promociones (id,merchant,category,benefit,description,payment,restrictions,comercio_id) values ('nueva','Nuevo comercio','Compras','10 %','Resumen','Básica','Seleccionados','nuevo')");
   await assert.rejects(db.query("update promociones set vigencia_desde='2026-12-01',vigencia_hasta='2026-11-01' where id='nueva'"), error => error.code === '23514');
   await assert.rejects(db.query("update promociones set dias_uso=array[9]::smallint[] where id='nueva'"), error => error.code === '23514');
