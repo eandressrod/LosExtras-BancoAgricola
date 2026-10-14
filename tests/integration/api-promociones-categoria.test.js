@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import promociones from '../../api/promociones.js';
 import preferencias from '../../api/preferencias.js';
 import { repositorioMock } from '../../backend/repositorios/mock.js';
+import { obtenerRepositorioPreferencias } from '../../backend/repositorios/index.js';
 import { crearToken } from '../../backend/servicios/sesion.js';
 
 process.env.DATA_SOURCE = 'mock';
@@ -48,6 +49,20 @@ test('H5 rechaza con 400 una categoría desconocida, repetida o vacía', async (
     const respuesta = await promociones.fetch(pedir('/api/promociones' + consulta, 'A'));
     assert.equal(respuesta.status, 400, consulta);
     assert.match((await respuesta.json()).error, /Categoría no válida/);
+  }
+});
+
+test('H5 acepta una categoría nueva del catálogo y rechaza la que ya no existe', async () => {
+  const repo = obtenerRepositorioPreferencias();
+  const original = repo.obtenerCategorias;
+  repo.obtenerCategorias = async () => [
+    { id: 'Restaurantes', nombre: 'Restaurantes' }, { id: 'Compras', nombre: 'Compras' }, { id: 'Viajes', nombre: 'Viajes' }
+  ];
+  try {
+    assert.deepEqual(await listar('A', '?categoria=Viajes'), []);
+    assert.equal((await promociones.fetch(pedir('/api/promociones?categoria=Entretenimiento', 'A'))).status, 400);
+  } finally {
+    repo.obtenerCategorias = original;
   }
 });
 

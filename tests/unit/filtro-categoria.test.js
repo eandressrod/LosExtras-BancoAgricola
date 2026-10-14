@@ -1,12 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { leerCategoria, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from '../../public/js/filtro-categoria.js';
+import { leerCategoria, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from '../../public/js/filtro-categoria.js';
 
-test('H5 lee de la URL solo una categoría conocida; lo demás es Todas', () => {
+test('H5 lee de la URL una sola categoría; vacía, repetida o ausente es Todas', () => {
   assert.equal(leerCategoria('?categoria=Compras', null, 'A'), 'Compras');
-  for (const search of ['', '?id=tienda', '?categoria=Bancos', '?categoria=compras', '?categoria=', '?categoria=Compras&categoria=Restaurantes']) {
+  assert.equal(leerCategoria('?categoria=Viajes', null, 'A'), 'Viajes');
+  for (const search of ['', '?id=tienda', '?categoria=', '?categoria=Compras&categoria=Restaurantes', '?categoria=' + 'x'.repeat(101)]) {
     assert.equal(leerCategoria(search, null, 'A'), null, search);
   }
+});
+
+test('H5 solo se aplica una categoría que exista en el catálogo vigente', () => {
+  const vigentes = [{ id: 'Restaurantes', nombre: 'Comida' }, { id: 'Viajes', nombre: 'Viajes' }];
+  assert.deepEqual(categoriaVigente('Restaurantes', vigentes), { id: 'Restaurantes', nombre: 'Comida' });
+  assert.equal(categoriaVigente('Compras', vigentes), null);
+  assert.equal(categoriaVigente('restaurantes', vigentes), null);
+  assert.equal(categoriaVigente(null, vigentes), null);
 });
 
 test('H5 el contexto de navegación pertenece a su perfil: otro usuario no lo hereda', () => {
