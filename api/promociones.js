@@ -2,7 +2,7 @@ import { filtrarPromociones, filtrarPorCategoria, leerCategoriaTemporal } from '
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioCuentas, obtenerRepositorioPreferencias } from '../backend/repositorios/index.js';
 import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
 import { leerCookie } from '../backend/servicios/sesion.js';
-import { tarjetasPropias, elegirTarjeta, rechazoDeTarjeta } from '../backend/servicios/tarjetas.js';
+import { tarjetasDelUsuario, elegirTarjeta, rechazoDeTarjeta } from '../backend/servicios/tarjetas.js';
 import { responderJson, metodoNoPermitido } from '../backend/http.js';
 
 export function crearHandlerPromociones(repositorios = {
@@ -28,7 +28,7 @@ export function crearHandlerPromociones(repositorios = {
         const filtro = leerCategoriaTemporal(parametros, new Set(categorias.map(categoria => categoria.id)));
         if (!filtro.ok) return responderJson({ error: 'Categoría no válida.' }, 400);
         // H16: los beneficios son los de la tarjeta elegida, siempre que sea del dueño de la sesión.
-        const eleccion = elegirTarjeta(tarjetasPropias(cuentas), parametros, perfil.tipoTarjeta);
+        const eleccion = elegirTarjeta(tarjetasDelUsuario(cuentas, perfil), parametros, perfil.tipoTarjeta);
         if (!eleccion.ok) {
           const { cuerpo, estado } = rechazoDeTarjeta(eleccion);
           return responderJson(cuerpo, estado);

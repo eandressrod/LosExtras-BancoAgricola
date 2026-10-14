@@ -1,7 +1,7 @@
 import { obtenerRepositorioAccesos, obtenerRepositorioCuentas } from '../backend/repositorios/index.js';
 import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
 import { leerCookie } from '../backend/servicios/sesion.js';
-import { tarjetasPropias, elegirTarjeta } from '../backend/servicios/tarjetas.js';
+import { tarjetasDelUsuario, elegirTarjeta } from '../backend/servicios/tarjetas.js';
 import { responderJson, metodoNoPermitido } from '../backend/http.js';
 
 // H16: tarjetas propias del dueño de la sesión; la identidad nunca sale de la consulta.
@@ -12,7 +12,7 @@ export function crearHandlerTarjetas(repositorios = { accesos: obtenerRepositori
       try {
         const perfil = await perfilDeSesion(leerCookie(request), repositorios.accesos());
         if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
-        const tarjetas = tarjetasPropias(await repositorios.cuentas().listarPorPerfil(perfil.id));
+        const tarjetas = tarjetasDelUsuario(await repositorios.cuentas().listarPorPerfil(perfil.id), perfil);
         const porDefecto = elegirTarjeta(tarjetas, new URLSearchParams(), perfil.tipoTarjeta).tarjeta;
         return responderJson(tarjetas.map(tarjeta => ({ ...tarjeta, predeterminada: tarjeta === porDefecto })));
       } catch {
