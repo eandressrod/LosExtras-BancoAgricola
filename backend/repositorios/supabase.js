@@ -1,5 +1,5 @@
 const CAMPOS_PROMOCION = 'id, merchant, category, benefit, description, payment, restrictions';
-const CAMPOS_CATALOGO = `${CAMPOS_PROMOCION}, imageUrl:imagen_url, imageAlt:imagen_alt, detailDescription:descripcion_detalle, validFrom:vigencia_desde, validUntil:vigencia_hasta, usageDays:dias_uso, comercio:comercios(nombre, logoUrl:logo_url), beneficios:beneficios_tarjeta(tipo_tarjeta, beneficio, medio_pago, restricciones, compra_minima, tope_descuento)`;
+const CAMPOS_CATALOGO = `${CAMPOS_PROMOCION}, imageUrl:imagen_url, imageAlt:imagen_alt, detailDescription:descripcion_detalle, validFrom:vigencia_desde, validUntil:vigencia_hasta, usageDays:dias_uso, categoria:categorias!promociones_categoria_fkey(nombre), comercio:comercios(nombre, logoUrl:logo_url), beneficios:beneficios_tarjeta(tipo_tarjeta, beneficio, medio_pago, restricciones, compra_minima, tope_descuento)`;
 
 /**
  * @param {import('@supabase/supabase-js').SupabaseClient} client

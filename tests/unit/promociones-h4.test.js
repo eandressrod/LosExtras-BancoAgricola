@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 import { filtrarPromociones } from '../../backend/promociones.js';
 
 const fecha = new Date('2026-10-09T18:00:00Z');
+
+test('una categoría administrada conserva ID para filtrar y expone su nombre para mostrar', () => {
+  const [promo] = filtrarPromociones([{ id:'nueva',category:'categoria-001',categoria:{nombre:'Salud'},beneficios:[{tipo_tarjeta:'basica',beneficio:'5 %'}] }], 'basica', ['categoria-001'], fecha);
+  assert.equal(promo.category,'categoria-001');
+  assert.equal(promo.categoryName,'Salud');
+  assert.equal(promo.categoria,undefined);
+});
 const oferta = {
   id: 'compras', merchant: 'Anterior', category: 'Compras', description: 'Resumen',
   detailDescription: 'Una descripción más completa.', validFrom: '2026-10-09', validUntil: '2026-11-06',

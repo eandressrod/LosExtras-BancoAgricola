@@ -1,6 +1,6 @@
 # Guía de desarrollo — Los Extras
 
-Actualizada el 8 de octubre de 2026. Los comandos se ejecutan desde la carpeta del repositorio, donde está `package.json`.
+Actualizada el 13 de octubre de 2026. Los comandos se ejecutan desde la carpeta del repositorio, donde está `package.json`.
 
 ## 1. Requisitos y acceso
 
@@ -186,3 +186,42 @@ Completar manualmente las tres variables necesarias en `.env`. Nuestro servidor 
 | No aparece el proyecto en Supabase/Vercel | Confirmar cuenta, invitación y permisos de acceso. |
 
 Referencia operativa del equipo: [SCRUM-63](https://somos-agilistas.atlassian.net/browse/SCRUM-63). Consultar también los criterios de aceptación y la DoD en la historia que se esté desarrollando.
+
+## 8. Midi: administrar los datos localmente
+
+Desde la raíz del repositorio, con Node 24, `npm ci` y el `.env` configurado:
+
+```powershell
+npm run midi
+```
+
+Abrir `http://127.0.0.1:3001`. La herramienta está en `hola/`; no se publica con las pantallas de `public/`. `SUPABASE_URL` y `SUPABASE_SECRET_KEY` permanecen en Node. Midi administra Supabase real independientemente de `DATA_SOURCE`; no utiliza el catálogo mock.
+
+El proyecto destino necesita las migraciones `midi_administracion`, `midi_borrado_revocaciones` y `midi_categorias`, que preparan lectura conjunta, guardado transaccional, categorías administrables y permisos del backend. Fueron aplicadas al proyecto compartido el 13 de octubre de 2026 (la última tiene versión UTC `20261014024012`). Un proyecto distinto necesita aplicar las migraciones en orden mediante su flujo autorizado; no ejecutar de nuevo las cargas iniciales sobre la base compartida.
+
+El árbol lateral contiene usuarios y el catálogo de promociones. En `Promociones → Categorías` se crean las categorías que utiliza la encuesta; Propiedades → Comercios permite asociar varios locales a cada categoría. Al desplegar una categoría se accede a sus comercios y, desde cada comercio, a sus ofertas. El botón Asociar comercios recupera esa selección; Nuevo dentro de la categoría permite crear un comercio ya vinculado. Comercios y Beneficios por tarjeta conservan sus vistas generales. Se puede editar directamente la cuadrícula o usar Propiedades. Las claves existentes están bloqueadas; cambiar Nombre no cambia el ID. Contraseña vacía en una edición conserva la actual; `NULL` en usuario de acceso retira también su hash. Al crear perfiles se requieren usuario y contraseña.
+
+Perfil rápido agrega un usuario con ID y acceso legibles (`usuario-001`, etc.), contraseña `123` editable, Básica/Black, cero a tres cuentas y encuesta pendiente. Evita los IDs/accesos cargados y los creados en el borrador; la base rechaza posibles duplicados de otra instancia. Las cuentas nuevas usan IDs como `cuenta-001`. Los identificadores anteriores se conservan. Generar, editar, cambiar de sección o aceptar Propiedades solo cambia el borrador. Guardar se pone azul cuando hay cambios y aplica el conjunto; Cancelar lo descarta. Actualizar conserva los campos editados, trae los demás valores y exige revisar los registros que cambiaron externamente. Ante un alta ya existente o una edición eliminada, se conserva el borrador y se informa del conflicto.
+
+Para imágenes de categorías, logos de comercios y fotos de ofertas, arrastrar el archivo sobre el campo o usar Elegir imagen. Se admiten PNG/JPG/WebP de hasta 2 MB, diez archivos y 8 MB de imágenes por guardado. La vista previa permanece en el navegador hasta Guardar; Cancelar no sube el borrador. No hay fotos de perfil. Al guardar, Node escribe los archivos en `public/recursos/midi/` con nombre derivado del contenido y envía solo su ruta a Supabase. Repetir la misma imagen reutiliza el archivo. Los archivos quedan locales: incluirlos en una publicación requiere el flujo habitual de Git/despliegue, no ocurre automáticamente por guardar en Midi. Quitar una imagen retira la referencia, sin borrar archivos que puedan estar compartidos. Un guardado remoto fallido puede dejar el archivo ya escrito; se conserva para reintentar y no se borra automáticamente.
+
+Al eliminar un perfil se retiran sus cuentas, preferencias, guardadas y revocaciones. Al eliminar ofertas se retiran beneficios y guardadas. Los comercios con ofertas o sucursales no se eliminan mientras existan esas referencias. No se puede desvincular un comercio de una categoría mientras tenga ofertas en ella, ni borrar una categoría todavía usada por comercios, ofertas o preferencias. Midi muestra las dependencias y pide confirmación antes de guardar las bajas.
+
+Límites por proceso: una RPC para leer las ocho tablas administradas, caché compartida de 30 segundos y agrupación de lecturas concurrentes; ninguna consulta por celda, pestaña o generación. Cada Guardar hace una RPC y devuelve la lectura actualizada. Se admiten hasta 200 cambios/1 MB de datos por lote, más las imágenes dentro de un cuerpo HTTP local máximo de 12 MB, con intervalo mínimo de dos segundos y máximo de diez guardados por minuto. Los bytes de imagen no se mandan a Supabase. El identificador de petición deduplica reintentos durante diez minutos. Un fallo de lectura aplica enfriamiento de cinco segundos. Si se pierde la respuesta de un guardado, comprobar su resultado antes de iniciar otra petición; la deduplicación local se pierde al reiniciar el servidor.
+
+Pruebas aisladas, incluidas también en `npm test`:
+
+```powershell
+npm run test:midi
+npm test
+```
+
+Comprobación remota explícita:
+
+```powershell
+npm run test:midi:remote
+```
+
+La prueba remota crea un perfil con ID legible y registros de catálogo UUID propios, comprueba categoría nueva con varios comercios, login/cuentas/encuesta/promociones, edición y rollback, y elimina exclusivamente esos registros al finalizar. Consulta previamente los IDs ocupados. No modifica A, B o demo ni vacía tablas compartidas. Hace como máximo siete RPC de Midi, además de las consultas de los endpoints del producto. Requiere `DATA_SOURCE=supabase` y las migraciones aplicadas; los errores de red o permisos pueden impedir la limpieza, que debe revisarse si falla.
+
+Para probar el perfil desde la aplicación, ejecutar `npm run dev` en otra terminal y abrir `http://127.0.0.1:3000`. Si el puerto 3001 está ocupado, cerrar la instancia anterior o definir `MIDI_PORT` en `.env`.

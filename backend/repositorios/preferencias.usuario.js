@@ -8,6 +8,11 @@
  */
 export function crearRepositorioPreferenciasUsuario(cliente) {
   return {
+    async obtenerCategorias() {
+      const { data, error } = await cliente.from('categorias').select('id,nombre,imagen_url,orden').order('orden').order('id');
+      if (error) throw new Error('No se pudo consultar el catálogo.');
+      return data;
+    },
     /**
      * Persiste las categorías seleccionadas y marca la encuesta como completada.
      * Usa upsert para crear o actualizar el registro del propietario de la sesión.

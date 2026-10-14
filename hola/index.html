@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Midi — Administración de datos</title><link rel="stylesheet" href="/midi.css"><script type="module" src="/app.js"></script></head>
+<body>
+  <div class="ventana">
+    <header class="titulo"><span>Midi — Administración de datos</span></header>
+    <div class="barra" role="toolbar" aria-label="Datos">
+      <button id="nuevo">Nuevo</button><button id="rapido">Perfil rápido</button><button id="propiedades">Propiedades</button><button id="eliminar">Eliminar</button>
+      <span class="separador"></span><button id="guardar">Guardar</button><button id="cancelar">Cancelar</button><button id="actualizar">Actualizar</button>
+    </div>
+    <div class="ruta"><input id="vista-ruta" aria-label="Ruta de la sección" readonly value="Midi\Inicio"><span id="numero-filas"></span></div>
+    <div class="contenido">
+      <nav id="arbol-panel" aria-label="Secciones de Midi"><div class="arbol-titulo"><img src="/recursos/computer_icon.png" alt=""><span>Midi</span></div><button id="nav-inicio" class="navegacion"><img src="/recursos/folder_icon.png" alt=""><span>Inicio</span></button><div id="arbol"></div></nav>
+      <div id="separador-panel" role="separator" tabindex="0" aria-label="Ancho del árbol" aria-orientation="vertical" aria-valuemin="125" aria-valuemax="600" aria-valuenow="215"></div>
+      <main>
+        <h1 id="vista-titulo" class="sr-only">Inicio</h1>
+        <p id="mensaje" role="status" aria-live="polite"></p>
+        <section id="inicio"><fieldset><legend>Conexión</legend><dl><dt>Proyecto</dt><dd id="destino">—</dd><dt>Estado</dt><dd id="conexion">Comprobando…</dd><dt>Última consulta</dt><dd id="consulta">—</dd></dl><button id="comprobar">Comprobar conexión</button></fieldset></section>
+        <fieldset id="edicion" class="edicion"><div id="cuadricula" class="cuadricula" hidden></div></fieldset>
+      </main>
+    </div>
+    <footer><span id="estado">Iniciando…</span><span id="pendientes">0 cambios pendientes</span></footer>
+  </div>
+  <dialog id="dialogo"><form method="dialog" id="form-propiedades"><header class="titulo"><strong id="dialogo-titulo">Propiedades</strong><button value="cancelar" aria-label="Cerrar propiedades">×</button></header><div class="dialogo-contenido"><div id="pestanas" role="tablist"></div><div id="campos"></div></div><div class="dialogo-botones"><button value="cancelar">Cancelar</button><button id="aceptar-propiedades" value="aceptar">Aceptar</button></div></form></dialog>
+</body></html>
