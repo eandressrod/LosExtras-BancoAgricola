@@ -94,15 +94,17 @@ npm run dev
 
 Abrir **http://127.0.0.1:3000**. Mantener la terminal abierta y detener el servidor con **Ctrl+C**. Reiniciarlo después de cambiar `.env` o archivos del backend.
 
-El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones` (`?categoria=Compras` aplica el filtro temporal de H5), `/api/promocion?id=restaurante` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
+El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones` (`?categoria=Compras` aplica el filtro temporal de H5 y `?tarjeta=` la tarjeta propia elegida en H16), `/api/promocion?id=restaurante`, `/api/tarjetas` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
 
 Los usuarios de prueba de H1 están guardados en la tabla `perfiles` de Supabase. Sus credenciales se entregan desde esta guía al verificador, fuera de la pantalla de login:
 
 | Perfil | Tarjeta | Usuario | Clave |
 | --- | --- | --- | --- |
-| A | Básica | `demo.basica` | `Basica2026` |
+| A | Básica y Black | `demo.basica` | `Basica2026` |
 | B | Black | `demo.black` | `Black2026` |
 | demo (general) | Básica | `demo` | `demo123` |
+
+Las tarjetas propias (H16) son las cuentas de tipo tarjeta de cada perfil, con su segmento Básica o Black (migración `tarjetas_propias`). A tiene dos y en "Para ti" elige con cuál consultar beneficios; B y demo usan directamente su única tarjeta.
 
 El formulario envía usuario y clave a `/api/auth/login`; el backend busca el usuario en la base y compara la clave con su hash. Con `DATA_SOURCE=supabase` (Vercel y `.env`) se usa la base; `mock` solo sirve para pruebas automáticas y desarrollo sin claves, con los mismos usuarios en `backend/datos.js`. No hay registro, recuperación, MFA ni autenticación bancaria. Al entrar, el backend envía una cookie `HttpOnly` firmada que dura 2 horas. Cada página privada consulta `/api/auth/sesion` para conocer el perfil (`id`, `nombre`, `tipoTarjeta`); el navegador no guarda la identidad. Si cambian los datos de prueba: `npm run hash -- "NuevaClave"`, una migración nueva, `backend/datos.js` y esta guía. La escritura de preferencias remotas y guardadas se implementa en sus historias; mientras tanto, la encuesta existente guarda elecciones localmente por perfil.
 

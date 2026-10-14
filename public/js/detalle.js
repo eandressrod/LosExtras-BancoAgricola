@@ -1,6 +1,7 @@
-import { requireSession, getJSON } from './comun.js';
+import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
 import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
 import { leerCategoria, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
+import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 
 const profile = await requireSession();
 if (profile) {
@@ -10,6 +11,8 @@ if (profile) {
   const back = document.querySelector('#back-to-list');
   history.replaceState(estadoNavegacion(profile.id, categoria), '', id ? urlDetalle(id, categoria) : location.href);
   back.href = urlListado(categoria);
+  // H16: el detalle muestra el beneficio de la tarjeta elegida en "Para ti" (el backend valida que sea propia).
+  const tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
 
   async function loadDetail() {
     const status = document.querySelector('#detail-status');
@@ -21,7 +24,7 @@ if (profile) {
     if (!id) { status.textContent = 'Selecciona una promoción desde el listado.'; return; }
     status.textContent = 'Cargando detalle…';
     try {
-      const promotion = await getJSON('/api/promocion?id=' + encodeURIComponent(id));
+      const promotion = await getJSON(conTarjeta('/api/promocion?id=' + encodeURIComponent(id), tarjetaId));
       document.querySelector('h1').textContent = promotion.merchant;
       document.title = promotion.merchant + ' · Promoción';
       document.querySelector('#benefit').textContent = promotion.benefit;
@@ -33,6 +36,8 @@ if (profile) {
       mostrarImagen(document.querySelector('#merchant-logo'), promotion.logoUrl);
       mostrarCondiciones(document.querySelector('#conditions'), promotion);
       back.href = urlListado(categoria, promotion.id);
+      const sessionBadge = document.querySelector('#session-profile');
+      if (sessionBadge) sessionBadge.textContent = `${profile.nombre} · ${cardName({ tipoTarjeta: promotion.applicableCard })}`;
       detail.hidden = false;
       status.textContent = '';
     } catch (error) {
