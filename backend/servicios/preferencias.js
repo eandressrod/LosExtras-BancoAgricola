@@ -15,7 +15,8 @@ export async function validarYGuardarPreferencias(usuarioId, categorias, repo) {
     throw new Error('Selecciona al menos una categoría');
   }
 
-  const hayInvalida = categorias.some((c) => !CATEGORIAS_PERMITIDAS.has(c));
+  const permitidas = repo.obtenerCategorias ? new Set((await repo.obtenerCategorias()).map(c => c.id)) : CATEGORIAS_PERMITIDAS;
+  const hayInvalida = categorias.some((c) => !permitidas.has(c));
   if (hayInvalida) {
     throw new Error('Categoría inválida');
   }

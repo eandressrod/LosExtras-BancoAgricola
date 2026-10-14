@@ -12,6 +12,7 @@ import sesion from '../api/auth/sesion.js';
 import logout from '../api/auth/logout.js';
 import menu from '../api/menu.js';
 import preferencias from '../api/preferencias.js';
+import categorias from '../api/categorias.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const routes = {
@@ -22,7 +23,8 @@ const routes = {
   '/api/auth/sesion': sesion,
   '/api/auth/logout': logout,
   '/api/menu': menu,
-  '/api/preferencias': preferencias
+  '/api/preferencias': preferencias,
+  '/api/categorias': categorias
 };
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -32,6 +34,8 @@ const types = {
   '.webmanifest': 'application/manifest+json',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon'
 };

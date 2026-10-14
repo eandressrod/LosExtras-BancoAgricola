@@ -1,4 +1,5 @@
 import { requireSession, getJSON } from './comun.js';
+import { cargarCategorias } from './categorias.js';
 
 if (await requireSession()) {
   const form = document.querySelector('#preferences-form');
@@ -7,7 +8,7 @@ if (await requireSession()) {
   const save = document.querySelector('#save-preferences');
   const cancel = document.querySelector('#cancel-preferences');
   const retry = document.querySelector('#retry');
-  const inputs = [...document.querySelectorAll('input[name="category"]')];
+  let inputs = [];
   let saving = false;
 
   async function loadPreferences() {
@@ -16,7 +17,8 @@ if (await requireSession()) {
     status.className = 'note';
     status.textContent = 'Cargando preferencias…';
     try {
-      const preferences = await getJSON('/api/preferencias');
+      const [preferences, opciones] = await Promise.all([getJSON('/api/preferencias'), cargarCategorias(document.querySelector('#category-options'))]);
+      inputs = opciones;
       inputs.forEach(input => { input.checked = preferences.categories.includes(input.value); });
       form.hidden = false;
       status.textContent = '';

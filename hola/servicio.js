@@ -1,11 +1,12 @@
 import { validarCambios } from './modelo.js';
 import { generarHash } from '../backend/servicios/contrasenas.js';
 import { createHash } from 'node:crypto';
+import { crearAlmacenImagenes } from './imagenes.js';
 
 export function errorMidi(mensaje, estado = 503) { return Object.assign(new Error(mensaje), { estado }); }
 
 /** Caché compartida, agrupación de lecturas y deduplicación de escrituras por proceso local. */
-export function crearServicioMidi(cliente, { reloj = Date.now } = {}) {
+export function crearServicioMidi(cliente, { reloj = Date.now, imagenes = crearAlmacenImagenes() } = {}) {
   let cache, leyendo, falloLectura, enfriarHasta = -1, revision = 0;
   const peticiones = new Map();
   const guardados = [];
@@ -37,11 +38,12 @@ export function crearServicioMidi(cliente, { reloj = Date.now } = {}) {
         .catch(e => { falloLectura = e; enfriarHasta = reloj() + 5000; throw e; }).finally(() => { leyendo = null; });
       return leyendo;
     },
-    async guardar(id, cambios) {
+    async guardar(id, cambios, archivos = []) {
       if (typeof id !== 'string' || !/^[\w-]{1,100}$/.test(id)) throw errorMidi('Identificador de petición no válido.', 400);
       try { validarCambios(cambios); } catch (e) { throw errorMidi(e.message, 400); }
       if (!cambios.length) throw errorMidi('No hay cambios para guardar.', 400);
-      const cuerpo = createHash('sha256').update(JSON.stringify(cambios)).digest('hex');
+      if (Buffer.byteLength(JSON.stringify(cambios)) > 1048576) throw errorMidi('El lote de datos supera 1 MB.', 413);
+      const cuerpo = createHash('sha256').update(JSON.stringify({ cambios, archivos })).digest('hex');
       for (const [clave, p] of peticiones) if (reloj() - p.instante > 600000) peticiones.delete(clave);
       if (peticiones.has(id)) {
         const p = peticiones.get(id);
@@ -58,7 +60,7 @@ export function crearServicioMidi(cliente, { reloj = Date.now } = {}) {
         if (datos.usuario_acceso === null) datos.contrasena_hash = null;
         return { ...c, datos };
       });
-      const promesa = consultar('midi_guardar_cambios', { cambios: preparados }).then(valor => { revision++; cache = { instante: reloj(), valor }; return valor; })
+      const promesa = imagenes.guardar(cambios, archivos).then(() => consultar('midi_guardar_cambios', { cambios: preparados })).then(valor => { revision++; cache = { instante: reloj(), valor }; return valor; })
         .catch(e => { if (e.estado === 503) { cache = undefined; revision++; } throw e; });
       peticiones.set(id, { cuerpo, promesa, instante: reloj() });
       return promesa;

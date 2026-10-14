@@ -1,14 +1,22 @@
 import { tablas, filaNueva, claveFila, identidad } from './schema.js';
 
-export function generarPerfil(azar = Math.random) {
+const secuencias = new Map();
+export function siguienteId(prefijo, filas = []) {
+  const usados = new Set(filas.flatMap(f => [f.id, f.usuario_acceso]));
+  let n = secuencias.get(prefijo) || 0, id;
+  do { id = `${prefijo}-${String(++n).padStart(3, '0')}`; } while (usados.has(id));
+  secuencias.set(prefijo,n); return id;
+}
+
+export function generarPerfil(azar = Math.random, existentes = {}) {
   const elegir = lista => lista[Math.min(lista.length - 1, Math.floor(azar() * lista.length))];
-  const uuid = crypto.randomUUID();
-  const perfil = { ...filaNueva('perfiles'), id: `prueba-${uuid}`, nombre: elegir(['Ana López', 'Luis Pérez', 'Marta García', 'Carlos Rivera', 'Sofía Torres', 'Diego Ramírez']),
-    tipo_tarjeta: elegir(['basica', 'black']), usuario_acceso: `prueba.${uuid}`, contrasena: '123' };
+  const id = siguienteId('usuario', existentes.perfiles);
+  const perfil = { ...filaNueva('perfiles'), id, nombre: elegir(['Ana López', 'Luis Pérez', 'Marta García', 'Carlos Rivera', 'Sofía Torres', 'Diego Ramírez']),
+    tipo_tarjeta: elegir(['basica', 'black']), usuario_acceso: id, contrasena: '123' };
   const modelos = [['Max Electrónico', 'Cuenta de ahorro'], ['CUENTA DIGITAL', 'Cuenta de ahorro'], ['Cuenta Corriente', 'Corriente'], ['Tarjeta de Crédito', 'Tarjeta de Crédito']];
   const cuentas = Array.from({ length: Math.min(3, Math.floor(azar() * 4)) }, (_, i) => {
     const [nombre, tipo] = elegir(modelos);
-    return { ...filaNueva('cuentas'), id: `cta-${crypto.randomUUID()}`, perfil_id: perfil.id, nombre, tipo,
+    return { ...filaNueva('cuentas'), id: siguienteId('cuenta', existentes.cuentas), perfil_id: perfil.id, nombre, tipo,
       numero_enmascarado: `•••• ${elegir(['1320', '5376', '4120', '0341'])}`, saldo: elegir([0, 30, 150, 1200, 3450.75]),
       segmento: perfil.tipo_tarjeta === 'black' ? 'Black' : 'Básica', orden: i + 1 };
   });
@@ -108,13 +116,13 @@ export function validarCambios(cambios) {
       const v = d[f.nombre];
       const error = () => { throw new Error(`${s.titulo}: ${f.etiqueta} no válido.`); };
       if (v == null) { if (!f.nullable) error(); continue; }
-      if (['texto', 'fecha'].includes(f.tipo) && typeof v !== 'string') error();
+      if (['texto', 'fecha', 'imagen'].includes(f.tipo) && typeof v !== 'string') error();
       if (f.tipo === 'booleano' && typeof v !== 'boolean') error();
       if (f.tipo === 'numero' && (v === '' || !['number', 'string'].includes(typeof v) || !Number.isFinite(Number(v)) || (f.entero && !Number.isInteger(Number(v))) || (f.minimo !== undefined && Number(v) < f.minimo))) error();
       if (f.tipo === 'fecha' && (!/^\d{4}-\d{2}-\d{2}$/.test(v) || !Number.isFinite(Date.parse(v)) || new Date(v).toISOString().slice(0, 10) !== v)) error();
-      if (f.tipo === 'lista' && (!Array.isArray(v) || v.some(x => !f.opciones.includes(x)) || (f.nombre === 'dias_uso' && v.length === 0))) error();
+      if (f.tipo === 'lista' && (!Array.isArray(v) || v.some(x => f.opciones ? !f.opciones.includes(x) : typeof x !== 'string' || !x.trim()) || (f.nombre === 'dias_uso' && v.length === 0))) error();
       if (f.opciones && f.tipo !== 'lista' && !f.opciones.includes(v)) error();
-      if (f.referencia && !v.trim()) error();
+      if (f.referencia && f.tipo !== 'lista' && !v.trim()) error();
     }
     if (c.tabla === 'perfiles') {
       if (d.contrasena !== undefined && (typeof d.contrasena !== 'string' || !d.contrasena)) throw new Error('Contraseña no válida.');
