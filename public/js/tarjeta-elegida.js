@@ -16,9 +16,9 @@ export function tarjetaActiva(tarjetas, elegida) {
   return tarjetas.find(tarjeta => tarjeta.id === elegida) ?? tarjetas.find(tarjeta => tarjeta.predeterminada) ?? tarjetas[0] ?? null;
 }
 
-/** Tipo y referencia enmascarada, por ejemplo "Black •••• 7754". */
+/** Tipo y referencia enmascarada, por ejemplo "Black •••• 7754". La tarjeta del perfil no trae referencia. */
 export function etiquetaTarjeta(tarjeta) {
-  return `${cardShortName(tarjeta)} ${tarjeta.numeroEnmascarado}`;
+  return [cardShortName(tarjeta), tarjeta.numeroEnmascarado].filter(Boolean).join(' ');
 }
 
 export function textoTarjeta(tarjeta) {

@@ -1,6 +1,7 @@
 // H16: las tarjetas propias son las cuentas de tipo tarjeta del dueño de la sesión.
 // Su segmento (Básica / Black) define qué beneficios aplican; los saldos no salen de aquí.
 const TIPO_POR_SEGMENTO = { 'Básica': 'basica', 'Black': 'black' };
+const NOMBRE_POR_TIPO = { basica: 'Tarjeta Básica', black: 'Tarjeta Black' };
 
 /** Tarjetas del usuario, en el orden de sus cuentas, con tipo de beneficio y referencia enmascarada. */
 export function tarjetasPropias(cuentas) {
@@ -12,6 +13,16 @@ export function tarjetasPropias(cuentas) {
       nombre: cuenta.nombre,
       numeroEnmascarado: cuenta.numeroEnmascarado
     }));
+}
+
+/**
+ * Tarjetas con las que el usuario puede consultar beneficios. Un perfil sin cuentas de tarjeta
+ * (por ejemplo, uno creado en Midi) conserva la tarjeta de su perfil, como antes de H16.
+ */
+export function tarjetasDelUsuario(cuentas, perfil) {
+  const propias = tarjetasPropias(cuentas);
+  if (propias.length || !NOMBRE_POR_TIPO[perfil.tipoTarjeta]) return propias;
+  return [{ id: null, tipoTarjeta: perfil.tipoTarjeta, nombre: NOMBRE_POR_TIPO[perfil.tipoTarjeta], numeroEnmascarado: null }];
 }
 
 /**

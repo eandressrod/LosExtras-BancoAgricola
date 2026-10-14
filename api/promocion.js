@@ -2,7 +2,7 @@ import { filtrarPromociones } from '../backend/promociones.js';
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioCuentas } from '../backend/repositorios/index.js';
 import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
 import { leerCookie } from '../backend/servicios/sesion.js';
-import { tarjetasPropias, elegirTarjeta, rechazoDeTarjeta } from '../backend/servicios/tarjetas.js';
+import { tarjetasDelUsuario, elegirTarjeta, rechazoDeTarjeta } from '../backend/servicios/tarjetas.js';
 import { responderJson, metodoNoPermitido } from '../backend/http.js';
 
 export default {
@@ -17,7 +17,7 @@ export default {
       const perfil = await perfilDeSesion(leerCookie(request), obtenerRepositorioAccesos());
       if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
       // H16: el detalle usa la tarjeta elegida, siempre que sea del dueño de la sesión.
-      const eleccion = elegirTarjeta(tarjetasPropias(await obtenerRepositorioCuentas().listarPorPerfil(perfil.id)), parametros, perfil.tipoTarjeta);
+      const eleccion = elegirTarjeta(tarjetasDelUsuario(await obtenerRepositorioCuentas().listarPorPerfil(perfil.id), perfil), parametros, perfil.tipoTarjeta);
       if (!eleccion.ok) {
         const { cuerpo, estado } = rechazoDeTarjeta(eleccion);
         return responderJson(cuerpo, estado);
