@@ -5,8 +5,8 @@ import { generarPerfil, crearBorrador, validarCambios } from '../../hola/modelo.
 test('Midi genera un perfil con acceso, tarjeta válida y contraseña editable 123', () => {
   const filas = generarPerfil(() => 0);
   const perfil = filas.perfiles[0];
-  assert.ok(perfil.id.startsWith('prueba-'));
-  assert.ok(perfil.usuario_acceso.startsWith('prueba.'));
+  assert.match(perfil.id, /^usuario-\d{3,}$/);
+  assert.equal(perfil.usuario_acceso, perfil.id);
   assert.equal(perfil.contrasena, '123');
   assert.equal(perfil.tipo_tarjeta, 'basica');
   assert.equal(filas.cuentas.length, 0);

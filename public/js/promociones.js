@@ -22,7 +22,7 @@ async function loadPromotions() {
       card.querySelector('h2').textContent = promotion.merchant;
       card.querySelector('.promo-benefit').textContent = promotion.benefit;
       card.querySelector('.promo-description').textContent = promotion.description;
-      card.querySelector('.promo-category').textContent = promotion.category;
+      card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
       card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
       card.querySelector('.promo-applicability').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
       const badge = card.querySelector('.promo-exclusive');

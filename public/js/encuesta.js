@@ -1,10 +1,22 @@
 import { requireSession } from './comun.js';
+import { cargarCategorias } from './categorias.js';
 
 const profile = await requireSession();
 if (profile) {
   const form = document.querySelector('#survey-form');
   const error = document.querySelector('#survey-error');
   const submitBtn = form.querySelector('button[type="submit"]');
+  const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Reintentar'; retry.hidden = true; error.after(retry);
+  async function cargar() {
+    submitBtn.disabled = true; retry.hidden = true; error.textContent = '';
+    try {
+      const inputs = await cargarCategorias(document.querySelector('#category-options'));
+      submitBtn.disabled = inputs.length === 0;
+      if (!inputs.length) error.textContent = 'No hay categorías disponibles.';
+    } catch { error.textContent = 'No se pudieron cargar las categorías.'; retry.hidden = false; }
+  }
+  retry.addEventListener('click', cargar);
+  await cargar();
 
   form.addEventListener('submit', async event => {
     event.preventDefault();

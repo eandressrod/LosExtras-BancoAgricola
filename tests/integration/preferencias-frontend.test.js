@@ -19,6 +19,7 @@ async function page({ categories = ['Compras'], loadFails = false, saveFails = f
   const state = { loadFails, saveFails }; const requests = [];
   const context = { document: { querySelector: get, querySelectorAll: () => inputs }, location,
     requireSession: async () => ({ id: 'A', tipoTarjeta: 'basica' }),
+    cargarCategorias: async () => { if (state.loadFails) throw new Error('Carga fallida'); return inputs; },
     getJSON: async () => { if (state.loadFails) throw new Error('Carga fallida'); return { completed: true, categories }; },
     fetch: async (url, options) => { requests.push({ url, options }); return { status: state.saveFails ? 503 : 200, ok: !state.saveFails, json: async () => ({ error: 'Guardado fallido' }) }; }
   };

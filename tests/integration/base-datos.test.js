@@ -22,7 +22,7 @@ after(async () => { await db?.close(); });
 test('existen las tablas persistentes de catálogo y revocación de sesiones', async () => {
   const { rows } = await db.query("select tablename from pg_tables where schemaname = 'public' order by tablename");
   assert.deepEqual(rows.map(fila => fila.tablename), [
-    'beneficios_tarjeta', 'comercios', 'cuentas', 'perfiles', 'preferencias_usuario',
+    'beneficios_tarjeta', 'categoria_comercios', 'categorias', 'comercios', 'cuentas', 'perfiles', 'preferencias_usuario',
     'promociones', 'promociones_guardadas', 'sesiones_revocadas', 'sucursales'
   ]);
 });
@@ -72,7 +72,7 @@ test('preferencias de A y B quedan separadas; categorías desconocidas se rechaz
   const { rows } = await db.query('select usuario_id, categorias from preferencias_usuario order by usuario_id');
   assert.deepEqual(rows, [{ usuario_id: 'A', categorias: ['Compras'] }, { usuario_id: 'B', categorias: ['Restaurantes'] }]);
   await assert.rejects(db.query("update preferencias_usuario set categorias = array['Desconocida'] where usuario_id = 'A'"),
-    error => error.code === '23514');
+    error => error.code === '23503');
 });
 
 test('guardadas impiden duplicados y referencias inexistentes', async () => {
@@ -101,7 +101,7 @@ test('sucursales necesitan un comercio existente y coordenadas válidas', async 
 
 test('tablas protegidas: RLS activo y sin privilegios directos de navegador', async () => {
   const { rows } = await db.query("select relname, relrowsecurity from pg_class join pg_namespace on pg_namespace.oid = relnamespace where nspname = 'public' and relkind = 'r'");
-  assert.equal(rows.length, 9);
+  assert.equal(rows.length, 11);
   assert.ok(rows.every(fila => fila.relrowsecurity));
   for (const rol of ['anon', 'authenticated']) {
     await db.exec(`set role ${rol}`);
