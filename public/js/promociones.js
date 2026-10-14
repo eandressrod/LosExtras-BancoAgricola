@@ -1,6 +1,6 @@
 import { requireSession, getJSON } from './comun.js';
 import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
-import { leerCategoria, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
+import { leerCategoria, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
 
 function crearTarjeta(promotion, categoria) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
@@ -31,14 +31,47 @@ if (profile) {
   const retry = document.querySelector('#retry');
   const showAll = document.querySelector('#show-all');
   const emptyPreferences = document.querySelector('#empty-preferences');
+  const filtros = document.querySelector('#category-filter');
   const chips = [...document.querySelectorAll('.filter-chip')];
-  let categoria = leerCategoria(location.search, history.state, profile.id);
+  const pedida = leerCategoria(location.search, history.state, profile.id);
+  let categorias = null;
+  let categoria = null;
   let consultaActual = 0;
 
   // El filtro activo queda marcado y en la entrada del historial, para volver del detalle al mismo listado.
   function mostrarFiltro(url) {
     for (const chip of chips) chip.setAttribute('aria-pressed', String((chip.dataset.category || null) === categoria));
     history.replaceState(estadoNavegacion(profile.id, categoria), '', url);
+  }
+
+  function crearFiltro(item) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'filter-chip';
+    chip.dataset.category = item.id;
+    chip.textContent = item.nombre;
+    chip.addEventListener('click', () => elegir(item.id));
+    filtros.append(chip);
+    chips.push(chip);
+  }
+
+  // Los filtros salen de las categorías vigentes; una categoría de la URL que ya no existe se ignora.
+  async function cargarCategorias() {
+    status.textContent = 'Cargando promociones…';
+    status.className = 'note';
+    retry.hidden = true;
+    try {
+      categorias = await getJSON('/api/categorias');
+    } catch (error) {
+      status.textContent = error.message;
+      status.className = 'error';
+      retry.hidden = false;
+      return false;
+    }
+    categorias.forEach(crearFiltro);
+    categoria = categoriaVigente(pedida, categorias)?.id ?? null;
+    mostrarFiltro(urlListado(categoria) + location.hash);
+    return true;
   }
 
   async function loadPromotions() {
@@ -55,7 +88,7 @@ if (profile) {
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro.
       for (const promotion of promotions) cards.append(crearTarjeta(promotion, categoria));
       if (promotions.length) status.textContent = '';
-      else status.textContent = categoria ? `No hay promociones de ${categoria} para tu perfil.` : 'No hay promociones para tus intereses.';
+      else status.textContent = categoria ? `No hay promociones de ${categoriaVigente(categoria, categorias).nombre} para tu perfil.` : 'No hay promociones para tus intereses.';
       showAll.hidden = promotions.length !== 0 || !categoria;
       emptyPreferences.hidden = promotions.length !== 0;
       const seleccionado = document.getElementById(decodeURIComponent(location.hash.slice(1)));
@@ -75,9 +108,14 @@ if (profile) {
     return loadPromotions();
   }
 
-  chips.forEach(chip => chip.addEventListener('click', () => elegir(chip.dataset.category || null)));
+  async function cargar() {
+    if (!categorias && !await cargarCategorias()) return;
+    await loadPromotions();
+  }
+
+  const [todas] = chips;
+  todas.addEventListener('click', () => elegir(null));
   showAll.addEventListener('click', () => elegir(null));
-  retry.addEventListener('click', loadPromotions);
-  mostrarFiltro(urlListado(categoria) + location.hash);
-  await loadPromotions();
+  retry.addEventListener('click', cargar);
+  await cargar();
 }

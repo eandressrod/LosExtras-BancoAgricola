@@ -33,14 +33,15 @@ export function filtrarPromociones(promociones, tipoTarjeta, categoriasPreferida
 
 /**
  * Filtro temporal de H5. Sin parámetro `categoria` equivale a Todas; si viene, debe ser
- * una sola categoría conocida. No se guarda: las preferencias del usuario no cambian.
+ * una sola categoría vigente del catálogo. No se guarda: las preferencias no cambian.
  * @param {URLSearchParams} parametros
+ * @param {Set<string>} vigentes identificadores de la tabla categorias
  * @returns {{ ok: true, categoria: string | null } | { ok: false }}
  */
-export function leerCategoriaTemporal(parametros) {
+export function leerCategoriaTemporal(parametros, vigentes = CATEGORIAS_PERMITIDAS) {
   const valores = parametros.getAll('categoria');
   if (valores.length === 0) return { ok: true, categoria: null };
-  if (valores.length === 1 && CATEGORIAS_PERMITIDAS.has(valores[0])) return { ok: true, categoria: valores[0] };
+  if (valores.length === 1 && vigentes.has(valores[0])) return { ok: true, categoria: valores[0] };
   return { ok: false };
 }
 
