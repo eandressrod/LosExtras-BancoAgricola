@@ -6,6 +6,14 @@
 .module-nav { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; gap: 4px; border-radius: 14px; background: #eaeaea; margin-bottom: 22px; }
 .module-nav a { display: grid; place-items: center; min-height: 44px; padding: 8px; border-radius: 10px; text-align: center; color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 600; }
 .module-nav a[aria-current] { background: var(--primary); }
+.card-choice { margin: -6px 0 18px; }
+.card-choice-label { margin: 0 0 8px; color: #575757; font-size: .85rem; font-weight: 600; }
+.card-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+.card-option { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 10px 14px; border-color: #c9c9c9; border-radius: 14px; background: white; font-size: .95rem; text-align: left; white-space: nowrap; }
+.card-option:hover { background: #f0f0f0; }
+.card-option[aria-pressed="true"], .card-option[aria-pressed="true"]:hover { padding: 9px 13px; border: 2px solid var(--text); background: #fffbea; }
+.card-option[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; font-weight: 800; }
+.card-single { margin: -6px 0 18px; font-size: .9rem; font-weight: 600; }
 .category-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 20px; }
 .filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-color: #c9c9c9; background: white; font-size: .9rem; }
 .filter-chip:hover { background: #f0f0f0; }
