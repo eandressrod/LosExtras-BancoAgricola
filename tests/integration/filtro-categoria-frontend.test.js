@@ -34,6 +34,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A' } = {})
   };
   const history = { state: estado, url: null, replaceState(nuevo, _titulo, url) { this.state = nuevo; this.url = url; } };
   const contexto = {
+    URLSearchParams,
     location: { search, hash, href: '/pagina' + search + hash },
     history,
     requireSession: async () => ({ id: perfil, tipoTarjeta: perfil === 'B' ? 'black' : 'basica' }),
