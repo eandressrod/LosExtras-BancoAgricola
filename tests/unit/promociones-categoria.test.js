@@ -43,6 +43,13 @@ test('H5 filtrar no modifica la lista recibida', () => {
   assert.equal(lista.length, 4);
 });
 
+test('H5 valida contra las categorías vigentes del catálogo, no contra una lista fija', () => {
+  const vigentes = new Set(['Restaurantes', 'Compras', 'Viajes']);
+  const leer = consulta => leerCategoriaTemporal(new URLSearchParams(consulta), vigentes);
+  assert.deepEqual(leer('categoria=Viajes'), { ok: true, categoria: 'Viajes' });
+  assert.deepEqual(leer('categoria=Entretenimiento'), { ok: false });
+});
+
 test('H5 valida la categoría pedida: sin parámetro es Todas; desconocida, repetida o vacía se rechaza', () => {
   const leer = consulta => leerCategoriaTemporal(new URLSearchParams(consulta));
   assert.deepEqual(leer(''), { ok: true, categoria: null });
