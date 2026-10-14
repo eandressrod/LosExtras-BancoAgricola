@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validarYGuardarPreferencias } from '../../backend/servicios/preferencias.js';
 
+test('valida contra el catálogo del repositorio y acepta categorías nuevas sin cambiar constantes', async () => {
+  let guardadas;
+  const repo = { obtenerCategorias: async () => [{ id: 'Salud', nombre: 'Salud y bienestar' }], guardarPreferencias: async (_, categorias) => { guardadas = categorias; } };
+  await validarYGuardarPreferencias('A', ['Salud'], repo);
+  assert.deepEqual(guardadas, ['Salud']);
+  await assert.rejects(validarYGuardarPreferencias('A', ['Compras'], repo), /inválida/);
+});
+
 test('rechaza selecciones vacías o nulas dando error (Criterio 2)', async () => {
   const repoMock = { async guardarPreferencias() { assert.fail('No debe llegar al repositorio'); } };
   
