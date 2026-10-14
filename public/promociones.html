@@ -23,12 +23,9 @@
         <a href="/promociones.html" aria-current="page">Para ti</a>
         <a href="/preferencias.html">Mis preferencias</a>
       </nav>
-      <!-- H5: filtro temporal; no cambia las preferencias guardadas. -->
-      <div class="category-filter" role="group" aria-label="Filtrar por categoría">
+      <!-- H5: filtro temporal; no cambia las preferencias guardadas. Las categorías llegan de /api/categorias. -->
+      <div id="category-filter" class="category-filter" role="group" aria-label="Filtrar por categoría">
         <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
-        <button type="button" class="filter-chip" data-category="Restaurantes" aria-pressed="false">Restaurantes</button>
-        <button type="button" class="filter-chip" data-category="Compras" aria-pressed="false">Compras</button>
-        <button type="button" class="filter-chip" data-category="Entretenimiento" aria-pressed="false">Entretenimiento</button>
       </div>
       <p id="list-status" class="note" role="status">Cargando promociones…</p>
       <button id="retry" class="secondary" hidden>Reintentar</button>

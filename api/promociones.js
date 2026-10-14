@@ -9,13 +9,17 @@ export default {
     if (request.method !== 'GET') {
       return metodoNoPermitido('GET');
     }
-    const filtro = leerCategoriaTemporal(new URL(request.url).searchParams);
-    if (!filtro.ok) return responderJson({ error: 'Categoría no válida.' }, 400);
     try {
       const perfil = await perfilDeSesion(leerCookie(request), obtenerRepositorioAccesos());
       if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
-      const preferencias = await obtenerRepositorioPreferencias().obtenerPreferencias(perfil.id);
-      const catalogo = await obtenerRepositorio().listarPromocionesConBeneficios();
+      const repoPreferencias = obtenerRepositorioPreferencias();
+      const vigentes = new Set((await repoPreferencias.obtenerCategorias()).map(categoria => categoria.id));
+      const filtro = leerCategoriaTemporal(new URL(request.url).searchParams, vigentes);
+      if (!filtro.ok) return responderJson({ error: 'Categoría no válida.' }, 400);
+      const [preferencias, catalogo] = await Promise.all([
+        repoPreferencias.obtenerPreferencias(perfil.id),
+        obtenerRepositorio().listarPromocionesConBeneficios()
+      ]);
       const aplicables = filtrarPromociones(catalogo, perfil.tipoTarjeta, preferencias.completed ? preferencias.categories : []);
       // H5: la categoría elegida solo restringe lo que ya aplica; nunca agrega ofertas.
       return responderJson(filtrarPorCategoria(aplicables, filtro.categoria));
