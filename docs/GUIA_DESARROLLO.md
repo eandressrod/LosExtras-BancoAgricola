@@ -2,6 +2,10 @@
 
 Actualizada el 13 de octubre de 2026. Los comandos se ejecutan desde la carpeta del repositorio, donde está `package.json`.
 
+Esta es la guía principal del equipo: explica instalación, ejecución, datos y verificación. Las [reglas para agentes](../AGENTS.md) indican cómo colaborar y respetar el alcance; la [guía de UI de Bancoagrícola](GUIA_UI_BANCOAGRICOLA.md) define la dirección visual para login, menú y Promociones.
+
+Para trabajar en una pantalla, leer primero la guía de UI y los criterios de su historia. El [kit visual compartido](GUIA_UI_BANCOAGRICOLA.md#procedencia-y-recursos-compartidos), en `docs/ui/kit-bancoagricola-v1/`, contiene SVG, previews, tokens y procedencia para comparar diseños y reutilizar piezas. Son reconstrucciones y propuestas, no recursos oficiales certificados. Los tokens son referencia, no estilos aplicados automáticamente. Esta carpeta no se sirve como parte de `public/`: copiar allí solo los assets que una implementación autorizada necesite. La guía visual no añade funciones ni sustituye la DoD.
+
 ## 1. Requisitos y acceso
 
 - Instalar [Git](https://git-scm.com/downloads) y [Node.js 24](https://nodejs.org/en/download), que incluye npm.
