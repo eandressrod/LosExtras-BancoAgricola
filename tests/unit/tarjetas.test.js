@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tarjetasPropias, elegirTarjeta } from '../../backend/servicios/tarjetas.js';
+import { tarjetasPropias, tarjetasDelUsuario, elegirTarjeta } from '../../backend/servicios/tarjetas.js';
 import { crearRepositorioCuentasMock } from '../../backend/repositorios/cuentas.mock.js';
 
 // H16: las tarjetas propias son las cuentas de tipo tarjeta del usuario; su segmento define los beneficios.
@@ -23,6 +23,14 @@ test('H16 una cuenta que no es tarjeta o con segmento desconocido no se ofrece; 
   ];
   assert.deepEqual(tarjetasPropias(cuentas), [{ id: 'debito', tipoTarjeta: 'black', nombre: 'Débito Black', numeroEnmascarado: '•••• 3' }]);
   assert.deepEqual(tarjetasPropias([]), []);
+});
+
+test('H16 un perfil sin cuentas de tarjeta (como los que crea Midi) conserva la tarjeta de su perfil', async () => {
+  const ahorro = [{ id: 'ahorro', nombre: 'Ahorro', tipo: 'Cuenta de ahorro', segmento: 'Básica', numeroEnmascarado: '•••• 1' }];
+  assert.deepEqual(tarjetasDelUsuario(ahorro, { tipoTarjeta: 'black' }), [{ id: null, tipoTarjeta: 'black', nombre: 'Tarjeta Black', numeroEnmascarado: null }]);
+  assert.deepEqual(tarjetasDelUsuario([], { tipoTarjeta: 'basica' }).map(tarjeta => tarjeta.tipoTarjeta), ['basica']);
+  assert.deepEqual(tarjetasDelUsuario([], { tipoTarjeta: 'oro' }), []);
+  assert.deepEqual(tarjetasDelUsuario(await crearRepositorioCuentasMock().listarPorPerfil('A'), { tipoTarjeta: 'basica' }).map(tarjeta => tarjeta.id), ['cta-a-3', 'cta-a-4']);
 });
 
 test('H16 sin tarjeta pedida se usa la del perfil; si no coincide, la primera propia', async () => {

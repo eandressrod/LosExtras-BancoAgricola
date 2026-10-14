@@ -42,6 +42,7 @@ test('H16 iniciar o cerrar sesión borra las elecciones de tarjeta y nada más',
 test('H16 cada tarjeta se identifica por tipo y referencia enmascarada', () => {
   assert.equal(etiquetaTarjeta(TARJETAS_A[1]), 'Black •••• 7754');
   assert.equal(textoTarjeta(TARJETAS_A[0]), 'Tarjeta Básica •••• 4821');
+  assert.equal(textoTarjeta({ id: null, tipoTarjeta: 'black', numeroEnmascarado: null }), 'Tarjeta Black');
 });
 
 test('H16 la consulta lleva la tarjeta elegida junto al filtro de categoría', () => {

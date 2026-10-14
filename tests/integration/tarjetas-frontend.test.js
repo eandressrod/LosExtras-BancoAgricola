@@ -41,6 +41,14 @@ test('H16 con una sola tarjeta no se muestra selector y se usa esa tarjeta', asy
   assert.deepEqual(p.consultas, ['/api/promociones?tarjeta=cta-b-2']);
 });
 
+test('H16 un perfil sin cuentas de tarjeta usa la tarjeta de su perfil sin selector', async () => {
+  const p = await abrirListado({ tarjetas: () => [{ id: null, tipoTarjeta: 'basica', nombre: 'Tarjeta Básica', numeroEnmascarado: null, predeterminada: true }] });
+  assert.equal(p.obtener('#card-choice').hidden, true);
+  assert.equal(p.obtener('#card-single').textContent, 'Tus beneficios con Tarjeta Básica');
+  assert.deepEqual(p.consultas, ['/api/promociones']);
+  assert.equal(p.sesion.getItem('los-extras-tarjeta:A'), null);
+});
+
 test('H16 sin tarjetas hay un estado comprensible y no se consultan ofertas', async () => {
   const p = await abrirListado({ tarjetas: () => [] });
   assert.equal(p.obtener('#list-status').textContent, 'No tienes tarjetas para consultar beneficios.');
