@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { crearToken, verificarToken } from '../../backend/servicios/sesion.js';
 import * as autenticacion from '../../backend/servicios/autenticacion.js';
+import { estadoActividad } from '../../backend/repositorios/accesos.mock.js';
 
 process.env.SESSION_SECRET = 'r'.repeat(40);
 function repositorio(revocadas = new Set()) {
   return {
+    estadoActividad,
     async buscarPerfilPorId(id) { return { id, nombre: 'Usuario ' + id, tipoTarjeta: 'basica' }; },
     async sesionRevocada(id) { return revocadas.has(id); },
     async revocarSesion({ id }) { revocadas.add(id); }

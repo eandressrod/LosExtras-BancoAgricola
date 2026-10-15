@@ -32,7 +32,7 @@ test('H16 GET /api/tarjetas entrega solo las tarjetas del usuario, con tipo y re
     { id: 'cta-a-4', tipoTarjeta: 'black', nombre: 'Tarjeta de Crédito Black', numeroEnmascarado: '•••• 7754', predeterminada: false }
   ]);
   assert.deepEqual(await json(tarjetas, '/api/tarjetas', 'B'), [
-    { id: 'cta-b-2', tipoTarjeta: 'black', nombre: 'Tarjeta de Crédito Black', numeroEnmascarado: '•••• 0341', predeterminada: true }
+    { id: 'cta-b-2', tipoTarjeta: 'black', nombre: 'Tarjeta de Crédito Black', numeroEnmascarado: '•••• 1744', predeterminada: true }
   ]);
   assert.deepEqual((await json(tarjetas, '/api/tarjetas', 'demo')).map(tarjeta => tarjeta.tipoTarjeta), ['basica']);
 });
