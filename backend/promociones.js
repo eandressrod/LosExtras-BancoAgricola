@@ -11,6 +11,30 @@ export async function buscarPromocion(id) {
 
 const fechaLocal = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/El_Salvador', year: 'numeric', month: '2-digit', day: '2-digit' });
 
+/** Fecha real con formato YYYY-MM-DD; descarta textos como 2026-02-30. */
+function esFecha(valor) {
+  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
+  const fecha = new Date(valor + 'T00:00:00Z');
+  return !Number.isNaN(fecha.getTime()) && fecha.toISOString().startsWith(valor);
+}
+
+/** null = cualquier día; si hay lista, solo enteros de domingo (0) a sábado (6). */
+function diasValidos(dias) {
+  return dias == null || (Array.isArray(dias) && dias.length > 0 && dias.every(dia => Number.isInteger(dia) && dia >= 0 && dia <= 6));
+}
+
+/**
+ * H17: la oferta se puede usar hoy (fecha civil de El Salvador) según su vigencia inclusiva y sus días
+ * permitidos. Una fecha ausente o no válida nunca se presenta como disponibilidad confirmada.
+ */
+export function disponibleHoy(promo, ahora = new Date()) {
+  const { validFrom, validUntil, usageDays } = promo;
+  if (!esFecha(validFrom) || !esFecha(validUntil) || validFrom > validUntil || !diasValidos(usageDays)) return false;
+  const hoy = fechaLocal.format(ahora);
+  if (hoy < validFrom || hoy > validUntil) return false;
+  return usageDays == null || usageDays.includes(new Date(hoy + 'T00:00:00Z').getUTCDay());
+}
+
 export function filtrarPromociones(promociones, tipoTarjeta, categoriasPreferidas, ahora = new Date()) {
   const hoy = fechaLocal.format(ahora);
   return (promociones ?? []).flatMap(({ beneficios, comercio, categoria, ...promo }) => {
@@ -26,7 +50,8 @@ export function filtrarPromociones(promociones, tipoTarjeta, categoriasPreferida
       applicableCard: tipoTarjeta, exclusive: new Set(beneficios.map(item => item.tipo_tarjeta)).size === 1,
       minimumPurchase: beneficio.compra_minima == null ? null : Number(beneficio.compra_minima),
       discountCap: beneficio.tope_descuento == null ? null : Number(beneficio.tope_descuento),
-      expired, upcoming, canUse: !expired && !upcoming
+      expired, upcoming, canUse: !expired && !upcoming,
+      availableToday: disponibleHoy(promo, ahora)
     }];
   });
 }
@@ -48,4 +73,22 @@ export function leerCategoriaTemporal(parametros, vigentes = CATEGORIAS_PERMITID
 /** Restringe a una categoría las ofertas que ya aplican a la tarjeta y los intereses; null es Todas. */
 export function filtrarPorCategoria(promociones, categoria) {
   return categoria ? promociones.filter(promo => promo.category === categoria) : promociones;
+}
+
+/**
+ * Filtro Disponibles hoy de H17. Sin parámetro `hoy` es el listado habitual; `hoy=1` lo activa.
+ * Como el de categoría, es temporal y no cambia las preferencias.
+ * @param {URLSearchParams} parametros
+ * @returns {{ ok: true, hoy: boolean } | { ok: false }}
+ */
+export function leerDisponibleHoy(parametros) {
+  const valores = parametros.getAll('hoy');
+  if (valores.length === 0) return { ok: true, hoy: false };
+  if (valores.length === 1 && valores[0] === '1') return { ok: true, hoy: true };
+  return { ok: false };
+}
+
+/** Deja solo las ofertas aplicables que se pueden usar hoy; apagado devuelve la misma lista. */
+export function filtrarDisponiblesHoy(promociones, hoy) {
+  return hoy ? promociones.filter(promo => promo.availableToday) : promociones;
 }

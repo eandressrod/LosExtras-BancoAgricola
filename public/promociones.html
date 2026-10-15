@@ -40,6 +40,8 @@
         <div id="card-options" class="card-options" role="group" aria-labelledby="card-choice-label"></div>
       </section>
       <p id="card-single" class="card-single" hidden></p>
+      <!-- H17: Disponibles hoy; filtro temporal que no cambia las preferencias guardadas. -->
+      <button id="today-filter" type="button" class="today-filter" aria-pressed="false">Disponibles hoy</button>
       <!-- H5: filtro temporal; no cambia las preferencias guardadas. Las categorías llegan de /api/categorias. -->
       <div id="category-filter" class="category-filter" role="group" aria-label="Filtrar por categoría">
         <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
@@ -50,6 +52,7 @@
       <div id="cards" class="promo-list"></div>
       <div class="empty-actions">
         <button id="show-all" type="button" class="secondary" hidden>Ver todas</button>
+        <button id="exit-today" type="button" class="secondary" hidden>Quitar Disponibles hoy</button>
         <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>
       </div>
       <template id="promotion-card">
@@ -66,6 +69,7 @@
             <p class="promo-description"></p>
             <p class="promo-applicability"></p>
             <p class="promo-validity"></p>
+            <p class="promo-today" hidden></p>
             <ul class="promo-conditions"></ul>
             <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
           </div>

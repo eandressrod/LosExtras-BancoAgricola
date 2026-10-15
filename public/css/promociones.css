@@ -15,10 +15,12 @@
 .card-option[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; font-weight: 800; }
 .card-single { margin: -6px 0 18px; font-size: .9rem; font-weight: 600; }
 .category-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 20px; }
-.filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-color: #c9c9c9; background: white; font-size: .9rem; }
-.filter-chip:hover { background: #f0f0f0; }
-.filter-chip[aria-pressed="true"], .filter-chip[aria-pressed="true"]:hover { border-color: var(--text); background: var(--primary); }
-.filter-chip[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; font-weight: 800; }
+.filter-chip, .today-filter { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-color: #c9c9c9; background: white; font-size: .9rem; }
+.filter-chip:hover, .today-filter:hover { background: #f0f0f0; }
+.filter-chip[aria-pressed="true"], .filter-chip[aria-pressed="true"]:hover,
+.today-filter[aria-pressed="true"], .today-filter[aria-pressed="true"]:hover { border-color: var(--text); background: var(--primary); }
+.filter-chip[aria-pressed="true"]::before, .today-filter[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; font-weight: 800; }
+.today-filter { margin: -6px 0 14px; font-weight: 700; }
 .empty-actions { display: grid; gap: 12px; }
 .promo-list { display: grid; gap: 22px; }
 .promo-card { display: block; overflow: hidden; border: 1px solid #e0e0e0; border-radius: 20px; color: var(--text); background: white; text-decoration: none; box-shadow: 0 3px 12px rgb(0 0 0 / .04); }
@@ -39,6 +41,7 @@
 .promo-applicability { margin: 8px 0; font-size: .8rem; font-weight: 600; }
 .promo-validity { margin: 8px 0; font-size: .85rem; }
 .promo-card--inactive .promo-validity { color: var(--error); font-weight: 600; }
+.promo-today { margin: 8px 0; padding: 6px 10px; border-left: 3px solid var(--primary); background: #fffbea; font-size: .85rem; font-weight: 600; }
 .promo-conditions { margin: 10px 0; padding-left: 17px; font-size: .8rem; color: #575757; }
 .promo-conditions li + li { margin-top: 4px; }
 .promo-open { display: flex; justify-content: space-between; align-items: center; min-height: 44px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #eee; font-size: .9rem; font-weight: 700; }
@@ -49,7 +52,7 @@
 .detail-content h1 { margin: 0 0 10px; font-size: 1.8rem; }
 .detail-benefit { font-size: 2rem; line-height: 1.15; letter-spacing: -.035em; font-weight: 800; margin: 0 0 20px; }
 .detail-description { font-size: 1rem; line-height: 1.65; margin-bottom: 20px; }
-.detail-content .promo-applicability, .detail-content .promo-validity, .detail-content .promo-conditions { font-size: .9rem; }
+.detail-content .promo-applicability, .detail-content .promo-validity, .detail-content .promo-today, .detail-content .promo-conditions { font-size: .9rem; }
 .preferences-page fieldset { border: 0; padding: 0; }
 .preferences-page legend { margin-bottom: 16px; font-size: .9rem; }
 .preferences-page .option { min-height: 62px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; padding: 12px 16px; background: white; }
