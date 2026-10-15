@@ -2,6 +2,8 @@
 
 El [registro de integración de UI, menú y PWA](INTEGRACION_UI_PWA.md) explica el incremento del 15 de octubre de 2026, su convivencia con H5/H16, los conflictos resueltos y las verificaciones realizadas.
 
+El despliegue conserva 12 entradas de función para Vercel Hobby: mensajes, metas y apertura de Promociones comparten `api/recursos.js` mediante rewrites; sus handlers están en `backend/handlers/`. Las URL de la aplicación y las validaciones de sesión no cambian. El servidor local utiliza la misma entrada compartida.
+
 ## H13 · Instalación en Android/iOS y sesión por inactividad
 
 Incorporación del 14 de octubre de 2026. Los archivos de la PWA viven en `public/pwa/`: manifest, iconos, estilos, registro, service worker, recuperación de conexión y controlador de inactividad. Los HTML enlazan esos recursos; la sesión conserva su implementación en el backend existente. No requiere dependencias npm nuevas.

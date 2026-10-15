@@ -6,7 +6,7 @@ import { crearServicioMidi } from '../../hola/servicio.js';
 import { crearBorrador, generarPerfil } from '../../hola/modelo.js';
 import perfiles from '../../api/perfiles.js';
 import login from '../../api/auth/login.js';
-import apertura from '../../api/promociones-apertura.js';
+import apertura from '../../backend/handlers/promociones-apertura.js';
 
 process.env.SESSION_SECRET ||= randomBytes(32).toString('hex');
 

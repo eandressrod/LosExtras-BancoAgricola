@@ -47,12 +47,22 @@ El recorrido real detectó además una incompatibilidad de presentación: H16 al
 
 La renovación por inactividad reveló otro problema en el adaptador local: reconstruía las peticiones con origen fijo `http://localhost`, perdiendo el host y puerto del navegador; una renovación legítima recibía 403. El adaptador ahora conserva `Host` al crear la URL. Una prueba HTTP con servidor real en puerto efímero reprodujo primero el 403 y comprueba después renovación del mismo origen con 200 y rechazo de origen ajeno con 403. No se relaja la validación de origen del endpoint ni se cambia configuración remota.
 
+## Empaquetado para Vercel Hobby
+
+El primer Preview de `71dbe6f` [falló](https://vercel.com/idk-bro6/los-extras-banco-agricola/3kdLt4hpofpQe3HNxGSeCtLb6CVX): el Dashboard autenticado indicó el máximo de **12 Serverless Functions** del plan Hobby, frente a 14 entradas de esta integración. Los CI de pruebas de push y PR habían pasado.
+
+Se agrupan `/api/mensajes`, `/api/metas` y `/api/promociones-apertura` en `api/recursos.js` mediante tres rewrites explícitos en `vercel.json`, reduciendo el despliegue a **12 entradas**. Sus handlers se trasladan a `backend/handlers/`, conservando métodos, validaciones, respuestas y propietario; el servidor local utiliza esa misma entrada. Las otras API mantienen sus rutas y funciones. No se cambia de plan ni se contratan servicios.
+
+La ruta original determina el handler; la entrada reescrita utiliza el parámetro `recurso`. El parámetro no sustituye la identidad de sesión ni permite elegir otro handler desde una ruta conocida. Recursos desconocidos responden 404. Dos pruebas unitarias y dos de integración, observadas fallar antes de implementar, verifican despacho, sesión, métodos, rewrites y límite de empaquetado. Las pruebas previas de cada handler continúan desde su nueva ubicación.
+
+Referencia consultada el 15 de octubre: la [documentación oficial de Node.js en Vercel](https://vercel.com/docs/functions/runtimes/node-js#create-a-nodejs-function-in-api) recomienda agrupar rutas relacionadas en una función, mantener módulos compartidos fuera de `api/` y usar [rewrites](https://vercel.com/docs/routing/rewrites).
+
 ## Verificación y límites
 
 Verificado antes de publicar, con Node 24.15.0:
 
 - `npm ci`: instalación reproducible, cero vulnerabilidades informadas.
-- `npm test`: **284/284** pruebas locales, cero fallos y cero omitidas. Primera ejecución integrada: 279/281; las dos diferencias de numeración descritas arriba quedaron corregidas. Se añadieron después las dos regresiones de presentación de tarjetas y la prueba HTTP del origen local, observadas primero en rojo y después en verde.
+- `npm test`: **288/288** pruebas locales, cero fallos y cero omitidas. Primera ejecución integrada: 279/281; las dos diferencias de numeración descritas arriba quedaron corregidas. Se añadieron después las regresiones de presentación de tarjetas, la prueba HTTP del origen local y las cuatro del empaquetado, observadas primero en rojo y después en verde.
 - Suite remota con `.env` privado y concurrencia 2: **10/10** contra Supabase, incluidas H5, H16, H19, login/Midi e inactividad. Las pruebas que escriben crean datos de QA o sesiones propias y ejecutan su limpieza; no se modifica esquema remoto.
 
 Estas comprobaciones no acreditan TDD retroactivo, instalación física en iPhone/Android, aceptación final del PO ni verificación de todos los criterios por persona externa. La integración y el CI no bastan para declarar Done las historias o cerrar el sprint. Las comprobaciones de CI y publicación posteriores quedan asociadas al PR y al commit de merge en GitHub.

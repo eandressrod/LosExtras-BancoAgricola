@@ -1,8 +1,8 @@
-import { obtenerRepositorioAccesos, obtenerRepositorioProductosMenu } from '../backend/repositorios/index.js';
-import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
-import { leerCookie } from '../backend/servicios/sesion.js';
-import { responderJson, responderSinContenido, metodoNoPermitido } from '../backend/http.js';
-import { validarMeta, validarId, errorDatos } from '../backend/servicios/productos-menu.js';
+import { obtenerRepositorioAccesos, obtenerRepositorioProductosMenu } from '../repositorios/index.js';
+import { perfilDeSesion } from '../servicios/autenticacion.js';
+import { leerCookie } from '../servicios/sesion.js';
+import { responderJson, responderSinContenido, metodoNoPermitido } from '../http.js';
+import { validarMeta, validarId, errorDatos } from '../servicios/productos-menu.js';
 
 export function crearHandlerMetas(repos = { accesos: obtenerRepositorioAccesos, productos: obtenerRepositorioProductosMenu }) {
   return { async fetch(request) {

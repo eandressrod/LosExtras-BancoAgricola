@@ -18,7 +18,7 @@ test('la consulta de testing incluye todos los perfiles, claves de prueba y flag
 });
 
 test('el endpoint de apertura exige sesión, ignora el propietario del cuerpo y no cambia encuesta ni otro usuario', async () => {
-  const { crearHandlerApertura }=await import('../../api/promociones-apertura.js');
+  const { crearHandlerApertura }=await import('../../backend/handlers/promociones-apertura.js');
   const { crearRepositorioUsuariosPruebaMock }=await import('../../backend/repositorios/usuarios-prueba.mock.js');
   const filas=[{id:'A',promocionesAbiertas:false,encuestaCompletada:false},{id:'B',promocionesAbiertas:false}];
   const repo=crearRepositorioUsuariosPruebaMock(filas);

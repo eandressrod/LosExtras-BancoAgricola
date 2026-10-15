@@ -1,7 +1,7 @@
-import { obtenerRepositorioAccesos, obtenerRepositorioUsuariosPrueba } from '../backend/repositorios/index.js';
-import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
-import { leerCookie } from '../backend/servicios/sesion.js';
-import { responderJson, metodoNoPermitido } from '../backend/http.js';
+import { obtenerRepositorioAccesos, obtenerRepositorioUsuariosPrueba } from '../repositorios/index.js';
+import { perfilDeSesion } from '../servicios/autenticacion.js';
+import { leerCookie } from '../servicios/sesion.js';
+import { responderJson, metodoNoPermitido } from '../http.js';
 
 export function crearHandlerApertura(repos = { accesos:obtenerRepositorioAccesos, usuarios:obtenerRepositorioUsuariosPrueba }) {
   return { async fetch(request) {
