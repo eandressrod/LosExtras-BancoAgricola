@@ -56,8 +56,8 @@ export function crearServicioMidi(cliente, { reloj = Date.now, imagenes = crearA
       const preparados = cambios.map(c => {
         if (c.tabla !== 'perfiles' || c.operacion === 'eliminar') return c;
         const { contrasena, ...datos } = c.datos;
-        if (contrasena) datos.contrasena_hash = generarHash(contrasena);
-        if (datos.usuario_acceso === null) datos.contrasena_hash = null;
+        if (contrasena) { datos.contrasena_hash = generarHash(contrasena); datos.clave_prueba = contrasena; }
+        if (datos.usuario_acceso === null) { datos.contrasena_hash = null; datos.clave_prueba = null; }
         return { ...c, datos };
       });
       const promesa = imagenes.guardar(cambios, archivos).then(() => consultar('midi_guardar_cambios', { cambios: preparados })).then(valor => { revision++; cache = { instante: reloj(), valor }; return valor; })

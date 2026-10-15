@@ -47,6 +47,22 @@
  * @property {(usuario: string) => Promise<AccesoPerfil | null>} buscarAccesoPorUsuario
  * @property {(id: string) => Promise<PerfilSesion | null>} buscarPerfilPorId
  * @property {(id: string) => Promise<boolean>} sesionRevocada
+ * @property {(sesion: { id: string, perfilId: string, creadaEn: number, expiraEn: number }, renovar?: boolean) => Promise<{ahora: number, inactivaEn: number}|null>} estadoActividad
  * @property {(sesion: { id: string, perfilId: string, expiraEn: number }) => Promise<void>} revocarSesion
  */
 export {};
+
+/** H19: referencia visual de producto; no determina elegibilidad en Promociones.
+ * @typedef {{ id: string, nombre: string, modalidad: 'débito'|'crédito', red: 'Visa'|'Mastercard', descripcion: string }} ProductoTarjeta
+ * @typedef {{ id: string, productoId: string, producto: ProductoTarjeta, numeroEnmascarado: string, saldo: number, moneda: string }} TarjetaMenu
+ * @typedef {{ id: string, nombre: string, objetivo: number, ahorrado: number, moneda: 'USD' }} MetaUsuario
+ * @typedef {{ id: string, titulo: string, texto: string, fecha: string, leido: boolean }} MensajeUsuario
+ * @typedef {Object} RepositorioProductosMenu
+ * @property {(perfilId: string) => Promise<{tarjetas: TarjetaMenu[], puntos: number, productosDisponibles: ProductoTarjeta[], mensajesPendientes: number}>} resumen
+ * @property {(perfilId: string) => Promise<MensajeUsuario[]>} listarMensajes
+ * @property {(perfilId: string, id: string) => Promise<MensajeUsuario|null>} leerMensaje
+ * @property {(perfilId: string) => Promise<MetaUsuario[]>} listarMetas
+ * @property {(perfilId: string, datos: Omit<MetaUsuario,'id'>) => Promise<MetaUsuario>} crearMeta
+ * @property {(perfilId: string, id: string, datos: Omit<MetaUsuario,'id'>) => Promise<MetaUsuario|null>} editarMeta
+ * @property {(perfilId: string, id: string) => Promise<boolean>} eliminarMeta
+ */

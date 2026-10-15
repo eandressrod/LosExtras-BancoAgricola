@@ -1,5 +1,9 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
 import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
+import { destinoEntradaPromociones } from './menu-modelo.js';
+import { registrarAperturaPromociones } from './usuarios-prueba.js';
+import { conIndicador } from './transiciones.js';
+
 import { leerCategoria, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
 
@@ -46,6 +50,8 @@ if (profile) {
   let tarjeta = null;
   let preparada = false;
   let consultaActual = 0;
+  let aperturaRegistrada = false;
+  const indicador = document.querySelector('#promotions-loading');
 
   // H5: el filtro activo queda marcado y en la entrada del historial, para volver del detalle al mismo listado.
   function mostrarFiltro(url) {
@@ -90,11 +96,17 @@ if (profile) {
 
   // Categorías vigentes (H5) y tarjetas propias (H16) se cargan juntas; si algo falla, Reintentar.
   async function prepararPagina() {
-    status.textContent = 'Cargando promociones…';
+    status.textContent = '';
     status.className = 'note';
     retry.hidden = true;
     let tarjetas;
     try {
+      if (!aperturaRegistrada) { await registrarAperturaPromociones(); aperturaRegistrada = true; }
+      if (new URLSearchParams(location.search).get('entrada') === 'menu') {
+        const preferencias = await getJSON('/api/preferencias');
+        const destino = destinoEntradaPromociones(location.search, preferencias);
+        if (destino) { location.replace(destino); return false; }
+      }
       [categorias, tarjetas] = await Promise.all([getJSON('/api/categorias'), getJSON('/api/tarjetas')]);
     } catch (error) {
       status.textContent = error.message;
@@ -124,12 +136,13 @@ if (profile) {
 
   async function loadPromotions() {
     const turno = ++consultaActual;
-    status.textContent = 'Cargando promociones…';
+    status.textContent = '';
     status.className = 'note';
     retry.hidden = true;
     showAll.hidden = true;
     emptyPreferences.hidden = true;
     cards.replaceChildren();
+    indicador.hidden = false;
     try {
       // La API valida la tarjeta y aplica sus beneficios, los intereses y la categoría del dueño de la sesión.
       const promotions = await getJSON(conTarjeta(urlConsulta(categoria), tarjeta.id));
@@ -146,6 +159,8 @@ if (profile) {
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;
+    } finally {
+      if (turno === consultaActual) indicador.hidden = true;
     }
   }
 
@@ -165,7 +180,7 @@ if (profile) {
   }
 
   async function cargar() {
-    if (!preparada && !await prepararPagina()) return;
+    if (!preparada && !await conIndicador(indicador, prepararPagina)) return;
     if (tarjeta) await loadPromotions();
   }
 
