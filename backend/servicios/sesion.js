@@ -28,7 +28,7 @@ function mismaFirma(recibida, esperada) {
 
 export function crearToken(perfilId, ahora = Date.now()) {
   const exp = Math.floor(ahora / 1000) + DURACION_SESION_SEGUNDOS;
-  const cuerpo = Buffer.from(JSON.stringify({ sid: randomUUID(), pid: perfilId, exp })).toString('base64url');
+  const cuerpo = Buffer.from(JSON.stringify({ sid: randomUUID(), pid: perfilId, exp, iat: ahora })).toString('base64url');
   return `${cuerpo}.${firmar(cuerpo)}`;
 }
 
@@ -39,10 +39,11 @@ export function datosDeToken(token, ahora = Date.now()) {
   if (!cuerpo || !firma || resto.length > 0) return null;
   if (!mismaFirma(firma, firmar(cuerpo))) return null;
   try {
-    const { sid, pid, exp } = JSON.parse(Buffer.from(cuerpo, 'base64url').toString('utf8'));
+    const { sid, pid, exp, iat } = JSON.parse(Buffer.from(cuerpo, 'base64url').toString('utf8'));
     const idValido = typeof sid === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sid);
     return idValido && typeof pid === 'string' && pid !== '' && Number.isSafeInteger(exp) && exp * 1000 > ahora
-      ? { id: sid, perfilId: pid, expiraEn: exp } : null;
+      && Number.isSafeInteger(iat) && iat <= ahora && iat < exp * 1000
+      ? { id: sid, perfilId: pid, expiraEn: exp, creadaEn: iat } : null;
   } catch {
     return null;
   }

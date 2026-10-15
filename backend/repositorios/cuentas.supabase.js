@@ -3,7 +3,7 @@
     async listarPorPerfil(perfilId) {
       const { data, error } = await cliente
         .from('cuentas')
-        .select('id, nombre, tipo, numero_enmascarado, saldo, moneda, segmento, orden')
+        .select('id, nombre, tipo, numero_enmascarado, numero_completo, saldo, moneda, segmento, orden')
         .eq('perfil_id', perfilId)
         .order('orden', { ascending: true });
 
@@ -16,6 +16,7 @@
         nombre: row.nombre,
         tipo: row.tipo,
         numeroEnmascarado: row.numero_enmascarado,
+        numeroCompleto: row.numero_completo,
         saldo: Number(row.saldo),
         moneda: row.moneda,
         segmento: row.segmento,

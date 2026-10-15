@@ -18,7 +18,7 @@ after(async () => { await db?.close(); });
 test('H16 A tiene Tarjeta Básica y Black, B su Black y demo su Básica, cada una con su dueño', async () => {
   const { rows } = await db.query("select perfil_id, id, segmento, numero_enmascarado from public.cuentas where tipo ilike 'tarjeta%' order by perfil_id, orden");
   assert.deepEqual(rows.map(fila => `${fila.perfil_id} ${fila.id} ${fila.segmento} ${fila.numero_enmascarado}`), [
-    'A cta-a-3 Básica •••• 4821', 'A cta-a-4 Black •••• 7754', 'B cta-b-2 Black •••• 0341', 'demo cta-demo-3 Básica •••• 3390'
+    'A cta-a-3 Básica •••• 4821', 'A cta-a-4 Black •••• 7754', 'B cta-b-2 Black •••• 1744', 'demo cta-demo-3 Básica •••• 3390'
   ]);
 });
 

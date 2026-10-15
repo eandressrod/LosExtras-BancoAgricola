@@ -1,4 +1,4 @@
-import { obtenerRepositorioAccesos, obtenerRepositorioCuentas, obtenerRepositorioEstadoEncuesta, obtenerRepositorioPreferencias } from '../backend/repositorios/index.js';
+import { obtenerRepositorioAccesos, obtenerRepositorioCuentas, obtenerRepositorioEstadoEncuesta, obtenerRepositorioPreferencias, obtenerRepositorioProductosMenu } from '../backend/repositorios/index.js';
 import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
 import { obtenerDatosMenu } from '../backend/servicios/menu.js';
 import { leerCookie } from '../backend/servicios/sesion.js';
@@ -8,7 +8,8 @@ export function crearHandlerMenu(repositorios = {
   accesos: obtenerRepositorioAccesos,
   cuentas: obtenerRepositorioCuentas,
   encuesta: obtenerRepositorioEstadoEncuesta,
-  preferencias: obtenerRepositorioPreferencias
+  preferencias: obtenerRepositorioPreferencias,
+  productos: obtenerRepositorioProductosMenu
 }) {
   return {
     async fetch(request) {
@@ -21,6 +22,7 @@ export function crearHandlerMenu(repositorios = {
         const repoPreferencias = repositorios.preferencias ? repositorios.preferencias() : null;
         
         const data = await obtenerDatosMenu(perfil, repositorios.cuentas(), repositorios.encuesta(), repoPreferencias);
+        if (repositorios.productos) Object.assign(data, await repositorios.productos().resumen(perfil.id));
         return responderJson(data);
       } catch (error) {
         console.error('Consulta de menú no disponible:', error.message);

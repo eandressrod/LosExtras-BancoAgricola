@@ -1,4 +1,4 @@
-﻿// Servidor local del producto: usa los mismos handlers HTTP que Vercel.
+// Servidor local del producto: usa los mismos handlers HTTP que Vercel.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
@@ -13,10 +13,13 @@ import logout from '../api/auth/logout.js';
 import menu from '../api/menu.js';
 import preferencias from '../api/preferencias.js';
 import categorias from '../api/categorias.js';
+import recursos from '../api/recursos.js';
+import actividad from '../api/auth/actividad.js';
 import tarjetas from '../api/tarjetas.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const routes = {
+  '/api/auth/actividad': actividad,
   '/api/perfiles': perfiles,
   '/api/promociones': promociones,
   '/api/promocion': promocion,
@@ -26,6 +29,10 @@ const routes = {
   '/api/menu': menu,
   '/api/preferencias': preferencias,
   '/api/categorias': categorias,
+  '/api/recursos': recursos,
+  '/api/mensajes': recursos,
+  '/api/metas': recursos,
+  '/api/promociones-apertura': recursos,
   '/api/tarjetas': tarjetas
 };
 const types = {
@@ -39,6 +46,7 @@ const types = {
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
   '.svg': 'image/svg+xml',
+  '.ttf': 'font/ttf',
   '.ico': 'image/x-icon'
 };
 
@@ -57,7 +65,7 @@ async function leerCuerpo(req) {
 
 createServer(async (req, res) => {
   try {
-    const url = new URL(req.url, 'http://localhost');
+    const url = new URL(req.url, 'http://' + req.headers.host);
     const handler = routes[url.pathname];
     if (handler) {
       const request = new Request(url, { method: req.method, headers: req.headers, body: await leerCuerpo(req) });
@@ -81,7 +89,8 @@ createServer(async (req, res) => {
       return;
     }
     const content = await readFile(path);
-    res.writeHead(200, { 'Content-Type': types[extname(path)] || 'application/octet-stream' });
+    res.writeHead(200, { 'Content-Type': types[extname(path)] || 'application/octet-stream',
+      ...(url.pathname === '/pwa/sw.js' ? { 'Service-Worker-Allowed': '/', 'Cache-Control': 'no-cache' } : {}) });
     res.end(req.method === 'HEAD' ? undefined : content);
   } catch (error) {
     const status = ['ENOENT', 'EISDIR'].includes(error.code) ? 404 : 500;

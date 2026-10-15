@@ -8,6 +8,15 @@ const aPerfil = fila => ({ id: fila.id, nombre: fila.nombre, tipoTarjeta: fila.t
  */
 export function crearRepositorioAccesosSupabase(client) {
   return {
+    async estadoActividad(sesion, renovar = false) {
+      const { data, error } = await client.rpc('estado_actividad_sesion', {
+        p_id: sesion.id, p_usuario: sesion.perfilId,
+        p_creada: new Date(sesion.creadaEn).toISOString(),
+        p_expira: new Date(sesion.expiraEn * 1000).toISOString(), p_renovar: renovar
+      });
+      if (error) throw new Error('No se pudo verificar la actividad de la sesión.');
+      return data;
+    },
     async buscarAccesoPorUsuario(usuario) {
       const { data, error } = await client.from('perfiles')
         .select(`${CAMPOS_PERFIL}, contrasena_hash`).eq('usuario_acceso', usuario).maybeSingle();
