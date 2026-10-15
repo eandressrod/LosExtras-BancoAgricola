@@ -13,6 +13,7 @@ import logout from '../api/auth/logout.js';
 import menu from '../api/menu.js';
 import preferencias from '../api/preferencias.js';
 import categorias from '../api/categorias.js';
+import tarjetas from '../api/tarjetas.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const routes = {
@@ -24,7 +25,8 @@ const routes = {
   '/api/auth/logout': logout,
   '/api/menu': menu,
   '/api/preferencias': preferencias,
-  '/api/categorias': categorias
+  '/api/categorias': categorias,
+  '/api/tarjetas': tarjetas
 };
 const types = {
   '.html': 'text/html; charset=utf-8',
