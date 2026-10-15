@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { partesSaldo } from '../../public/js/menu-modelo.js';
+import * as modeloMenu from '../../public/js/menu-modelo.js';
 
 const source = (await readFile(new URL('../../public/js/menu.js', import.meta.url), 'utf8')).replace(/^\uFEFF?import[^\n]+\n/gm, '');
 function element() {
@@ -17,7 +17,7 @@ function element() {
     classList: { add() {} }
   };
 }
-async function page({ statuses = [200], completed = false, logoutFails = false } = {}) {
+async function page({ statuses = [200], completed = false, logoutFails = false, cuentas } = {}) {
   const els = new Map(); let ready; let forgotten = false; const requests = [];
   const get = id => { if (!els.has(id)) els.set(id, { ...element(), id }); return els.get(id); };
   const location = { value: '', assign(url) { this.value = url; }, replace(url) { this.value = url; }, reload() {} };
@@ -26,7 +26,8 @@ async function page({ statuses = [200], completed = false, logoutFails = false }
     document: { getElementById: get, querySelector: () => get('btn-ver-todas'), querySelectorAll: () => [], createElement: element, addEventListener(_, fn) { ready = fn; } },
     window: { location }, location,
     requireSession: async () => ({ id: 'A', nombre: 'Usuario A', tipoTarjeta: 'basica' }),
-    cardName: () => 'Tarjeta Básica', compartirCuenta: async () => 'copiado', partesSaldo,
+    ...modeloMenu,
+    cardName: () => 'Tarjeta Básica', compartirCuenta: async () => 'copiado',
     animarEntradaMenu:async()=>{ requests.push('entrada-menu'); },
     forgetLogin() { forgotten = true; },
     logout: async () => { if (state.logoutFails) throw new Error('No se pudo cerrar la sesión.'); forgotten = true; },
@@ -34,7 +35,7 @@ async function page({ statuses = [200], completed = false, logoutFails = false }
       requests.push(url); const status = statuses.length > 1 ? statuses.shift() : statuses[0];
       return { ok: status === 200, status, json: async () => status === 200 ? {
         perfil: { id: 'A', nombre: 'Usuario A', tipoTarjeta: 'basica' },
-        cuentas: [{ id: 'cta-a', nombre: 'Cuenta A', tipo: 'Ahorro', numeroEnmascarado: '•••• 1234', numeroCompleto: '1000001234', saldo: 30, moneda: 'USD' }],
+        cuentas: cuentas ?? [{ id: 'cta-a', nombre: 'Cuenta A', tipo: 'Ahorro', numeroEnmascarado: '•••• 1234', numeroCompleto: '1000001234', saldo: 30, moneda: 'USD' }],
         tarjetas: [{ id: 'tarjeta-a', numeroEnmascarado: '•••• 9876', saldo: 50, moneda: 'USD', producto: { nombre: 'Clásica', modalidad: 'crédito', red: 'Visa' } }],
         encuestaPendiente: !state.completed, destinoPromociones: state.completed ? '/promociones.html' : '/encuesta.html'
       } : { error: 'Servicio no disponible' } };
@@ -45,6 +46,19 @@ async function page({ statuses = [200], completed = false, logoutFails = false }
   await ready();
   return { get, state, location, requests, forgotten: () => forgotten };
 }
+
+test('menú integrado no muestra null ni ofrece compartir el número completo de tarjetas H16', async () => {
+  const p = await page({ cuentas: [
+    { id: 'cta-a-3', nombre: 'Tarjeta Básica', tipo: 'Tarjeta de Crédito', numeroEnmascarado: '•••• 4821', numeroCompleto: null, saldo: 0, moneda: 'USD' },
+    { id: 'cta-b-2', nombre: 'Tarjeta Black', tipo: 'Tarjeta de Crédito', numeroEnmascarado: '•••• 1744', numeroCompleto: '3896681744', saldo: 1200, moneda: 'USD' }
+  ] });
+  const filas = p.get('productos-lista').children;
+  for (const [i, referencia] of ['•••• 4821', '•••• 1744'].entries()) {
+    assert.equal(filas[i].children[1].textContent, referencia + ' Tarjeta de Crédito');
+    assert.equal(filas[i].children[5].children[0].textContent, 'N.º ' + referencia);
+    assert.equal(filas[i].children[5].children.length, 1);
+  }
+});
 
 test('entrar carga el menú y no abre encuesta antes del clic', async () => {
   const p = await page();

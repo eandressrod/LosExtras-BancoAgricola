@@ -1,4 +1,4 @@
-﻿// Servidor local del producto: usa los mismos handlers HTTP que Vercel.
+// Servidor local del producto: usa los mismos handlers HTTP que Vercel.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
@@ -17,6 +17,7 @@ import mensajes from '../api/mensajes.js';
 import metas from '../api/metas.js';
 import apertura from '../api/promociones-apertura.js';
 import actividad from '../api/auth/actividad.js';
+import tarjetas from '../api/tarjetas.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const routes = {
@@ -32,7 +33,8 @@ const routes = {
   '/api/categorias': categorias,
   '/api/mensajes': mensajes,
   '/api/metas': metas,
-  '/api/promociones-apertura': apertura
+  '/api/promociones-apertura': apertura,
+  '/api/tarjetas': tarjetas
 };
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -64,7 +66,7 @@ async function leerCuerpo(req) {
 
 createServer(async (req, res) => {
   try {
-    const url = new URL(req.url, 'http://localhost');
+    const url = new URL(req.url, 'http://' + req.headers.host);
     const handler = routes[url.pathname];
     if (handler) {
       const request = new Request(url, { method: req.method, headers: req.headers, body: await leerCuerpo(req) });

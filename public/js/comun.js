@@ -3,6 +3,7 @@ export const categories = ['Restaurantes', 'Compras', 'Entretenimiento'];
 const CARD_NAMES = { basica: 'Básica', black: 'Black' };
 const LOGIN_HINT_KEY = 'los-extras-sesion-iniciada';
 const PREFERENCES_KEY = 'los-extras-preferencias';
+const CARD_CHOICE_PREFIX = 'los-extras-tarjeta:';
 
 export function readStorage(storage, key) {
   try { return storage.getItem(key); } catch { return null; }
@@ -19,10 +20,28 @@ export function saveStorage(storage, key, value) {
 export function cardShortName(profile) { return CARD_NAMES[profile.tipoTarjeta] ?? profile.tipoTarjeta; }
 export function cardName(profile) { return 'Tarjeta ' + cardShortName(profile); }
 
+/** sessionStorage de esta pestaña, o null si el navegador no lo permite. */
+export function almacenSesion() {
+  try { return sessionStorage; } catch { return null; }
+}
+
+// H16: la tarjeta elegida es temporal, por perfil y por pestaña; el backend valida que sea propia.
+export function cardChoiceKey(profileId) { return CARD_CHOICE_PREFIX + profileId; }
+
+/** Borra las elecciones de tarjeta de cualquier perfil: una sesión nueva empieza sin elección. */
+export function forgetCardSelections(storage = almacenSesion()) {
+  try {
+    for (let index = storage.length - 1; index >= 0; index -= 1) {
+      const key = storage.key(index);
+      if (key?.startsWith(CARD_CHOICE_PREFIX)) storage.removeItem(key);
+    }
+  } catch { /* Sin almacenamiento no hay elecciones que borrar. */ }
+}
+
 // Pista de presentación; nunca sustituye la consulta de sesión al backend.
 // La identidad nunca se guarda en el navegador: la conoce el backend por la cookie HttpOnly.
-export function rememberLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, '1'); }
-export function forgetLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, null); }
+export function rememberLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, '1'); forgetCardSelections(); }
+export function forgetLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, null); forgetCardSelections(); }
 export function mayHaveSession() { return readStorage(localStorage, LOGIN_HINT_KEY) === '1'; }
 
 /** Perfil de la sesión activa, null si no hay sesión; lanza un error si no se pudo verificar. */

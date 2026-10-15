@@ -167,10 +167,11 @@ test('revocación persistida en PostgreSQL se respeta desde otra instancia del r
 
 test('cuentas tienen propietario, números enmascarados y permiten añadir filas sin cambiar el menú', async () => {
   const { rows } = await db.query("select perfil_id, count(*)::integer as total from public.cuentas where perfil_id in ('A','B','demo') group by perfil_id order by perfil_id");
-  assert.deepEqual(rows, [{ perfil_id: 'A', total: 2 }, { perfil_id: 'B', total: 2 }, { perfil_id: 'demo', total: 2 }]);
+  // H16: A suma su Tarjeta Básica y su Tarjeta Black; demo, su Tarjeta Básica.
+  assert.deepEqual(rows, [{ perfil_id: 'A', total: 4 }, { perfil_id: 'B', total: 2 }, { perfil_id: 'demo', total: 3 }]);
   await db.query("insert into public.cuentas (id, perfil_id, nombre, tipo, numero_enmascarado) values ('extra-a', 'A', 'Cuenta adicional', 'Ahorro', '•••• 4567')");
   const extra = await db.query("select count(*)::integer as total from public.cuentas where perfil_id='A'");
-  assert.equal(extra.rows[0].total, 3);
+  assert.equal(extra.rows[0].total, 5);
   await assert.rejects(db.query("insert into public.cuentas (id, perfil_id, nombre, tipo, numero_enmascarado) values ('sin-dueno', 'inexistente', 'Prueba', 'Ahorro', '•••• 4567')"), error => error.code === '23503');
   for (const rol of ['anon', 'authenticated']) {
     await db.exec(`set role ${rol}`);

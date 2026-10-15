@@ -1,5 +1,7 @@
 # Guía de desarrollo — Los Extras
 
+El [registro de integración de UI, menú y PWA](INTEGRACION_UI_PWA.md) explica el incremento del 15 de octubre de 2026, su convivencia con H5/H16, los conflictos resueltos y las verificaciones realizadas.
+
 ## H13 · Instalación en Android/iOS y sesión por inactividad
 
 Incorporación del 14 de octubre de 2026. Los archivos de la PWA viven en `public/pwa/`: manifest, iconos, estilos, registro, service worker, recuperación de conexión y controlador de inactividad. Los HTML enlazan esos recursos; la sesión conserva su implementación en el backend existente. No requiere dependencias npm nuevas.
@@ -117,17 +119,19 @@ npm run dev
 
 Abrir **http://127.0.0.1:3000**. Mantener la terminal abierta y detener el servidor con **Ctrl+C**. Reiniciarlo después de cambiar `.env` o archivos del backend.
 
-El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones`, `/api/promocion?id=restaurante` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
+El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones` (`?categoria=Compras` aplica el filtro temporal de H5 y `?tarjeta=` la tarjeta propia elegida en H16), `/api/promocion?id=restaurante`, `/api/tarjetas` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
 
 Los usuarios de prueba de H1 están guardados en la tabla `perfiles` de Supabase. Además de esta guía, el login permite seleccionarlos y autocompletar su acceso ficticio, por petición expresa del usuario del 14 de octubre:
 
 | Perfil | Tarjeta | Usuario | Clave |
 | --- | --- | --- | --- |
-| A | Básica | `demo.basica` | `Basica2026` |
+| A | Básica y Black | `demo.basica` | `Basica2026` |
 | B | Black | `demo.black` | `Black2026` |
 | demo (general) | Básica | `demo` | `demo123` |
 
-El formulario envía usuario y clave a `/api/auth/login`; el backend busca el usuario en la base y compara la clave con su hash. Con `DATA_SOURCE=supabase` (Vercel y `.env`) se usa la base; `mock` solo sirve para pruebas automáticas y desarrollo sin claves, con los mismos usuarios en `backend/datos.js`. No hay registro, recuperación, MFA ni autenticación bancaria. Al entrar, el backend envía una cookie `HttpOnly` firmada que dura 2 horas. Cada página privada consulta `/api/auth/sesion` para conocer el perfil (`id`, `nombre`, `tipoTarjeta`); el navegador no guarda la identidad. Si cambian los datos de prueba: `npm run hash -- "NuevaClave"`, una migración nueva, `backend/datos.js` y esta guía. La escritura de preferencias remotas y guardadas se implementa en sus historias; mientras tanto, la encuesta existente guarda elecciones localmente por perfil.
+Las tarjetas propias (H16) son las cuentas de tipo tarjeta de cada perfil, con su segmento Básica o Black (migración `tarjetas_propias`). A tiene dos y en "Para ti" elige con cuál consultar beneficios; B y demo usan directamente su única tarjeta.
+
+El formulario envía usuario y clave a `/api/auth/login`; el backend busca el usuario en la base y compara la clave con su hash. Con `DATA_SOURCE=supabase` (Vercel y `.env`) se usa la base; `mock` solo sirve para pruebas automáticas y desarrollo sin claves, con los mismos usuarios en `backend/datos.js`. No hay registro, recuperación, MFA ni autenticación bancaria. Al entrar, el backend envía una cookie `HttpOnly` firmada con máximo absoluto de 2 horas y vencimiento por inactividad a los 120 segundos (H13). Cada página privada consulta `/api/auth/sesion` para conocer el perfil (`id`, `nombre`, `tipoTarjeta`); el navegador no guarda la identidad. Si cambian los datos de prueba: `npm run hash -- "NuevaClave"`, una migración nueva, `backend/datos.js` y esta guía. La encuesta y Mis preferencias consultan y guardan categorías por usuario mediante `/api/preferencias` en Supabase; los filtros de H5 y la tarjeta elegida de H16 son temporales y no cambian esas preferencias.
 
 La primera entrada sin pista de sesión muestra carga durante al menos2s mientras consulta `/api/perfiles?testing=1`. El marcador se guarda en `sessionStorage`, sin perfiles ni claves y solo tras una consulta correcta. En retornos/recargas, el script del HTML oculta splash antes del primer render y no vuelve a pedir perfiles; el selector los recupera al abrirse. Se verifica la sesión con el backend antes de mostrar login y una sesión vigente entra al menú sin pedir perfiles. La transición inicial desvanece la bienvenida260ms, muestra cabecera/bienvenida del login con aro1s y después revela el formulario; movimiento reducido omite la animación. Login aceptado usa `deslizarHaciaMenu` y un marcador de entrada consumido una vez por `animarEntradaMenu`, antes de esperar datos del menú, para que el contenedor termine centrado mientras carga. Un error de menú revela Reintentar. Promociones usa `conIndicador` durante las peticiones, sin retraso artificial. Productos, metas y mensajes muestran el mismo aro pequeño; el SVG reconstruido está en `public/recursos/menu/carga.svg`. Recursos/CSS: `public/recursos/inicio/`, `public/css/inicio.css`, `public/css/carga.css`; lógica en `inicio.js` y `transiciones.js`. CIB Sans Light/Bold local sustituye Roboto y la fuente anterior del menú; procedencia y permiso en la guía de UI.
 

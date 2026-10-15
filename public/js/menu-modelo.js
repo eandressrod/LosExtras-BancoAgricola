@@ -11,6 +11,12 @@ export function partesSaldo(producto, visible) {
   };
 }
 
+export function referenciaCuenta(cuenta) {
+  return /tarjeta/i.test(cuenta.tipo)
+    ? cuenta.numeroEnmascarado
+    : cuenta.numeroCompleto || cuenta.numeroEnmascarado;
+}
+
 export async function compartirCuenta(cuenta, navegador = navigator) {
   if (!cuenta.numeroCompleto) throw new Error('El número completo de esta cuenta no está disponible.');
   const text = `${cuenta.nombre}\nN.º ${cuenta.numeroCompleto}`;
