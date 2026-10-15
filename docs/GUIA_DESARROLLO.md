@@ -98,7 +98,7 @@ npm run dev
 
 Abrir **http://127.0.0.1:3000**. Mantener la terminal abierta y detener el servidor con **Ctrl+C**. Reiniciarlo después de cambiar `.env` o archivos del backend.
 
-El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones`, `/api/promocion?id=restaurante` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
+El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones` (`?categoria=Compras` aplica el filtro temporal de H5), `/api/promocion?id=restaurante` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
 
 Los usuarios de prueba de H1 están guardados en la tabla `perfiles` de Supabase. Sus credenciales se entregan desde esta guía al verificador, fuera de la pantalla de login:
 

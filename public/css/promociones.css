@@ -6,6 +6,12 @@
 .module-nav { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; gap: 4px; border-radius: 14px; background: #eaeaea; margin-bottom: 22px; }
 .module-nav a { display: grid; place-items: center; min-height: 44px; padding: 8px; border-radius: 10px; text-align: center; color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 600; }
 .module-nav a[aria-current] { background: var(--primary); }
+.category-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 20px; }
+.filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-color: #c9c9c9; background: white; font-size: .9rem; }
+.filter-chip:hover { background: #f0f0f0; }
+.filter-chip[aria-pressed="true"], .filter-chip[aria-pressed="true"]:hover { border-color: var(--text); background: var(--primary); }
+.filter-chip[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; font-weight: 800; }
+.empty-actions { display: grid; gap: 12px; }
 .promo-list { display: grid; gap: 22px; }
 .promo-card { display: block; overflow: hidden; border: 1px solid #e0e0e0; border-radius: 20px; color: var(--text); background: white; text-decoration: none; box-shadow: 0 3px 12px rgb(0 0 0 / .04); }
 .promo-card:hover { border-color: #b4b4b4; }

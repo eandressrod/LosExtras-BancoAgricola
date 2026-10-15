@@ -1,4 +1,5 @@
 import { obtenerRepositorio } from './repositorios/index.js';
+import { CATEGORIAS_PERMITIDAS } from './servicios/preferencias.js';
 
 export async function listarPromociones() {
   return obtenerRepositorio().listarPromociones();
@@ -28,4 +29,23 @@ export function filtrarPromociones(promociones, tipoTarjeta, categoriasPreferida
       expired, upcoming, canUse: !expired && !upcoming
     }];
   });
+}
+
+/**
+ * Filtro temporal de H5. Sin parámetro `categoria` equivale a Todas; si viene, debe ser
+ * una sola categoría vigente del catálogo. No se guarda: las preferencias no cambian.
+ * @param {URLSearchParams} parametros
+ * @param {Set<string>} vigentes identificadores de la tabla categorias
+ * @returns {{ ok: true, categoria: string | null } | { ok: false }}
+ */
+export function leerCategoriaTemporal(parametros, vigentes = CATEGORIAS_PERMITIDAS) {
+  const valores = parametros.getAll('categoria');
+  if (valores.length === 0) return { ok: true, categoria: null };
+  if (valores.length === 1 && vigentes.has(valores[0])) return { ok: true, categoria: valores[0] };
+  return { ok: false };
+}
+
+/** Restringe a una categoría las ofertas que ya aplican a la tarjeta y los intereses; null es Todas. */
+export function filtrarPorCategoria(promociones, categoria) {
+  return categoria ? promociones.filter(promo => promo.category === categoria) : promociones;
 }
