@@ -1,4 +1,4 @@
-import { filtrarPromociones, filtrarPorCategoria, leerCategoriaTemporal } from '../backend/promociones.js';
+import { filtrarPromociones, filtrarPorCategoria, leerCategoriaTemporal, leerDisponibleHoy, filtrarDisponiblesHoy } from '../backend/promociones.js';
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioCuentas, obtenerRepositorioPreferencias } from '../backend/repositorios/index.js';
 import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
 import { leerCookie } from '../backend/servicios/sesion.js';
@@ -10,7 +10,7 @@ export function crearHandlerPromociones(repositorios = {
   cuentas: obtenerRepositorioCuentas,
   preferencias: obtenerRepositorioPreferencias,
   catalogo: obtenerRepositorio
-}) {
+}, reloj = () => new Date()) {
   return {
     async fetch(request) {
       if (request.method !== 'GET') {
@@ -27,6 +27,8 @@ export function crearHandlerPromociones(repositorios = {
         ]);
         const filtro = leerCategoriaTemporal(parametros, new Set(categorias.map(categoria => categoria.id)));
         if (!filtro.ok) return responderJson({ error: 'Categoría no válida.' }, 400);
+        const disponibilidad = leerDisponibleHoy(parametros);
+        if (!disponibilidad.ok) return responderJson({ error: 'Filtro de disponibilidad no válido.' }, 400);
         // H16: los beneficios son los de la tarjeta elegida, siempre que sea del dueño de la sesión.
         const eleccion = elegirTarjeta(tarjetasDelUsuario(cuentas, perfil), parametros, perfil.tipoTarjeta);
         if (!eleccion.ok) {
@@ -38,9 +40,9 @@ export function crearHandlerPromociones(repositorios = {
           repoPreferencias.obtenerPreferencias(perfil.id),
           repositorios.catalogo().listarPromocionesConBeneficios()
         ]);
-        const aplicables = filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, preferencias.completed ? preferencias.categories : []);
-        // H5: la categoría elegida solo restringe lo que ya aplica; nunca agrega ofertas.
-        return responderJson(filtrarPorCategoria(aplicables, filtro.categoria));
+        const aplicables = filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, preferencias.completed ? preferencias.categories : [], reloj());
+        // H5 y H17: la categoría y Disponibles hoy solo restringen lo que ya aplica; nunca agregan ofertas.
+        return responderJson(filtrarDisponiblesHoy(filtrarPorCategoria(aplicables, filtro.categoria), disponibilidad.hoy));
       } catch {
         return responderJson({ error: 'No se pudieron cargar las promociones.' }, 503);
       }

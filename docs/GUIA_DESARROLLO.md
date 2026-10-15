@@ -121,7 +121,7 @@ npm run dev
 
 Abrir **http://127.0.0.1:3000**. Mantener la terminal abierta y detener el servidor con **Ctrl+C**. Reiniciarlo después de cambiar `.env` o archivos del backend.
 
-El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones` (`?categoria=Compras` aplica el filtro temporal de H5 y `?tarjeta=` la tarjeta propia elegida en H16), `/api/promocion?id=restaurante`, `/api/tarjetas` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
+El servidor sirve las páginas y ejecuta `/api/perfiles`, `/api/promociones` (`?categoria=Compras` aplica el filtro temporal de H5, `?tarjeta=` la tarjeta propia elegida en H16 y `?hoy=1` Disponibles hoy de H17: vigencia inclusiva y días permitidos según la fecha civil de El Salvador; cada oferta incluye `availableToday`), `/api/promocion?id=restaurante`, `/api/tarjetas` y `/api/auth/login`, `/api/auth/sesion`, `/api/auth/logout`. Live Server o abrir un HTML directamente no ejecuta estos endpoints.
 
 Los usuarios de prueba de H1 están guardados en la tabla `perfiles` de Supabase. Además de esta guía, el login permite seleccionarlos y autocompletar su acceso ficticio, por petición expresa del usuario del 14 de octubre:
 

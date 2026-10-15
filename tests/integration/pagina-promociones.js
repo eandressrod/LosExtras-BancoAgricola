@@ -7,6 +7,7 @@ import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
 import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
+import { textoDisponibleHoy } from '../../public/js/promocion-vista.js';
 
 export const CATEGORIAS = ['Restaurantes', 'Compras', 'Entretenimiento'].map((id, orden) => ({ id, nombre: id, orden }));
 export const TARJETAS = {
@@ -25,7 +26,7 @@ export const PROMOS = {
 export const parametro = (url, nombre) => new URL(url, 'http://localhost').searchParams.get(nombre);
 
 const fuente = async archivo => (await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8')).replace(/^import[^\n]+\n/gm, '');
-const vista = { textoVigencia: () => '', mostrarImagen: () => {}, mostrarCondiciones: () => {} };
+const vista = { textoVigencia: () => '', textoDisponibleHoy, mostrarImagen: () => {}, mostrarCondiciones: () => {} };
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 
 export function elemento(extra = {}) {
@@ -132,7 +133,7 @@ export async function abrirDetalle(opciones = {}) {
       consultas.push(url);
       if (opciones.falla) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');
       const black = parametro(url, 'tarjeta') === 'cta-a-4';
-      return { id: 'tienda', merchant: 'Siman', benefit: black ? '25 % de descuento' : '15 % de descuento', applicableCard: black ? 'black' : 'basica' };
+      return { id: 'tienda', merchant: 'Siman', benefit: black ? '25 % de descuento' : '15 % de descuento', applicableCard: black ? 'black' : 'basica', ...opciones.promocion };
     }
   });
   await vm.runInNewContext(`(async () => { ${await fuente('detalle.js')} })()`, nav.contexto);
