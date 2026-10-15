@@ -1,5 +1,5 @@
 import { filtrarPromociones, filtrarPorCategoria, leerCategoriaTemporal } from '../backend/promociones.js';
-import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioCuentas, obtenerRepositorioPreferencias } from '../backend/repositorios/index.js';
+import { obtenerRepositorioAccesos, obtenerRepositorioPreferencias } from '../backend/repositorios/index.js';
 import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
 import { leerCookie } from '../backend/servicios/sesion.js';
 import { tarjetasDelUsuario, elegirTarjeta, rechazoDeTarjeta } from '../backend/servicios/tarjetas.js';
