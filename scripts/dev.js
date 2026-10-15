@@ -13,9 +13,7 @@ import logout from '../api/auth/logout.js';
 import menu from '../api/menu.js';
 import preferencias from '../api/preferencias.js';
 import categorias from '../api/categorias.js';
-import mensajes from '../api/mensajes.js';
-import metas from '../api/metas.js';
-import apertura from '../api/promociones-apertura.js';
+import recursos from '../api/recursos.js';
 import actividad from '../api/auth/actividad.js';
 import tarjetas from '../api/tarjetas.js';
 
@@ -31,9 +29,10 @@ const routes = {
   '/api/menu': menu,
   '/api/preferencias': preferencias,
   '/api/categorias': categorias,
-  '/api/mensajes': mensajes,
-  '/api/metas': metas,
-  '/api/promociones-apertura': apertura,
+  '/api/recursos': recursos,
+  '/api/mensajes': recursos,
+  '/api/metas': recursos,
+  '/api/promociones-apertura': recursos,
   '/api/tarjetas': tarjetas
 };
 const types = {

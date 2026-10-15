@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
 import menu from '../../api/menu.js';
-import metas from '../../api/metas.js';
-import mensajes from '../../api/mensajes.js';
+import metas from '../../backend/handlers/metas.js';
+import mensajes from '../../backend/handlers/mensajes.js';
 import login from '../../api/auth/login.js';
 
 process.env.SESSION_SECRET ||= randomBytes(32).toString('hex');

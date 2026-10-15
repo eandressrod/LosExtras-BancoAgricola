@@ -11,7 +11,7 @@ function req(ruta, perfil = 'A', method = 'GET', cuerpo) {
 
 test('H19 TDD: mensajes son propios y marcar ajeno no cambia sus datos', async () => {
   const { crearRepositorioProductosMock } = await import('../../backend/repositorios/productos-menu.mock.js');
-  const { crearHandlerMensajes } = await import('../../api/mensajes.js');
+  const { crearHandlerMensajes } = await import('../../backend/handlers/mensajes.js');
   const repo = crearRepositorioProductosMock({ mensajes: [{ id: 'm-a', perfilId: 'A', titulo: 'A', texto: 'Aviso A', leido: false }, { id: 'm-b', perfilId: 'B', titulo: 'B', texto: 'Aviso B', leido: false }] });
   const api = crearHandlerMensajes({ accesos: () => acceso, productos: () => repo });
   assert.equal((await api.fetch(req('/api/mensajes', null))).status, 401);
@@ -24,7 +24,7 @@ test('H19 TDD: mensajes son propios y marcar ajeno no cambia sus datos', async (
 
 test('H19 TDD: metas CRUD valida montos, persiste y exige propietario', async () => {
   const { crearRepositorioProductosMock } = await import('../../backend/repositorios/productos-menu.mock.js');
-  const { crearHandlerMetas } = await import('../../api/metas.js');
+  const { crearHandlerMetas } = await import('../../backend/handlers/metas.js');
   const repo = crearRepositorioProductosMock({ metas: [] });
   const api = crearHandlerMetas({ accesos: () => acceso, productos: () => repo });
   assert.equal((await api.fetch(req('/api/metas', null))).status, 401);

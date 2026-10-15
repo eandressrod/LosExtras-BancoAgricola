@@ -4,6 +4,11 @@
   "buildCommand": "",
   "outputDirectory": "public",
   "cleanUrls": false,
+  "rewrites": [
+    { "source": "/api/mensajes", "destination": "/api/recursos?recurso=mensajes" },
+    { "source": "/api/metas", "destination": "/api/recursos?recurso=metas" },
+    { "source": "/api/promociones-apertura", "destination": "/api/recursos?recurso=promociones-apertura" }
+  ],
   "headers": [
     {
       "source": "/pwa/sw.js",
