@@ -3,60 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Menú · Los Extras</title>
+  <title>Mis Productos · Los Extras</title>
+    <script>try { if (sessionStorage.getItem('los-extras-entrada-menu') === '1') document.documentElement.dataset.entradaMenu = 'pending'; } catch {}</script>
   <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/fuentes.css">
   <link rel="stylesheet" href="/css/menu.css">
-</head>
-<body data-session="pending">
+  <link rel="stylesheet" href="/css/carga.css">
+  <link rel="manifest" href="/pwa/manifest.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
+    <link rel="icon" type="image/png" sizes="192x192" href="/pwa/icono-192.png?v=sv-1">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Bancoagrícola">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="stylesheet" href="/pwa/pwa.css">
+    <script type="module" src="/pwa/pwa.js"></script>
+  </head>
+<body class="menu-page" data-session="pending">
   <div class="app-wrapper">
     <header class="ba-header">
-      <img class="menu-brand" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
-      <button class="action-btn-header" id="btn-logout">Cerrar sesión</button>
-    </header>
-    <p id="alerta-logout" class="alerta-logout-fallido" role="alert" hidden></p>
-    <main class="menu-main">
-      <p id="menu-loading" class="menu-state" role="status">Cargando tus cuentas…</p>
-      <section id="menu-error" class="menu-state" role="alert" hidden>
-        <p id="menu-error-text"></p>
-        <button id="btn-reintentar">Reintentar</button>
-      </section>
-      <div id="menu-content" hidden>
-        <section class="user-greeting-section">
-          <div class="greeting-info">
-            <h1 id="greeting-title"></h1>
-            <p id="greeting-perfil"></p>
-          </div>
-        </section>
-        <section aria-labelledby="cuentas-title">
-          <div class="section-header-row">
-            <div class="section-header-left">
-              <h2 id="cuentas-title" class="section-title">Mis cuentas</h2>
-              <button class="btn-eye-toggle" id="btn-eye-toggle" aria-label="Ocultar o mostrar saldos" aria-pressed="false">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              </button>
-            </div>
-            <button id="btn-ver-todas" class="link-ver-todas" aria-expanded="false">Ver todas</button>
-          </div>
-          <div class="cuentas-carousel" id="cuentas-carousel"></div>
-        </section>
-        <button class="tarjetas-entry-card" id="btn-mis-tarjetas" aria-pressed="false">
-          <span class="tarjetas-entry-left">Mis tarjetas · <span id="tarjeta-tipo"></span></span>
-          <span aria-hidden="true">›</span>
-        </button>
-        <button class="promociones-entry-card" id="btn-promociones">
-          <span class="promociones-entry-left">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" aria-hidden="true"><path d="M20 12v10H4V12"></path><path d="M2 7h20v5H2z"></path><path d="M12 22V7"></path></svg>
-            <span>Beneficios para tu tarjeta</span>
-          </span>
-          <span>Promociones ›</span>
-        </button>
+      <img class="menu-brand" src="/recursos/menu/simbolo.svg" alt="Bancoagrícola">
+      <div class="ba-header-actions">
+        <button class="header-action" id="btn-mensajeria" disabled><span class="header-icon"><img src="/recursos/menu/campana.svg" alt=""><span id="mensajes-contador" class="badge-counter" hidden></span></span><span>Mensajería</span></button>
+        <button class="header-action" id="btn-perfil" disabled><img src="/recursos/menu/perfil.svg" alt=""><span>Perfil</span></button>
       </div>
+    </header>
+    <button id="btn-disponibles" class="available-products" disabled><img src="/recursos/menu/plus.svg" alt=""><span>Tienes productos disponibles</span></button>
+    <button id="btn-promociones" class="promotions-entry" disabled><span class="promotions-entry-icon"><img src="/recursos/menu/para_ti.svg" alt=""></span><span>Promociones para ti</span><span class="promotions-entry-arrow" aria-hidden="true">›</span></button>
+    <div class="product-tabs" role="tablist" aria-label="Mis productos">
+      <button id="tab-cuentas" role="tab" aria-selected="true" aria-controls="panel-productos" tabindex="0">Cuentas</button>
+      <button id="btn-mis-tarjetas" role="tab" aria-selected="false" aria-controls="panel-productos" tabindex="-1">Tarjetas</button>
+      <button id="tab-metas" role="tab" aria-selected="false" aria-controls="panel-productos" tabindex="-1">Metas</button>
+    </div>
+    <main class="menu-main">
+      <h1 class="visually-hidden">Mis Productos</h1>
+      <div id="menu-loading" class="module-loading" role="status" aria-label="Cargando productos"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
+      <section id="menu-error" class="menu-state" role="alert" hidden><p id="menu-error-text"></p><button id="btn-reintentar">Reintentar</button></section>
+      <section id="menu-content" hidden>
+        <div id="panel-productos" role="tabpanel" aria-labelledby="tab-cuentas" tabindex="0"><div id="productos-lista" class="products-list"></div></div>
+      </section>
+      <img class="menu-arcs" src="/recursos/menu/arcos.svg" alt="" aria-hidden="true">
     </main>
     <nav class="bottom-nav-bar" aria-label="Navegación del menú">
-      <button class="nav-tab-item active" id="btn-nav-inicio">Inicio</button>
-      <button class="nav-tab-item" id="btn-tab-parati" disabled>Para ti</button>
+      <button id="btn-nav-inicio" class="nav-tab-item"><img src="/recursos/menu/inicio.svg" alt=""><span>Inicio</span></button>
+      <button id="btn-nav-productos" class="nav-tab-item active" aria-current="page"><img src="/recursos/menu/mis_productos.svg" alt=""><span>Mis Productos</span></button>
+      <button id="btn-nav-gestiones" class="nav-tab-item"><img src="/recursos/menu/gestiones.svg" alt=""><span>Gestiones</span></button>
     </nav>
   </div>
+  <dialog id="menu-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-header"><h2 id="dialog-title"></h2><button id="dialog-close" class="close-dialog" aria-label="Cerrar">×</button></div>
+    <div id="dialog-body"></div><p id="dialog-alert" class="error" role="alert" hidden></p>
+    <button id="btn-ver-todas" hidden>Ver todas mis cuentas</button>
+    <button id="btn-logout" hidden>Cerrar sesión</button><p id="alerta-logout" class="error" role="alert" hidden></p>
+  </dialog>
   <script type="module" src="/js/menu.js"></script>
   <noscript>Activa JavaScript para usar la aplicación.</noscript>
 </body>

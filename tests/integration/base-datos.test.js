@@ -22,8 +22,8 @@ after(async () => { await db?.close(); });
 test('existen las tablas persistentes de catálogo y revocación de sesiones', async () => {
   const { rows } = await db.query("select tablename from pg_tables where schemaname = 'public' order by tablename");
   assert.deepEqual(rows.map(fila => fila.tablename), [
-    'beneficios_tarjeta', 'categoria_comercios', 'categorias', 'comercios', 'cuentas', 'perfiles', 'preferencias_usuario',
-    'promociones', 'promociones_guardadas', 'sesiones_revocadas', 'sucursales'
+    'beneficios_tarjeta', 'categoria_comercios', 'categorias', 'comercios', 'cuentas', 'mensajes_usuario', 'metas_usuario', 'perfiles', 'preferencias_usuario', 'productos_tarjeta',
+    'promociones', 'promociones_guardadas', 'puntos_usuario', 'sesiones_actividad', 'sesiones_revocadas', 'sucursales', 'tarjetas_usuario'
   ]);
 });
 
@@ -69,7 +69,7 @@ test('usuario de acceso único y siempre acompañado de su hash', async () => {
 
 test('preferencias de A y B quedan separadas; categorías desconocidas se rechazan', async () => {
   await db.query("insert into preferencias_usuario (usuario_id, categorias) values ('A', array['Compras']), ('B', array['Restaurantes'])");
-  const { rows } = await db.query('select usuario_id, categorias from preferencias_usuario order by usuario_id');
+  const { rows } = await db.query("select usuario_id, categorias from preferencias_usuario where usuario_id in ('A','B') order by usuario_id");
   assert.deepEqual(rows, [{ usuario_id: 'A', categorias: ['Compras'] }, { usuario_id: 'B', categorias: ['Restaurantes'] }]);
   await assert.rejects(db.query("update preferencias_usuario set categorias = array['Desconocida'] where usuario_id = 'A'"),
     error => error.code === '23503');
@@ -101,7 +101,7 @@ test('sucursales necesitan un comercio existente y coordenadas válidas', async 
 
 test('tablas protegidas: RLS activo y sin privilegios directos de navegador', async () => {
   const { rows } = await db.query("select relname, relrowsecurity from pg_class join pg_namespace on pg_namespace.oid = relnamespace where nspname = 'public' and relkind = 'r'");
-  assert.equal(rows.length, 11);
+  assert.equal(rows.length, 17);
   assert.ok(rows.every(fila => fila.relrowsecurity));
   for (const rol of ['anon', 'authenticated']) {
     await db.exec(`set role ${rol}`);
@@ -125,7 +125,11 @@ test('backend tiene los permisos de escritura necesarios para preferencias y gua
 test('revocación persistida en PostgreSQL se respeta desde otra instancia del repositorio', async () => {
   process.env.SESSION_SECRET = 'p'.repeat(40);
   // Adaptador del transporte para probar servicio → repositorio → PostgreSQL real en memoria.
-  const client = { from(tabla) {
+  const client = { async rpc(nombre, p) {
+    assert.equal(nombre, 'estado_actividad_sesion');
+    const {rows} = await db.query('select estado_actividad_sesion($1,$2,$3,$4,$5) as estado', [p.p_id,p.p_usuario,p.p_creada,p.p_expira,p.p_renovar]);
+    return {data:rows[0].estado,error:null};
+  }, from(tabla) {
     assert.ok(['perfiles', 'sesiones_revocadas'].includes(tabla));
     let campos;
     let filtro;
@@ -162,7 +166,7 @@ test('revocación persistida en PostgreSQL se respeta desde otra instancia del r
 });
 
 test('cuentas tienen propietario, números enmascarados y permiten añadir filas sin cambiar el menú', async () => {
-  const { rows } = await db.query('select perfil_id, count(*)::integer as total from public.cuentas group by perfil_id order by perfil_id');
+  const { rows } = await db.query("select perfil_id, count(*)::integer as total from public.cuentas where perfil_id in ('A','B','demo') group by perfil_id order by perfil_id");
   assert.deepEqual(rows, [{ perfil_id: 'A', total: 2 }, { perfil_id: 'B', total: 2 }, { perfil_id: 'demo', total: 2 }]);
   await db.query("insert into public.cuentas (id, perfil_id, nombre, tipo, numero_enmascarado) values ('extra-a', 'A', 'Cuenta adicional', 'Ahorro', '•••• 4567')");
   const extra = await db.query("select count(*)::integer as total from public.cuentas where perfil_id='A'");

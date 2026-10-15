@@ -13,9 +13,14 @@ import logout from '../api/auth/logout.js';
 import menu from '../api/menu.js';
 import preferencias from '../api/preferencias.js';
 import categorias from '../api/categorias.js';
+import mensajes from '../api/mensajes.js';
+import metas from '../api/metas.js';
+import apertura from '../api/promociones-apertura.js';
+import actividad from '../api/auth/actividad.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const routes = {
+  '/api/auth/actividad': actividad,
   '/api/perfiles': perfiles,
   '/api/promociones': promociones,
   '/api/promocion': promocion,
@@ -24,7 +29,10 @@ const routes = {
   '/api/auth/logout': logout,
   '/api/menu': menu,
   '/api/preferencias': preferencias,
-  '/api/categorias': categorias
+  '/api/categorias': categorias,
+  '/api/mensajes': mensajes,
+  '/api/metas': metas,
+  '/api/promociones-apertura': apertura
 };
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -37,6 +45,7 @@ const types = {
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
   '.svg': 'image/svg+xml',
+  '.ttf': 'font/ttf',
   '.ico': 'image/x-icon'
 };
 
@@ -79,7 +88,8 @@ createServer(async (req, res) => {
       return;
     }
     const content = await readFile(path);
-    res.writeHead(200, { 'Content-Type': types[extname(path)] || 'application/octet-stream' });
+    res.writeHead(200, { 'Content-Type': types[extname(path)] || 'application/octet-stream',
+      ...(url.pathname === '/pwa/sw.js' ? { 'Service-Worker-Allowed': '/', 'Cache-Control': 'no-cache' } : {}) });
     res.end(req.method === 'HEAD' ? undefined : content);
   } catch (error) {
     const status = ['ENOENT', 'EISDIR'].includes(error.code) ? 404 : 500;
