@@ -4,24 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Iniciar sesión · Los Extras</title>
+    <script>
+      // Decidir antes del primer render evita un destello del splash al recargar.
+      try {
+        if (sessionStorage.getItem('los-extras-inicio-listo') === '1' || localStorage.getItem('los-extras-sesion-iniciada') === '1') document.documentElement.dataset.inicio = 'directo';
+      } catch { /* Con almacenamiento bloqueado se conserva la carga inicial. */ }
+    </script>
+    <link rel="preload" href="/recursos/fuentes/CIBFontSans-Light.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="/recursos/fuentes/CIBFontSans-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="/css/styles.css">
-    <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
+    <link rel="stylesheet" href="/css/fuentes.css">
+    <link rel="stylesheet" href="/css/carga.css">
+    <link rel="stylesheet" href="/css/inicio.css">
+    <link rel="stylesheet" href="/css/login.css">
     <script type="module" src="/js/login.js"></script>
+    <link rel="manifest" href="/pwa/manifest.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
+    <link rel="icon" type="image/png" sizes="192x192" href="/pwa/icono-192.png?v=sv-1">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Bancoagrícola">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="stylesheet" href="/pwa/pwa.css">
+    <script type="module" src="/pwa/pwa.js"></script>
   </head>
   <body class="login-page">
-    <main class="login">
+    <section id="startup-screen" class="startup-screen" role="status" aria-label="Cargando usuarios">
+      <div class="startup-art">
+        <img class="startup-brand" src="/recursos/inicio/marca.png" alt="Bancoagrícola">
+        <img class="startup-stroke startup-yellow" src="/recursos/inicio/arco-amarillo.png" alt="" aria-hidden="true">
+        <img class="startup-stroke startup-left" src="/recursos/inicio/arco-izquierdo.png" alt="" aria-hidden="true">
+        <img class="startup-stroke startup-purple" src="/recursos/inicio/arco-morado.png" alt="" aria-hidden="true">
+        <img class="startup-stroke startup-right" src="/recursos/inicio/arco-derecho.png" alt="" aria-hidden="true">
+      </div>
+
+      <div id="startup-error" class="startup-error" role="alert" hidden>
+        <p>No se pudieron cargar los usuarios.</p>
+        <button id="startup-retry" type="button">Reintentar</button>
+      </div>
+    </section>
+    <main class="login" hidden>
+      <header class="login-header">
+        <button id="login-contact" type="button" aria-label="Contacto"><img src="/recursos/login/llamada.svg" alt=""></button>
+        <img class="login-logo" src="/recursos/inicio/logo.svg" alt="Bancoagrícola">
+        <button id="login-help" type="button" aria-label="Ayuda"><img src="/recursos/login/ayuda.svg" alt=""></button>
+      </header>
       <div class="login__intro">
         <h1>Bienvenido a la aplicación de<br>Bancoagrícola</h1>
       </div>
 
+      <div id="startup-spinner" class="startup-indicator" role="status" aria-label="Cargando acceso" hidden><svg class="loading-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="147 22.65" transform="rotate(230 32 32)"/></svg><span>CARGANDO...</span></div>
       <form id="login-form" class="login__form" novalidate>
-        <label>Usuario<input name="username" autocomplete="off" autocapitalize="none" spellcheck="false" required aria-describedby="login-error"></label>
-        <label>Clave<input name="password" type="password" autocomplete="off" required aria-describedby="login-error"></label>
-        <p id="login-error" class="error" role="alert"></p>
-        <button type="submit">Ingresar</button>
+        <div class="login-fields">
+          <label>Usuario<input name="username" autocomplete="off" autocapitalize="none" spellcheck="false" required aria-describedby="login-error"></label>
+          <label>Clave<input name="password" type="password" autocomplete="off" required aria-describedby="login-error"></label>
+          <button id="login-recover" class="login-recover" type="button">Recuperar usuario o clave</button>
+        </div>
+        <div class="login-lower">
+          <button id="show-testing-users" class="login-users" type="button" aria-haspopup="dialog"><img class="login-fingerprint" src="/recursos/login/huella.png" srcset="/recursos/login/huella@2x.png 2x" alt=""><span>Ver usuarios de prueba</span><img class="login-chevron" src="/recursos/login/flecha.png" srcset="/recursos/login/flecha.svg 2x" alt=""></button>
+          <p id="login-error" class="error" role="alert"></p>
+          <button class="login-continue" type="submit">Continuar</button>
+        </div>
       </form>
 
     </main>
-    <noscript>Activa JavaScript para usar la aplicación.</noscript>
+    <dialog id="testing-users-dialog" class="login-dialog" aria-labelledby="testing-users-title">
+      <div class="login-dialog-header"><h2 id="testing-users-title">Usuarios de prueba</h2><button id="close-testing-users" class="login-dialog-close" type="button" aria-label="Cerrar usuarios de prueba">×</button></div>
+      <p id="testing-users-status" role="status"></p>
+      <div id="testing-users-list"></div>
+      <button id="retry-testing-users" type="button" hidden>Reintentar</button>
+    </dialog>
+    <dialog id="login-about" class="login-dialog" aria-labelledby="login-about-title">
+      <div class="login-dialog-header"><h2 id="login-about-title">Los Extras</h2><button id="close-login-about" class="login-dialog-close" type="button" aria-label="Cerrar información">×</button></div>
+      <p>Equipo del módulo de promociones de Bancoagrícola.</p>
+      <ul><li>David Ignacio Argueta Valles</li><li>Ernesto Andrés Rodríguez Sandoval</li><li>Sara Nicole Meléndez Ortez</li><li>Samuel André Mojica Mercado</li><li>German Eduardo Suazo Aparicio</li></ul>
+    </dialog>
+    <noscript><style>.startup-screen { display: none !important; }</style>Activa JavaScript para usar la aplicación.</noscript>
   </body>
 </html>

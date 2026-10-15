@@ -1,5 +1,6 @@
 // Repositorio en memoria para desarrollo local sin base de datos
-const guardadas = new Map();
+import fixtures from '../datos-menu.json' with { type: 'json' };
+const guardadas = new Map(fixtures.preferencias.filter(p => p.completada).map(p => [p.usuarioId, p.categorias]));
 
 export function crearRepositorioPreferenciasMock() {
   return {

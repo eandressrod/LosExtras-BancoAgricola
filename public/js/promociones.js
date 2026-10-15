@@ -1,16 +1,28 @@
 import { requireSession, getJSON } from './comun.js';
 import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
+import { destinoEntradaPromociones } from './menu-modelo.js';
+import { registrarAperturaPromociones } from './usuarios-prueba.js';
+import { conIndicador } from './transiciones.js';
+
+let aperturaRegistrada = false;
 
 async function loadPromotions() {
   const status = document.querySelector('#list-status');
   const cards = document.querySelector('#cards');
   const retry = document.querySelector('#retry');
-  status.textContent = 'Cargando promociones…';
+  status.textContent = '';
   status.className = 'note';
   retry.hidden = true;
   cards.replaceChildren();
   document.querySelector('#empty-preferences').hidden = true;
-  try {
+  await conIndicador(document.querySelector('#promotions-loading'), async () => { try {
+    if (!aperturaRegistrada) { await registrarAperturaPromociones(); aperturaRegistrada = true; }
+    if (new URLSearchParams(location.search).get('entrada') === 'menu') {
+      const preferencias = await getJSON('/api/preferencias');
+      const destino = destinoEntradaPromociones(location.search, preferencias);
+      if (destino) { location.replace(destino); return; }
+      history.replaceState(null, '', location.pathname + location.hash);
+    }
     // La API aplica tarjeta y categorías del dueño de la sesión.
     const promotions = await getJSON('/api/promociones');
     for (const promotion of promotions) {
@@ -43,7 +55,7 @@ async function loadPromotions() {
     status.className = 'error';
     retry.hidden = false;
     document.querySelector('#empty-preferences').hidden = true;
-  }
+  } });
 }
 
 const profile = await requireSession();

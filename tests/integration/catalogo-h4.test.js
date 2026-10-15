@@ -33,7 +33,7 @@ test('H4 usa beneficios por tarjeta y una exclusiva sin duplicar comercio ni alt
   assert.equal(rows.length, 9);
   assert.deepEqual(rows.filter(p => p.promocion_id === 'siman-black').map(p => p.tipo_tarjeta), ['black']);
   assert.notEqual(rows.find(p => p.promocion_id === 'tienda' && p.tipo_tarjeta === 'basica').beneficio, rows.find(p => p.promocion_id === 'tienda' && p.tipo_tarjeta === 'black').beneficio);
-  assert.equal((await db.query('select count(*)::int as total from preferencias_usuario')).rows[0].total, 0);
+  assert.equal((await db.query("select count(*)::int as total from preferencias_usuario where usuario_id in ('A','B','demo')")).rows[0].total, 0);
 });
 
 test('H4 recursos locales existen y el catálogo mock coincide con el catálogo de la migración', async () => {

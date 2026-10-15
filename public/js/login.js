@@ -1,22 +1,98 @@
-import { fetchSession, mayHaveSession, rememberLogin, forgetLogin } from './comun.js';
+import { fetchSession, mayHaveSession, rememberLogin, forgetLogin, getJSON } from './comun.js';
+import { necesitaCargaInicial, prepararInicio, transicionarInicio } from './inicio.js';
+import { credencialesDePerfil } from './usuarios-prueba.js';
+import { deslizarHaciaMenu } from './transiciones.js';
 
 const form = document.querySelector('#login-form');
 const { username, password } = form.elements;
 const errorBox = document.querySelector('#login-error');
 const submitButton = form.querySelector('[type="submit"]');
+const startupScreen = document.querySelector('#startup-screen');
+const startupError = document.querySelector('#startup-error');
+const startupRetry = document.querySelector('#startup-retry');
+const loginScreen = document.querySelector('.login');
+const usersDialog = document.querySelector('#testing-users-dialog');
+const usersList = document.querySelector('#testing-users-list');
+const usersStatus = document.querySelector('#testing-users-status');
+const usersRetry = document.querySelector('#retry-testing-users');
+const aboutDialog = document.querySelector('#login-about');
+let perfilesDisponibles = [];
+
+function mostrarUsuarios(perfiles) {
+  usersList.replaceChildren();
+  for (const perfil of perfiles) {
+    const boton = document.createElement('button'); boton.type = 'button'; boton.className = 'testing-user';
+    const avatar = document.createElement('span'); avatar.className = 'testing-user-avatar';
+    const icono = document.createElement('img'); icono.src = '/recursos/login/usuarios.svg'; icono.alt = ''; avatar.appendChild(icono);
+    const detalles = document.createElement('span'); detalles.className = 'testing-user-details';
+    const nombre = document.createElement('strong'); nombre.textContent = perfil.nombre;
+    const usuario = document.createElement('small'); usuario.textContent = perfil.usuarioAcceso || 'Sin usuario de acceso';
+    detalles.appendChild(nombre); detalles.appendChild(usuario); boton.appendChild(avatar); boton.appendChild(detalles);
+    if (!perfil.promocionesAbiertas) { const punto = document.createElement('span'); punto.className = 'unopened-dot'; punto.setAttribute('role','img'); punto.setAttribute('aria-label','Promociones sin abrir'); boton.appendChild(punto); }
+    boton.disabled = !perfil.usuarioAcceso;
+    boton.addEventListener('click', () => {
+      const credenciales = credencialesDePerfil(perfil);
+      username.value = credenciales.usuario; password.value = credenciales.clave;
+      showError(''); usersDialog.close();
+      if (credenciales.clave) submitButton.focus(); else password.focus();
+    });
+    usersList.appendChild(boton);
+  }
+}
+
+async function abrirUsuarios() {
+  if (!usersDialog.open) usersDialog.showModal();
+  mostrarUsuarios(perfilesDisponibles);
+  usersStatus.textContent = 'Cargando usuarios…'; usersRetry.hidden = true;
+  try {
+    perfilesDisponibles = await getJSON('/api/perfiles?testing=1');
+    mostrarUsuarios(perfilesDisponibles);
+    usersStatus.textContent = perfilesDisponibles.length ? '' : 'No hay usuarios disponibles.';
+  } catch (error) { usersStatus.textContent = error.message; usersRetry.hidden = false; }
+}
+
+async function prepararAcceso() {
+  const primeraEntrada = necesitaCargaInicial(sessionStorage) && !mayHaveSession();
+  startupScreen.hidden = !primeraEntrada;
+  loginScreen.hidden = true;
+  startupError.hidden = true;
+  startupRetry.disabled = true;
+  submitButton.disabled = true;
+  if (await redirectIfLoggedIn()) return;
+  if (!primeraEntrada) {
+    loginScreen.hidden = false;
+    submitButton.disabled = false;
+    return;
+  }
+  const resultado = await prepararInicio({ storage: sessionStorage, cargarPerfiles: () => getJSON('/api/perfiles?testing=1') });
+  if (resultado.error) {
+    startupScreen.hidden = false;
+    loginScreen.hidden = true;
+    startupError.hidden = false;
+    startupRetry.disabled = false;
+    return;
+  }
+  perfilesDisponibles = resultado.perfiles;
+  await transicionarInicio(startupScreen, loginScreen, { indicador:document.querySelector('#startup-spinner'), formulario:form });
+  submitButton.disabled = false;
+}
 
 // Entrar siempre lleva primero al menú: con una sesión vigente no se muestra el login.
 async function redirectIfLoggedIn() {
-  if (!mayHaveSession()) return;
-  document.body.dataset.session = 'pending';
   try {
     if (await fetchSession()) {
       location.replace('/menu.html');
-      return;
+      return true;
     }
     forgetLogin();
-  } catch { /* Sin conexión: se muestra el formulario. */ }
+  } catch {
+    startupScreen.hidden = false;
+    startupError.hidden = false;
+    startupRetry.disabled = false;
+    return true;
+  }
   document.body.removeAttribute('data-session');
+  return false;
 }
 
 function showError(message, invalidFields = []) {
@@ -38,7 +114,7 @@ function missingFieldsError() {
 
 function setBusy(busy) {
   submitButton.disabled = busy;
-  submitButton.textContent = busy ? 'Ingresando…' : 'Ingresar';
+  submitButton.textContent = busy ? 'Ingresando…' : 'Continuar';
 }
 
 // El backend valida usuario y clave contra la base de datos y, si coinciden, crea la sesión.
@@ -55,7 +131,7 @@ async function enter() {
     });
     if (response.ok) {
       rememberLogin();
-      location.replace('/menu.html');
+      await deslizarHaciaMenu(loginScreen);
       return;
     }
     const { error } = await response.json().catch(() => ({}));
@@ -74,4 +150,16 @@ form.addEventListener('submit', event => {
 form.addEventListener('input', event => event.target.removeAttribute('aria-invalid'));
 
 addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
-redirectIfLoggedIn();
+startupRetry.addEventListener('click', prepararAcceso);
+document.querySelector('#show-testing-users').addEventListener('click', abrirUsuarios);
+document.querySelector('#login-recover').addEventListener('click', abrirUsuarios);
+usersRetry.addEventListener('click', abrirUsuarios);
+document.querySelector('#close-testing-users').addEventListener('click', () => usersDialog.close());
+for (const id of ['#login-contact','#login-help']) document.querySelector(id).addEventListener('click', () => aboutDialog.showModal());
+document.querySelector('#close-login-about').addEventListener('click', () => aboutDialog.close());
+try {
+  const motivo = sessionStorage.getItem('bancoagricola-motivo-salida');
+  sessionStorage.removeItem('bancoagricola-motivo-salida');
+  if (motivo === 'inactividad') showError('Tu sesión terminó por inactividad.');
+} catch { /* El acceso no depende del almacenamiento local. */ }
+prepararAcceso();

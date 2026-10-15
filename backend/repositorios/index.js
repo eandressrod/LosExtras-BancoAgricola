@@ -9,6 +9,10 @@ import { crearRepositorioEstadoEncuestaMock } from './estado-encuesta.mock.js';
 import { crearRepositorioEstadoEncuestaSupabase } from './estado-encuesta.supabase.js';
 import { crearRepositorioPreferenciasUsuario } from './preferencias.usuario.js';
 import { obtenerClienteSupabase } from '../config/supabase.js';
+import { crearRepositorioProductosMock } from './productos-menu.mock.js';
+import { crearRepositorioProductosSupabase } from './productos-menu.supabase.js';
+import { crearRepositorioUsuariosPruebaMock } from './usuarios-prueba.mock.js';
+import { crearRepositorioUsuariosPruebaSupabase } from './usuarios-prueba.supabase.js';
 
 
 let repositorioSupabase;
@@ -17,11 +21,25 @@ let cuentasSupabase;
 let estadoEncuestaSupabase;
 let preferenciasMock;
 let preferenciasSupabase;
+let productosMock;
+let productosSupabase;
+let usuariosPruebaMock;
+let usuariosPruebaSupabase;
+
+export function obtenerRepositorioUsuariosPrueba() {
+  if (fuenteDeDatos() === 'mock') return usuariosPruebaMock ??= crearRepositorioUsuariosPruebaMock();
+  return usuariosPruebaSupabase ??= crearRepositorioUsuariosPruebaSupabase(obtenerClienteSupabase());
+}
 
 function fuenteDeDatos() {
   const source = process.env.DATA_SOURCE || 'mock';
   if (source !== 'mock' && source !== 'supabase') throw new Error('DATA_SOURCE debe ser mock o supabase.');
   return source;
+}
+
+export function obtenerRepositorioProductosMenu() {
+  if (fuenteDeDatos() === 'mock') return productosMock ??= crearRepositorioProductosMock();
+  return productosSupabase ??= crearRepositorioProductosSupabase(obtenerClienteSupabase());
 }
 
 /** @returns {import('./contrato.js').RepositorioCatalogo} */

@@ -1,13 +1,15 @@
 // Datos ficticios locales (DATA_SOURCE=mock) para pruebas y desarrollo sin claves.
 // Reflejan las migraciones de supabase/; con DATA_SOURCE=supabase los usuarios se leen de la base.
-// Las claves de prueba se muestran en el login (public/index.html); aquí solo su hash.
+// Accesos ficticios: hash para validación y clave de prueba para el selector autorizado del login.
+import datosMenu from './datos-menu.json' with { type: 'json' };
 export const perfiles = [
-  { id: 'demo', nombre: 'Usuario', tipoTarjeta: 'basica', usuarioAcceso: 'demo',
+  { id: 'demo', clavePrueba:'demo123', promocionesAbiertas:false, nombre: 'Usuario', tipoTarjeta: 'basica', usuarioAcceso: 'demo',
     contrasenaHash: 'scrypt$M_MND_a1ICaA2pU6QnSwzA$BNLN7do9LjccyV3SmkWh7skSGfQrAhi_BVL7zD4nlFo' },
-  { id: 'A', nombre: 'Usuario A', tipoTarjeta: 'basica', usuarioAcceso: 'demo.basica',
+  { id: 'A', clavePrueba:'Basica2026', promocionesAbiertas:false, nombre: 'Usuario A', tipoTarjeta: 'basica', usuarioAcceso: 'demo.basica',
     contrasenaHash: 'scrypt$VW3bG4vYSj3byjANg1dRfw$jqBaaGdi3tPIScvjLFHTy8vMfktpLmCbRhjxMlPBcIE' },
-  { id: 'B', nombre: 'Usuario B', tipoTarjeta: 'black', usuarioAcceso: 'demo.black',
-    contrasenaHash: 'scrypt$_19-BdYxD0xaRE5syARVuQ$6rEmOsgu4UhK7kq2oJbz3anp2elDiUrX93jY8Um9B2k' }
+  { id: 'B', clavePrueba:'Black2026', promocionesAbiertas:false, nombre: 'Usuario B', tipoTarjeta: 'black', usuarioAcceso: 'demo.black',
+    contrasenaHash: 'scrypt$_19-BdYxD0xaRE5syARVuQ$6rEmOsgu4UhK7kq2oJbz3anp2elDiUrX93jY8Um9B2k' },
+  ...datosMenu.perfiles
 ];
 export const promociones = [
   { id: 'restaurante', merchant: 'Restaurante', category: 'Restaurantes', benefit: '10 % de descuento', description: 'Descuento en una comida.', payment: 'Tarjeta de débito', restrictions: 'Una compra por usuario. No acumulable con otras ofertas.' },

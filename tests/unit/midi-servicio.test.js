@@ -2,6 +2,27 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { crearServicioMidi } from '../../hola/servicio.js';
 import { generarPerfil, crearBorrador } from '../../hola/modelo.js';
+import { verificarContrasena } from '../../backend/servicios/contrasenas.js';
+
+test('Midi guarda la clave de prueba y el hash al crear/cambiar acceso, conserva ambos sin cambio y los borra al retirar acceso', async () => {
+  let ahora = 0;
+  const enviados = [];
+  const servicio = crearServicioMidi({ rpc: async (_, { cambios }) => { enviados.push(cambios[0].datos); return { data: {}, error: null }; } }, { reloj: () => ahora });
+  const crear = lote().find(c => c.tabla === 'perfiles');
+  await servicio.guardar('crear-acceso', [crear]);
+  assert.equal(enviados[0].clave_prueba, crear.datos.contrasena);
+  assert.ok(verificarContrasena(crear.datos.contrasena, enviados[0].contrasena_hash));
+  const editar = { ...crear, operacion: 'editar', version: '1', datos: { ...crear.datos, contrasena: 'NuevaPrueba2026' } };
+  ahora += 2001; await servicio.guardar('cambiar-acceso', [editar]);
+  assert.equal(enviados[1].clave_prueba, 'NuevaPrueba2026');
+  assert.ok(verificarContrasena('NuevaPrueba2026', enviados[1].contrasena_hash));
+  delete editar.datos.contrasena;
+  ahora += 2001; await servicio.guardar('conservar-acceso', [editar]);
+  assert.ok(!('clave_prueba' in enviados[2]) && !('contrasena_hash' in enviados[2]));
+  editar.datos.usuario_acceso = null;
+  ahora += 2001; await servicio.guardar('retirar-acceso', [editar]);
+  assert.equal(enviados[3].clave_prueba, null); assert.equal(enviados[3].contrasena_hash, null);
+});
 
 const lote = () => { const b = crearBorrador(); b.agregar(generarPerfil(() => 0)); return b.cambios(); };
 test('100 lecturas concurrentes y cambios de vista usan una sola consulta durante 30 segundos', async () => {
