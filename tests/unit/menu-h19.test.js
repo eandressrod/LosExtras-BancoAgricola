@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+test('menú integrado: tarjetas usan referencia enmascarada aunque exista número completo', async () => {
+  const { referenciaCuenta } = await import('../../public/js/menu-modelo.js');
+  assert.equal(referenciaCuenta({ tipo: 'Tarjeta de Crédito', numeroCompleto: null, numeroEnmascarado: '•••• 4821' }), '•••• 4821');
+  assert.equal(referenciaCuenta({ tipo: 'Tarjeta de Crédito', numeroCompleto: '3896681744', numeroEnmascarado: '•••• 1744' }), '•••• 1744');
+  assert.equal(referenciaCuenta({ tipo: 'Cuenta de ahorro', numeroCompleto: '8122104944', numeroEnmascarado: '•••• 4944' }), '8122104944');
+});
+
 test('H19 TDD: valida metas y calcula progreso sin modificar saldos', async () => {
   const { validarMeta, progresoMeta } = await import('../../backend/servicios/productos-menu.js');
   assert.deepEqual(validarMeta({ nombre: ' Viaje ', objetivo: 500, ahorrado: 125 }), { nombre: 'Viaje', objetivo: 500, ahorrado: 125, moneda: 'USD' });

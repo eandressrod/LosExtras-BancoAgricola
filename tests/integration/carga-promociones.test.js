@@ -1,23 +1,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import vm from 'node:vm';
-import { conIndicador } from '../../public/js/transiciones.js';
+import { abrirListado } from './pagina-promociones.js';
 
-const source=(await readFile(new URL('../../public/js/promociones.js',import.meta.url),'utf8')).replace(/^import[^\n]+\n/gm,'');
-test('Promociones muestra el aro mientras consulta y lo retira al resolver o fallar, sin repetir apertura al reintentar', async () => {
-  const elementos=new Map(); const get=s=>{if(!elementos.has(s))elementos.set(s,{hidden:false,textContent:'',className:'',replaceChildren(){},addEventListener(t,fn){this[t]=fn;}});return elementos.get(s);};
-  let resolver, rechazar; let peticion=new Promise((r,j)=>{resolver=r;rechazar=j;}); let aperturas=0, consultas=0;
-  const context={document:{querySelector:get,getElementById:()=>null},location:{search:'',hash:''},URLSearchParams,conIndicador,
-    requireSession:async()=>({id:'A'}), registrarAperturaPromociones:async()=>{aperturas++;},getJSON:()=>{consultas++;return peticion;}};
-  await vm.runInNewContext(`(async()=>{${source}\n})()`,context);
-  for(let i=0;i<4;i++)await Promise.resolve();
-  assert.equal(get('#promotions-loading').hidden,false); assert.equal(consultas,1);
-  resolver([]); for(let i=0;i<8;i++)await Promise.resolve();
-  assert.equal(get('#promotions-loading').hidden,true); assert.equal(get('#empty-preferences').hidden,false);
-  peticion=new Promise((r,j)=>{resolver=r;rechazar=j;});
-  const reintento=get('#retry').click(); assert.equal(get('#promotions-loading').hidden,false);
+test('Promociones conserva aro, filtros y tarjeta durante petición/reintento sin repetir apertura', async () => {
+  let respuesta = [];
+  const p = await abrirListado({ responder: () => respuesta });
+  const aro = p.obtener('#promotions-loading');
+  assert.equal(aro.hidden, true);
+  let resolver, rechazar;
+  respuesta = new Promise((r,j) => { resolver=r; rechazar=j; });
+  const consulta = p.chip('Compras').click();
+  assert.equal(aro.hidden, false);
+  assert.match(p.consultas.at(-1), /categoria=Compras&tarjeta=cta-a-3/);
+  resolver([]); await consulta;
+  assert.equal(aro.hidden, true);
+  respuesta = new Promise((r,j) => { resolver=r; rechazar=j; });
+  const reintento = p.obtener('#retry').click();
+  assert.equal(aro.hidden, false);
   rechazar(new Error('Sin conexión')); await reintento;
-  assert.equal(get('#promotions-loading').hidden,true); assert.equal(get('#retry').hidden,false);
-  assert.equal(get('#list-status').textContent,'Sin conexión'); assert.equal(aperturas,1); assert.equal(consultas,2);
+  assert.equal(aro.hidden, true);
+  assert.equal(p.obtener('#retry').hidden, false);
+  assert.equal(p.obtener('#list-status').textContent, 'Sin conexión');
+  assert.equal(p.pedidas.aperturas, 1);
+});
+
+test('una respuesta antigua no retira el aro de la selección más reciente', async () => {
+  let respuesta = [];
+  const p = await abrirListado({ responder: () => respuesta });
+  let finPrimera, finSegunda;
+  respuesta = new Promise(r => finPrimera=r);
+  const primera = p.chip('Compras').click();
+  respuesta = new Promise(r => finSegunda=r);
+  const segunda = p.chip('Restaurantes').click();
+  finPrimera([]); await primera;
+  assert.equal(p.obtener('#promotions-loading').hidden, false);
+  finSegunda([]); await segunda;
+  assert.equal(p.obtener('#promotions-loading').hidden, true);
 });

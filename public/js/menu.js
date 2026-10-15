@@ -1,5 +1,5 @@
 import { requireSession, forgetLogin, logout, cardName, getJSON } from './comun.js';
-import { compartirCuenta, partesSaldo } from './menu-modelo.js';
+import { compartirCuenta, partesSaldo, referenciaCuenta } from './menu-modelo.js';
 import { animarEntradaMenu } from './transiciones.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -88,16 +88,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) { mostrarError(error); }
   }
   function tarjetaCuenta(cuenta) {
+    const referencia = referenciaCuenta(cuenta);
     const card = elemento('article', 'product-card account-product');
     card.appendChild(imagen('cerdito_ahorro', 'account-icon'));
-    card.appendChild(elemento('h3', '', `${cuenta.numeroCompleto} ${cuenta.tipo}`));
+    card.appendChild(elemento('h3', '', `${referencia} ${cuenta.tipo}`));
     card.appendChild(elemento('p', 'product-subtitle', cuenta.nombre));
     card.appendChild(saldo(cuenta));
     card.appendChild(elemento('p', 'balance-label', 'Saldo disponible · ' + cuenta.moneda));
     const footer = elemento('div', 'account-footer');
-    footer.appendChild(elemento('span', '', 'N.º ' + cuenta.numeroCompleto));
-    const share = boton('Compartir número', () => abrirCompartir(cuenta), 'share-account');
-    share.appendChild(imagen('compartir')); footer.appendChild(share); card.appendChild(footer);
+    footer.appendChild(elemento('span', '', 'N.º ' + referencia));
+    if (cuenta.numeroCompleto && !/tarjeta/i.test(cuenta.tipo)) {
+      const share = boton('Compartir número', () => abrirCompartir(cuenta), 'share-account');
+      share.appendChild(imagen('compartir')); footer.appendChild(share);
+    }
+    card.appendChild(footer);
     return card;
   }
   function tarjetaProducto(tarjeta) {
