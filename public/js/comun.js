@@ -1,3 +1,4 @@
+import { actualizarSesion, iniciarInactividad, avisarCierre } from '../pwa/inactividad.js';
 export const categories = ['Restaurantes', 'Compras', 'Entretenimiento'];
 const CARD_NAMES = { basica: 'Básica', black: 'Black' };
 const LOGIN_HINT_KEY = 'los-extras-sesion-iniciada';
@@ -37,7 +38,7 @@ export function forgetCardSelections(storage = almacenSesion()) {
   } catch { /* Sin almacenamiento no hay elecciones que borrar. */ }
 }
 
-// Solo una pista local para no consultar la sesión en el login sin haber entrado.
+// Pista de presentación; nunca sustituye la consulta de sesión al backend.
 // La identidad nunca se guarda en el navegador: la conoce el backend por la cookie HttpOnly.
 export function rememberLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, '1'); forgetCardSelections(); }
 export function forgetLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, null); forgetCardSelections(); }
@@ -48,7 +49,9 @@ export async function fetchSession() {
   const response = await fetch('/api/auth/sesion', { cache: 'no-store' });
   if (response.status === 401) return null;
   if (!response.ok) throw new Error('No se pudo verificar la sesión.');
-  return (await response.json()).perfil;
+  const data = await response.json();
+  actualizarSesion(data.sesion);
+  return data.perfil;
 }
 
 /** Protege una página: sin sesión vuelve al login; con sesión muestra el perfil y la página. */
@@ -73,6 +76,7 @@ export async function requireSession() {
     badge.hidden = false;
   }
   document.body.removeAttribute('data-session');
+  iniciarInactividad();
   return profile;
 }
 
@@ -96,6 +100,7 @@ export async function logout() {
   const response = await fetch('/api/auth/logout', { method: 'POST' }).catch(() => null);
   if (!response?.ok) throw new Error('No se pudo cerrar la sesión. Revisa tu conexión e intenta de nuevo.');
   forgetLogin();
+  avisarCierre();
 }
 
 // Preferencias locales separadas por perfil: el otro perfil no hereda la encuesta.

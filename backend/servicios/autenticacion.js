@@ -4,6 +4,15 @@ import { generarHash, verificarContrasena } from './contrasenas.js';
 import { datosDeToken } from './sesion.js';
 
 const LONGITUD_MAXIMA = 100;
+/** La actividad se valida en persistencia; leer una sesión nunca prolonga su plazo. */
+export async function estadoDeSesion(token, repo, renovar = false) {
+  const sesion = datosDeToken(token);
+  if (!sesion || await repo.sesionRevocada(sesion.id)) return null;
+  const estado = await repo.estadoActividad(sesion, renovar);
+  if (!estado) return null;
+  const perfil = await repo.buscarPerfilPorId(sesion.perfilId);
+  return perfil ? { perfil, sesion: { id: sesion.id, ...estado, expiraEn: sesion.expiraEn * 1000 } } : null;
+}
 const ERROR_CAMPOS = 'Escribe tu usuario y tu clave.';
 // Mismo mensaje para usuario inexistente y clave errónea: no revela qué dato falló.
 const ERROR_CREDENCIALES = 'Usuario o clave incorrectos. Revisa los usuarios de prueba.';
@@ -37,9 +46,7 @@ export async function iniciarSesion(cuerpo, repo) {
  * @param {import('../repositorios/contrato.js').RepositorioAccesos} repo
  */
 export async function perfilDeSesion(token, repo) {
-  const sesion = datosDeToken(token);
-  if (!sesion || await repo.sesionRevocada(sesion.id)) return null;
-  return repo.buscarPerfilPorId(sesion.perfilId);
+  return (await estadoDeSesion(token, repo))?.perfil ?? null;
 }
 
 /** Revoca solo la sesión actual. Un fallo del repositorio impide anunciar su cierre. */

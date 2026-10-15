@@ -1,14 +1,18 @@
 import { listarPerfiles } from '../backend/perfiles.js';
+import { obtenerRepositorioUsuariosPrueba } from '../backend/repositorios/index.js';
+import { perfilDePrueba } from '../backend/servicios/usuarios-prueba.js';
+import { responderJson, metodoNoPermitido } from '../backend/http.js';
 
-export default {
+export function crearHandlerPerfiles(repos = { publicos:listarPerfiles, pruebas:obtenerRepositorioUsuariosPrueba }) { return {
   async fetch(request) {
-    if (request.method !== 'GET') {
-      return Response.json({ error: 'Método no permitido.' }, { status: 405, headers: { Allow: 'GET' } });
-    }
+    if (request.method !== 'GET') return metodoNoPermitido('GET');
     try {
-      return Response.json(await listarPerfiles());
+      const testing = new URL(request.url).searchParams.get('testing') === '1';
+      const datos = testing ? (await repos.pruebas().listar()).map(perfilDePrueba) : await repos.publicos();
+      return responderJson(datos);
     } catch {
-      return Response.json({ error: 'No se pudieron cargar los perfiles.' }, { status: 503 });
+      return responderJson({ error: 'No se pudieron cargar los perfiles.' }, 503);
     }
   }
-};
+}; }
+export default crearHandlerPerfiles();

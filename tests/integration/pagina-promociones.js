@@ -5,6 +5,8 @@ import vm from 'node:vm';
 import * as filtro from '../../public/js/filtro-categoria.js';
 import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
+import { conIndicador } from '../../public/js/transiciones.js';
+import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
 
 export const CATEGORIAS = ['Restaurantes', 'Compras', 'Entretenimiento'].map((id, orden) => ({ id, nombre: id, orden }));
 export const TARJETAS = {
@@ -64,6 +66,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     requireSession: async () => ({ id: perfil, nombre: NOMBRES[perfil], tipoTarjeta: perfil === 'B' ? 'black' : 'basica' }),
     almacenSesion: () => sesion,
     cardName,
+    conIndicador, destinoEntradaPromociones,
     ...vista, ...filtro, ...tarjeta
   };
   return { obtener, history, contexto, elementos, sesion };
@@ -87,11 +90,12 @@ export async function abrirListado(opciones = {}) {
     return { querySelector(selector) { if (!partes.has(selector)) partes.set(selector, elemento()); return partes.get(selector); } };
   } } });
   const consultas = [];
-  const pedidas = { categorias: 0, tarjetas: 0 };
+  const pedidas = { categorias: 0, tarjetas: 0, aperturas: 0 };
   const categorias = opciones.categorias ?? (() => CATEGORIAS);
   const tarjetas = opciones.tarjetas ?? (() => TARJETAS[perfil] ?? []);
   const responder = opciones.responder ?? (url => PROMOS[parametro(url, 'categoria') ?? 'todas']);
   Object.assign(nav.contexto, {
+    registrarAperturaPromociones: async () => { pedidas.aperturas++; },
     document: {
       querySelector: nav.obtener,
       querySelectorAll: selector => selector === '.filter-chip' ? [todas] : [],

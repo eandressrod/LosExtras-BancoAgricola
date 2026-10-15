@@ -20,9 +20,23 @@ function cambiosPerfil(filas) {
   return b.cambios().map(c => c.tabla === 'perfiles' ? { ...c, datos: { ...Object.fromEntries(Object.entries(c.datos).filter(([k]) => k !== 'contrasena')), contrasena_hash: generarHash(c.datos.contrasena) } } : c);
 }
 
+test('login conserva claves de prueba y primera apertura independiente; Midi crea flag false y guarda claves', async () => {
+  const {rows}=await db.query("select clave_prueba,promociones_abiertas from perfiles where id='A'");
+  assert.equal(rows[0].clave_prueba,'Basica2026'); assert.equal(rows[0].promociones_abiertas,false);
+  const filas=generarPerfil(()=>0); const cambios=cambiosPerfil(filas);
+  cambios.find(c=>c.tabla==='perfiles').datos.clave_prueba='123';
+  const datos=await guardar(cambios);
+  const creado=datos.perfiles.find(p=>p.id===filas.perfiles[0].id);
+  assert.equal(creado.clave_prueba,'123'); assert.equal(creado.promociones_abiertas,false);
+  await db.query('update perfiles set promociones_abiertas=true where id=$1',[creado.id]);
+  assert.equal((await db.query('select encuesta_completada from preferencias_usuario where usuario_id=$1',[creado.id])).rows[0].encuesta_completada,false);
+  const actual=(await leer()).perfiles.find(p=>p.id===creado.id);
+  await guardar([{tabla:'perfiles',operacion:'eliminar',clave:{id:actual.id},version:actual._version,dependencias:actual._dependencias}]);
+});
+
 test('lectura conjunta devuelve seis tablas, versiones y dependencias sin hashes ni sesiones', async () => {
   const datos = await leer();
-  assert.equal(datos.perfiles.length, 3);
+  assert.equal(datos.perfiles.length, 6);
   assert.ok(datos.perfiles.every(p => p._version && p._dependencias && !('contrasena_hash' in p)));
   assert.equal(datos.perfiles.find(p => p.id === 'A')._conteos.cuentas, 4); // H16: dos cuentas de ahorro y dos tarjetas
   assert.ok(!('sesiones_revocadas' in datos));
