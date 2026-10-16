@@ -1,0 +1,17 @@
+{
+  "versiones": [
+    { "pr": 1, "commit": "41bafac6695db3d39743fed0139da105b48592c7", "migracion": "20261008231036", "regreso": false },
+    { "pr": 2, "commit": "02a3d77b5181d092ec22ba217468e7e4d45cee00", "migracion": "20261009042850", "regreso": false },
+    { "pr": 3, "commit": "cf6a1581f4849e8a6222e83a2a435e97f7fabbe8", "migracion": "20261009232449", "regreso": false },
+    { "pr": 4, "commit": "16b144568ec983184f3b056e42566ce17533f292", "migracion": "20261010055053", "regreso": false },
+    { "pr": 5, "commit": "991689be9dd9751658696f2c2bacd61db9ade1ec", "migracion": "20261010124614", "regreso": false },
+    { "pr": 6, "commit": "66229e359fb5fb66ca0348c5c481287f896cc577", "migracion": "20261010124614", "regreso": false },
+    { "pr": 7, "commit": "80845594538fd08fa2fb6e049752f6edd23a9371", "migracion": "20261010124614", "regreso": false },
+    { "pr": 8, "commit": "21bcfb40084060c1d9627b7b74588328691adbd3", "migracion": "20261014024012", "regreso": false },
+    { "pr": 9, "commit": "91f7421407ceb53c2ec34e3c06ee426637f08027", "migracion": "20261014024012", "regreso": false },
+    { "pr": 10, "commit": "274d42b315905e3d2889cf2a47accf6eb6ee56b6", "migracion": "20261014024012", "regreso": false },
+    { "pr": 11, "commit": "d8b2de9e2c1166e58484bb3b2e4f0beb5437fec8", "migracion": "20261014034922", "regreso": false },
+    { "pr": 12, "commit": "dfb3f152b3c9784e33292658db30a4e4181b4a58", "migracion": "20261015014018", "regreso": false },
+    { "pr": 13, "commit": "451dbea1becb019e379b1adbcb4c275699fb8333", "migracion": "20261016015547", "regreso": true }
+  ]
+}
