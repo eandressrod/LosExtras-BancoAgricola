@@ -193,6 +193,17 @@ Para crear el archivo de una nueva migración desde el repo:
 npx --no-install supabase migration new nombre_del_cambio
 ```
 
+### Versiones, regreso y respaldo de datos
+
+Los datos viven siempre en el esquema de la última migración; las migraciones solo avanzan y nunca se revierten. Volver a una versión anterior de producción es únicamente el rollback de Vercel: la base no se toca y conserva los datos escritos por cualquier versión.
+
+- **Manifiesto:** `supabase/versiones.json` asocia cada PR fusionado en main con su SHA de merge y la última migración que exige. Al fusionar un PR, añadir su entrada al final. `regreso: true` marca las versiones a las que se garantiza volver; PR 1–12 quedan como historial con `false` porque PR 13 reescribió cuentas/tarjetas de forma incompatible.
+- **Expand/contract:** mientras la versión en producción sea destino de regreso, una migración nueva solo puede agregar (tablas, columnas con default, constraints que esa versión ya cumpla). Quitar, renombrar o regenerar datos se hace en una migración posterior, cuando la versión que lo necesitaba deja de ser destino de regreso.
+- **Prueba de regreso:** `npm run test:regreso` extrae el código de la última versión del manifiesto, sustituye sus migraciones por las actuales y ejecuta su suite. Si falla, la migración nueva rompe el regreso. Requiere el historial de git (CI usa `fetch-depth: 0`) y usa las dependencias instaladas del proyecto actual.
+- **Foto de datos:** antes de aplicar una migración a la base compartida, ejecutar el workflow manual «Respaldo de datos» de GitHub Actions o `npm run respaldo -- crear`. La foto se guarda en el bucket privado `respaldos` de Supabase Storage (`<migración>/<fecha>-<commit>.json`), visible desde el Dashboard; el script crea el bucket si no existe. El workflow necesita los secrets `SUPABASE_URL` y `SUPABASE_SECRET_KEY` del repositorio. Las tablas `sesiones_*` no se respaldan.
+- **Restaurar:** `npm run respaldo -- listar` y `npm run respaldo -- restaurar <ruta>` simulan; con `--confirmar` hacen upsert por clave primaria en orden de dependencias. Solo se acepta una foto de la misma migración que la última local, que debe coincidir con la aplicada en la base. No borra filas creadas después de la foto.
+- El repositorio es público: no guardar fotos como artifacts ni en el repo, y no imprimir filas en los registros.
+
 Guardar en Supabase catálogo y elecciones persistentes por usuario. Filtro, búsqueda, orden temporal, navegación, borradores, zoom/centro, ubicación del visitante y distancias quedan locales. H9 conserva solo un último identificador local por perfil, sin historial. Las operaciones privadas de usuario deben validar sesión y propietario en backend; la clave privada no valida la identidad del visitante.
 
 ## 6. Vercel, cuando sea necesario

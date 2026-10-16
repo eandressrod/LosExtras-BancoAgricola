@@ -1,6 +1,7 @@
 node_modules/
 .idea/
 .vercel/
+.regreso/
 .env
 .env.*
 !.env.example
