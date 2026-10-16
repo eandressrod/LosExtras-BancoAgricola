@@ -22,6 +22,58 @@ function vigilarErrores(page) {
   return errores;
 }
 
+for (const movimiento of ['no-preference', 'reduce']) {
+  test(`login pasa del botón al menú sin carga intermedia (${movimiento})`, async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await page.emulateMedia({ reducedMotion:movimiento });
+    await page.addInitScript(() => {
+      const animate = Element.prototype.animate;
+      Element.prototype.animate = function (...args) {
+        if (this.matches('.app-wrapper')) sessionStorage.setItem('qa-slide-menu', '1');
+        return animate.apply(this, args);
+      };
+      const observar = () => {
+        if (sessionStorage.getItem('qa-acceso') === '1') {
+          for (const id of ['startup-spinner', 'menu-entry-loading']) {
+            const nodo = document.getElementById(id);
+            if (nodo?.getBoundingClientRect().height && getComputedStyle(nodo).visibility === 'visible') {
+              sessionStorage.setItem('qa-carga-intermedia', id);
+            }
+          }
+        }
+        requestAnimationFrame(observar);
+      };
+      requestAnimationFrame(observar);
+    });
+    let aceptarLogin, entregarProductos;
+    const login = new Promise(resolve => { aceptarLogin = resolve; });
+    const productos = new Promise(resolve => { entregarProductos = resolve; });
+    await page.route('**/api/auth/login', async ruta => { await login; await ruta.continue(); });
+    await page.route('**/api/menu', async ruta => { await productos; await ruta.continue(); });
+    await page.goto(origen() + '/');
+    const formulario = page.locator('#login-form');
+    await expect(formulario).toBeVisible({ timeout:15000 });
+    await formulario.locator('[name="username"]').fill('demo.basica');
+    await formulario.locator('[name="password"]').fill('Basica2026');
+    await page.evaluate(() => sessionStorage.setItem('qa-acceso', '1'));
+    await formulario.locator('[type="submit"]').click();
+    await expect(formulario.locator('[type="submit"]')).toHaveText('Ingresando…');
+    await expect(formulario).toBeVisible();
+    await expect(page.locator('#startup-spinner')).toBeHidden();
+    aceptarLogin();
+    await expect(page).toHaveURL(/\/menu\.html/);
+    await expect(page.locator('.app-wrapper')).toBeInViewport();
+    await expect(page.locator('#menu-entry-loading')).toBeHidden();
+    await expect(page.locator('#menu-resume-loading')).toBeHidden();
+    await expect(page.locator('#menu-loading')).toBeVisible();
+    entregarProductos();
+    await expect(page.locator('#menu-content')).toBeVisible({ timeout:15000 });
+    expect(await page.evaluate(() => sessionStorage.getItem('qa-carga-intermedia'))).toBeNull();
+    expect(await page.evaluate(() => sessionStorage.getItem('qa-slide-menu'))).toBe(movimiento === 'reduce' ? null : '1');
+    expect(errores, errores.join('\n')).toEqual([]);
+  });
+}
+
 test('perfil A completa el camino principal de Promociones sin errores', async ({ page }) => {
   const errores = vigilarErrores(page);
 
