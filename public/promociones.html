@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Para ti · Los Extras</title>
+    <script src="/js/arranque.js"></script>
+    <link rel="stylesheet" href="/css/inicio.css">
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
     <link rel="stylesheet" href="/css/carga.css">
     <link rel="stylesheet" href="/css/promociones.css">
+    <link rel="stylesheet" href="/css/guardadas.css">
     <script type="module" src="/js/promociones.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -21,6 +24,7 @@
     <script type="module" src="/pwa/pwa.js"></script>
   </head>
   <body class="promotions-page" data-session="pending">
+    <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso a promociones"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <div class="header-row">
@@ -32,6 +36,7 @@
       <h1>Para ti</h1>
       <nav class="module-nav" aria-label="Promociones">
         <a href="/promociones.html" aria-current="page">Para ti</a>
+        <a href="/guardadas.html">Guardadas</a>
         <a href="/preferencias.html">Mis preferencias</a>
       </nav>
       <!-- H16: tarjetas propias. El selector solo aparece con dos o más tarjetas. -->
@@ -40,16 +45,20 @@
         <div id="card-options" class="card-options" role="group" aria-labelledby="card-choice-label"></div>
       </section>
       <p id="card-single" class="card-single" hidden></p>
+      <!-- H17: Disponibles hoy; filtro temporal que no cambia las preferencias guardadas. -->
+      <button id="today-filter" type="button" class="today-filter" aria-pressed="false">Disponibles hoy</button>
       <!-- H5: filtro temporal; no cambia las preferencias guardadas. Las categorías llegan de /api/categorias. -->
       <div id="category-filter" class="category-filter" role="group" aria-label="Filtrar por categoría">
         <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
       </div>
       <p id="list-status" class="note" role="status"></p>
+      <p id="saved-status" class="error" role="alert"></p>
       <div id="promotions-loading" class="module-loading" role="status" aria-label="Cargando promociones" hidden><svg class="loading-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="147 22.65" transform="rotate(230 32 32)"/></svg><span>CARGANDO...</span></div>
       <button id="retry" class="secondary" hidden>Reintentar</button>
       <div id="cards" class="promo-list"></div>
       <div class="empty-actions">
         <button id="show-all" type="button" class="secondary" hidden>Ver todas</button>
+        <button id="exit-today" type="button" class="secondary" hidden>Quitar Disponibles hoy</button>
         <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>
       </div>
       <template id="promotion-card">
@@ -66,7 +75,10 @@
             <p class="promo-description"></p>
             <p class="promo-applicability"></p>
             <p class="promo-validity"></p>
+            <p class="promo-today" hidden></p>
             <ul class="promo-conditions"></ul>
+            <button type="button" class="secondary guardar-promo">Guardar</button>
+            <p class="error guardar-error" role="alert"></p>
             <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
           </div>
         </a>

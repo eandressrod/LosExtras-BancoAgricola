@@ -2,17 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as inicio from '../../public/js/inicio.js';
 import { readFile } from 'node:fs/promises';
-import vm from 'node:vm';
 
-test('el arranque del HTML decide ocultar carga antes de descargar el módulo, solo con visita o pista de sesión', async () => {
+test('el HTML conserva bienvenida visible antes de descargar módulos, también con una visita o sesión previa', async () => {
   const html = await readFile(new URL('../../public/index.html', import.meta.url), 'utf8');
-  const bootstrap = html.match(/<script>([\s\S]*?)<\/script>/)[1];
-  for (const [visitada, sesion, esperado] of [[true,false,'directo'],[false,true,'directo'],[false,false,undefined]]) {
-    const raiz = {dataset:{}};
-    vm.runInNewContext(bootstrap, {document:{documentElement:raiz},sessionStorage:{getItem:()=>visitada?'1':null},localStorage:{getItem:()=>sesion?'1':null}});
-    assert.equal(raiz.dataset.inicio,esperado);
-  }
-  assert.doesNotThrow(() => vm.runInNewContext(bootstrap, {document:{documentElement:{dataset:{}}},sessionStorage:{getItem(){throw new Error('Bloqueado');}}}));
+  assert.doesNotMatch(html, /dataset\.inicio\s*=\s*['"]directo/);
+  assert.match(html, /id="startup-screen"[^>]*role="status"/);
+  assert.match(html, /<main class="login" hidden>/);
 });
 
 test('transición conserva la carga hasta terminar el fundido y bloquea acceso durante la animación', async () => {
@@ -20,9 +15,12 @@ test('transición conserva la carga hasta terminar el fundido y bloquea acceso d
   const animaciones = [];
   const carga = { hidden:false, animate(fotogramas, opciones) { animaciones.push({fotogramas,opciones}); return {finished:fin.promesa, cancel() {}}; } };
   const acceso = { hidden:true, inert:false, animate: carga.animate };
-  const transicion = inicio.transicionarInicio(carga, acceso);
+  const indicador = {hidden:true};
+  const transicion = inicio.transicionarInicio(carga, acceso, {indicador,esperar:async()=>{}});
   assert.equal(carga.hidden, false); assert.equal(acceso.hidden, false); assert.equal(acceso.inert, true);
   assert.equal(animaciones.length, 2); assert.equal(animaciones[0].opciones.duration, 260);
+  assert.equal(indicador.hidden,false);
+  assert.ok(animaciones.every(a=>a.fotogramas.every(f=>f.transform===undefined)));
   fin.resolver(); await transicion;
   assert.equal(carga.hidden, true); assert.equal(acceso.inert, false);
 });
@@ -42,6 +40,15 @@ test('cancelar la animación no deja la carga bloqueada ni el formulario inerte'
   assert.equal(carga.hidden,true); assert.equal(acceso.inert,false);
 });
 
+test('una carga cancelada por segundo plano no vuelve a revelar el formulario al terminar', async () => {
+  const fin=pendiente();let vigente=true;
+  const carga={hidden:false,animate(){return {finished:fin.promesa,cancel(){}};}};
+  const acceso={hidden:true,animate:carga.animate};
+  const transicion=inicio.transicionarInicio(carga,acceso,{vigente:()=>vigente});
+  vigente=false;acceso.hidden=true;fin.resolver();await transicion;
+  assert.equal(carga.hidden,false);assert.equal(acceso.hidden,true);
+});
+
 function almacenamiento(inicial = null) {
   let valor = inicial;
   return { getItem() { return valor; }, setItem(_, nuevo) { valor = nuevo; } };
@@ -55,11 +62,22 @@ function pendiente() {
 test('el aro se muestra en la cabecera del login con formulario oculto, después del splash', async () => {
   const fin=pendiente();
   const carga={hidden:false}; const acceso={hidden:true}; const indicador={hidden:true}; const formulario={hidden:false};
-  const transicion=inicio.transicionarInicio(carga,acceso,{indicador,formulario,esperar:ms=>{assert.equal(ms,1000);return fin.promesa;}});
+  const transicion=inicio.transicionarInicio(carga,acceso,{indicador,formulario,esperar:ms=>{assert.equal(ms,180);return fin.promesa;}});
   await Promise.resolve();
   assert.equal(carga.hidden,true); assert.equal(indicador.hidden,false); assert.equal(acceso.hidden,false); assert.equal(formulario.hidden,true);
   fin.resolver(); await transicion;
   assert.equal(indicador.hidden,true); assert.equal(acceso.hidden,false); assert.equal(formulario.hidden,false); assert.equal(acceso.inert,false);
+});
+
+test('el círculo espera los datos y se retira al formulario sin una animación adicional', async () => {
+  const datos=pendiente();let animaciones=0;
+  const animate=()=>{animaciones++;return {finished:Promise.resolve(),cancel(){}};};
+  const carga={hidden:false,animate},acceso={hidden:true,animate},indicador={hidden:true},formulario={hidden:false};
+  const transicion=inicio.transicionarInicio(carga,acceso,{indicador,formulario,preparar:()=>datos.promesa,esperar:async()=>{}});
+  for(let i=0;i<8;i++)await Promise.resolve();
+  assert.equal(formulario.hidden,true);assert.equal(indicador.hidden,false);
+  datos.resolver(['listo']);assert.deepEqual(await transicion,['listo']);
+  assert.equal(formulario.hidden,false);assert.equal(indicador.hidden,true);assert.equal(animaciones,2);
 });
 
 test('carga inicial espera 2000 ms aunque los perfiles lleguen antes y marca solo al terminar', async () => {

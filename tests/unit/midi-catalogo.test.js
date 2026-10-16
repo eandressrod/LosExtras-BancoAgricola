@@ -3,6 +3,18 @@ import assert from 'node:assert/strict';
 import { generarPerfil, crearBorrador, validarCambios } from '../../hola/modelo.js';
 import { filaNueva, tablas } from '../../hola/schema.js';
 
+test('los nuevos perfiles de Midi generan solo cuentas bancarias con número completo',()=>{
+  const datos=generarPerfil(()=>0.99);
+  assert.ok(datos.cuentas.length>0);
+  assert.ok(datos.cuentas.every(c=>!/tarjeta/i.test(c.tipo)&&/^[1-9]\d{9}$/.test(c.numero_completo)));
+});
+
+test('generar varios perfiles sin instantánea externa tampoco repite números de cuenta',()=>{
+  const a=generarPerfil(()=>0.99),b=generarPerfil(()=>0.99);
+  const numeros=[...a.cuentas,...b.cuentas].map(c=>c.numero_completo);
+  assert.equal(new Set(numeros).size,numeros.length);
+});
+
 test('perfiles rápidos usan identificadores cortos y evitan datos existentes y borradores', () => {
   const existentes = { perfiles: [{ id: 'usuario-001', usuario_acceso: 'usuario-002' }], cuentas: [{ id: 'cuenta-001' }] };
   const a = generarPerfil(() => 0.99, existentes);

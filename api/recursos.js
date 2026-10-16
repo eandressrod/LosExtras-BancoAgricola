@@ -1,10 +1,11 @@
 import mensajes from '../backend/handlers/mensajes.js';
 import metas from '../backend/handlers/metas.js';
 import apertura from '../backend/handlers/promociones-apertura.js';
+import guardadas from '../backend/handlers/guardadas.js';
 import { responderJson } from '../backend/http.js';
 
-// Una entrada de Vercel para tres rutas, conservando sus handlers y contratos.
-export function crearHandlerRecursos(rutas = { mensajes, metas, 'promociones-apertura': apertura }) {
+// Una entrada de Vercel para varias rutas, conservando sus handlers y contratos.
+export function crearHandlerRecursos(rutas = { mensajes, metas, 'promociones-apertura': apertura, guardadas }) {
   return { async fetch(request) {
     const url = new URL(request.url);
     const recurso = url.pathname === '/api/recursos'

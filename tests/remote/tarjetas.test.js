@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { obtenerRepositorioCuentas } from '../../backend/repositorios/index.js';
+import { obtenerRepositorioProductosMenu } from '../../backend/repositorios/index.js';
 import { tarjetasPropias, elegirTarjeta } from '../../backend/servicios/tarjetas.js';
 
 // H16 con datos reales (solo lectura). Requiere la migración tarjetas_propias aplicada en Supabase.
 test('H16 en Supabase A tiene Básica y Black, B y demo una sola, y nadie puede elegir una tarjeta ajena', async () => {
   assert.equal(process.env.DATA_SOURCE, 'supabase');
-  const repo = obtenerRepositorioCuentas();
+  const repo = obtenerRepositorioProductosMenu();
   const de = {};
-  for (const perfil of ['A', 'B', 'demo']) de[perfil] = tarjetasPropias(await repo.listarPorPerfil(perfil));
+  for (const perfil of ['A', 'B', 'demo']) de[perfil] = tarjetasPropias(await repo.listarTarjetas(perfil));
   assert.deepEqual(de.A.map(tarjeta => tarjeta.tipoTarjeta), ['basica', 'black']);
   assert.deepEqual(de.B.map(tarjeta => tarjeta.tipoTarjeta), ['black']);
   assert.deepEqual(de.demo.map(tarjeta => tarjeta.tipoTarjeta), ['basica']);

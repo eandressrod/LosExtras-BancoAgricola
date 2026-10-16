@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Guardadas · Los Extras</title>
+    <script src="/js/arranque.js"></script>
+    <link rel="stylesheet" href="/css/inicio.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/fuentes.css">
+    <link rel="stylesheet" href="/css/carga.css">
+    <link rel="stylesheet" href="/css/promociones.css">
+    <link rel="stylesheet" href="/css/guardadas.css">
+    <script type="module" src="/js/guardadas.js"></script>
+    <link rel="manifest" href="/pwa/manifest.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
+    <link rel="icon" type="image/png" sizes="192x192" href="/pwa/icono-192.png?v=sv-1">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Bancoagrícola">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="stylesheet" href="/pwa/pwa.css">
+    <script type="module" src="/pwa/pwa.js"></script>
+  </head>
+  <body class="saved-page" data-session="pending">
+    <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
+    <header>
+      <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
+      <div class="header-row">
+        <p>Los Extras</p>
+        <p id="session-profile" class="session-profile" hidden></p>
+      </div>
+    </header>
+    <main>
+      <h1>Guardadas</h1>
+      <nav class="module-nav" aria-label="Promociones">
+        <a href="/promociones.html">Para ti</a>
+        <a href="/guardadas.html" aria-current="page">Guardadas</a>
+        <a href="/preferencias.html">Mis preferencias</a>
+      </nav>
+      <p id="list-status" class="note" role="status">Cargando guardadas…</p>
+      <button id="retry" class="secondary" type="button" hidden>Reintentar</button>
+      <div id="cards" class="promo-list"></div>
+      <p id="empty-none" hidden>No tienes promociones guardadas.</p>
+      <p id="empty-filter" hidden>Ninguna promoción guardada aplica ahora a tu tarjeta.</p>
+      <p id="empty-action" hidden><a class="button secondary" href="/promociones.html">Ver el listado</a></p>
+      <template id="promotion-card">
+        <div class="promo-card-wrap">
+          <a class="promo-card">
+            <div class="promo-media">
+              <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
+              <div class="merchant-mark"><img class="merchant-logo" alt="" loading="lazy"></div>
+              <span class="promo-exclusive" hidden></span>
+            </div>
+            <div class="promo-content">
+              <p class="promo-category"></p>
+              <h2></h2>
+              <p class="promo-benefit"></p>
+              <p class="promo-description"></p>
+              <p class="promo-applicability"></p>
+              <p class="promo-validity"></p>
+              <ul class="promo-conditions"></ul>
+              <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
+            </div>
+          </a>
+          <button type="button" class="secondary guardar-promo">Quitar</button>
+          <p class="error guardar-error" role="alert"></p>
+        </div>
+      </template>
+      <div class="actions"><a class="button secondary" href="/menu.html">Volver al menú</a></div>
+    </main>
+    <noscript>Activa JavaScript para usar la aplicación.</noscript>
+  </body>
+</html>

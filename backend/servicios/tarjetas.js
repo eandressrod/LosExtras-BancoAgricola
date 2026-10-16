@@ -1,51 +1,23 @@
-// H16: las tarjetas propias son las cuentas de tipo tarjeta del dueño de la sesión.
-// Su segmento (Básica / Black) define qué beneficios aplican; los saldos no salen de aquí.
-const TIPO_POR_SEGMENTO = { 'Básica': 'basica', 'Black': 'black' };
-const NOMBRE_POR_TIPO = { basica: 'Tarjeta Básica', black: 'Tarjeta Black' };
-
-/** Tarjetas del usuario, en el orden de sus cuentas, con tipo de beneficio y referencia enmascarada. */
-export function tarjetasPropias(cuentas) {
-  return cuentas
-    .filter(cuenta => /tarjeta/i.test(cuenta.tipo) && TIPO_POR_SEGMENTO[cuenta.segmento])
-    .map(cuenta => ({
-      id: cuenta.id,
-      tipoTarjeta: TIPO_POR_SEGMENTO[cuenta.segmento],
-      nombre: cuenta.nombre,
-      numeroEnmascarado: cuenta.numeroEnmascarado
-    }));
+// Menú y Promociones consumen tarjetas_usuario; no se inventan tarjetas a partir del perfil.
+export function tarjetasPropias(tarjetas) {
+  return tarjetas.filter(t => t.cuentaId && ['basica','black'].includes(t.tipoTarjeta))
+    .map(t => ({ id:t.id, cuentaId:t.cuentaId, tipoTarjeta:t.tipoTarjeta,
+      nombre:t.producto ? 'Tarjeta de ' + t.producto.modalidad + ' ' + t.producto.nombre : t.nombre,
+      numeroEnmascarado:t.numeroEnmascarado }));
 }
+export function tarjetasDelUsuario(tarjetas) { return tarjetasPropias(tarjetas); }
 
-/**
- * Tarjetas con las que el usuario puede consultar beneficios. Un perfil sin cuentas de tarjeta
- * (por ejemplo, uno creado en Midi) conserva la tarjeta de su perfil, como antes de H16.
- */
-export function tarjetasDelUsuario(cuentas, perfil) {
-  const propias = tarjetasPropias(cuentas);
-  if (propias.length || !NOMBRE_POR_TIPO[perfil.tipoTarjeta]) return propias;
-  return [{ id: null, tipoTarjeta: perfil.tipoTarjeta, nombre: NOMBRE_POR_TIPO[perfil.tipoTarjeta], numeroEnmascarado: null }];
-}
-
-/**
- * Tarjeta con la que se consultan beneficios. Sin `?tarjeta` se usa la del perfil (o la primera propia).
- * Solo se acepta un identificador de las tarjetas del propio usuario.
- * @param {ReturnType<typeof tarjetasPropias>} tarjetas
- * @param {URLSearchParams} parametros
- * @param {'basica' | 'black'} tipoDelPerfil
- * @returns {{ ok: true, tarjeta: object | null } | { ok: false, motivo: 'ajena' | 'invalida' }}
- */
+/** La elección siempre pertenece a las tarjetas del propietario verificado. */
 export function elegirTarjeta(tarjetas, parametros, tipoDelPerfil) {
   const valores = parametros.getAll('tarjeta');
-  if (valores.length === 0) {
-    return { ok: true, tarjeta: tarjetas.find(tarjeta => tarjeta.tipoTarjeta === tipoDelPerfil) ?? tarjetas[0] ?? null };
-  }
-  if (valores.length > 1 || !valores[0]) return { ok: false, motivo: 'invalida' };
-  const tarjeta = tarjetas.find(item => item.id === valores[0]);
-  return tarjeta ? { ok: true, tarjeta } : { ok: false, motivo: 'ajena' };
+  if (valores.length === 0) return { ok:true, tarjeta:tarjetas.find(t => t.tipoTarjeta === tipoDelPerfil) ?? tarjetas[0] ?? null };
+  if (valores.length > 1 || !valores[0]) return { ok:false, motivo:'invalida' };
+  const tarjeta = tarjetas.find(t => t.id === valores[0]);
+  return tarjeta ? { ok:true, tarjeta } : { ok:false, motivo:'ajena' };
 }
 
-/** Respuesta HTTP para una elección rechazada: un ID ajeno se trata igual que uno inexistente. */
 export function rechazoDeTarjeta(eleccion) {
   return eleccion.motivo === 'ajena'
-    ? { cuerpo: { error: 'Tarjeta no encontrada.' }, estado: 404 }
-    : { cuerpo: { error: 'Tarjeta no válida.' }, estado: 400 };
+    ? { cuerpo:{error:'Tarjeta no encontrada.'},estado:404 }
+    : { cuerpo:{error:'Tarjeta no válida.'},estado:400 };
 }

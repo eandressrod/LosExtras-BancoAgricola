@@ -2,11 +2,17 @@ import { randomUUID } from 'node:crypto';
 import fixtures from '../datos-menu.json' with { type: 'json' };
 
 export function crearRepositorioProductosMock(datos = fixtures) {
-  const { tarjetas = [], productos = [], puntos = [], mensajes = [], metas = [] } = structuredClone(datos);
+  const { cuentas = [], tarjetas = [], productos = [], puntos = [], mensajes = [], metas = [] } = structuredClone(datos);
   const propias = (filas, perfilId) => structuredClone(filas.filter(f => f.perfilId === perfilId));
+  const listarTarjetas = async perfilId => propias(tarjetas, perfilId).map(t => {
+    const cuenta = cuentas.find(c => c.id === t.cuentaId && c.perfilId === perfilId);
+    if (!cuenta) throw new Error('La tarjeta no tiene cuenta propia asociada.');
+    return { ...t, cuenta:{id:cuenta.id,numeroCompleto:cuenta.numeroCompleto}, producto:productos.find(p => p.id === t.productoId) };
+  });
   return {
+    listarTarjetas,
     async resumen(perfilId) {
-      return { tarjetas: propias(tarjetas, perfilId).map(t => ({ ...t, producto: productos.find(p => p.id === t.productoId) })), puntos: puntos.find(p => p.perfilId === perfilId)?.acumulados ?? 0, productosDisponibles: structuredClone(productos), mensajesPendientes: mensajes.filter(m => m.perfilId === perfilId && !m.leido).length };
+      return { tarjetas: await listarTarjetas(perfilId), puntos: puntos.find(p => p.perfilId === perfilId)?.acumulados ?? 0, productosDisponibles: structuredClone(productos), mensajesPendientes: mensajes.filter(m => m.perfilId === perfilId && !m.leido).length };
     },
     async listarMensajes(perfilId) { return propias(mensajes, perfilId); },
     async leerMensaje(perfilId, id) {
