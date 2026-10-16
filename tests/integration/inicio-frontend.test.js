@@ -12,7 +12,7 @@ function element() {
     showModal() { this.open=true; }, close() { this.open=false; }, appendChild(c) { this.children.push(c); }, replaceChildren(...c) { this.children=c; },
     addEventListener(type,fn) { this[type]=fn; }, reset() { for (const campo of Object.values(this.elements||{})) campo.value=''; } };
 }
-function page({ visitada = false, sesion = false, fallo = false, sesionPendiente = false, motivo = null, rechazarLogin = false } = {}) {
+function page({ visitada = false, sesion = false, fallo = false, sesionPendiente = false, motivo = null, rechazarLogin = false, loginPendiente = false, falloRed = false } = {}) {
   const elementos = new Map();
   const get = selector => { if (!elementos.has(selector)) elementos.set(selector, element()); return elementos.get(selector); };
   const form = get('#login-form');
@@ -24,6 +24,7 @@ function page({ visitada = false, sesion = false, fallo = false, sesionPendiente
   const storage = { getItem: k => almacen.get(k) ?? null, setItem: (k,v) => almacen.set(k,v), removeItem:k=>almacen.delete(k) };
   let liberar; const tiempo = new Promise(resolve => { liberar = resolve; });
   let resolverSesion; const consultaSesion = new Promise(resolve => { resolverSesion = resolve; });
+  let resolverLogin; const consultaLogin = new Promise(resolve => { resolverLogin = resolve; });
   const estado = { fallo, espera:0, consultas:0, destino:'', perfiles:[{id:'A',nombre:'A',usuarioAcceso:'a',clavePrueba:'ClaveA',promocionesAbiertas:false},{id:'midi-1',nombre:'Midi',usuarioAcceso:'midi',clavePrueba:'ClaveMidi',promocionesAbiertas:true}] };
   const context = {
     document: { hidden:false, addEventListener(t,fn) {this[t]=fn;}, querySelector:get, createElement:element, body: { dataset: {}, removeAttribute() {} } },
@@ -33,13 +34,13 @@ function page({ visitada = false, sesion = false, fallo = false, sesionPendiente
     necesitaCargaInicial,
     transicionarInicio:(carga,acceso,opciones)=>transicionarInicio(carga,acceso,{...opciones,reducirMovimiento:true}),conMinimoCarga:async f=>f(),
     deslizarHaciaMenu:async(_,opciones)=>{estado.slide=true;estado.modo=opciones?.modo;estado.destino='/menu.html';}, mostrarCargaAcceso:async(pantalla,circulo)=>{assert.equal(pantalla,form);assert.equal(circulo,get('#startup-spinner'));estado.fadeCarga=true;}, programarRetiroAviso(){},
-    fetch:async()=>({ok:!rechazarLogin,status:rechazarLogin?401:200,json:async()=>({error:'Revisa usuario y clave.'})}),
+    fetch:async()=>{ if (loginPendiente) await consultaLogin; if (falloRed) throw new Error('Sin red'); return {ok:!rechazarLogin,status:rechazarLogin?401:200,json:async()=>({error:'Revisa usuario y clave.'})}; },
     credencialesDePerfil,
     prepararInicio: opciones => prepararInicio({ ...opciones, esperar() { estado.espera++; return tiempo; } }),
     async getJSON(url) { assert.equal(url, '/api/perfiles?testing=1'); estado.consultas++; if (estado.fallo) throw new Error('No disponible'); return estado.perfiles; }
   };
   const lista = vm.runInNewContext(source, context);
-  return { get, estado, liberar, lista, storage, resolverSesion, document:context.document };
+  return { get, estado, liberar, lista, storage, resolverSesion, resolverLogin, document:context.document };
 }
 
 test('recarga con pista de sesión mantiene carga bancaria y no pide perfiles antes de comprobar la sesión', async () => {
@@ -115,21 +116,35 @@ test('Contacto y Ayuda muestran información del equipo; recuperación abre usua
   await p.get('#login-recover').click(); assert.equal(p.get('#testing-users-dialog').open,true);
 });
 
-test('credenciales aceptadas usan el deslizamiento antes de llegar al menú', async () => {
-  const p=page({visitada:true}); await p.lista;
+test('el botón conserva Ingresando y el formulario visible hasta el slide directo al menú', async () => {
+  const p=page({visitada:true,loginPendiente:true}); await p.lista;
   const f=p.get('#login-form');f.elements.username.value='usuario';f.elements.password.value='clave';
   f.submit({preventDefault(){}});for(let i=0;i<12;i++)await Promise.resolve();
-  assert.equal(p.estado.fadeCarga,true);
+  assert.equal(p.estado.fadeCarga,undefined);
+  assert.equal(f.hidden,false);assert.equal(p.get('#startup-spinner').hidden,true);
+  assert.equal(p.get('submit').textContent,'Ingresando…');assert.equal(p.get('submit').disabled,true);
+  assert.equal(p.estado.destino,'');
+  p.resolverLogin();for(let i=0;i<18;i++)await Promise.resolve();
   assert.equal(p.estado.slide,true);assert.equal(p.estado.destino,'/menu.html');
 });
 
-test('credenciales rechazadas recuperan el formulario y sus controles desde el círculo', async () => {
+test('credenciales rechazadas conservan el formulario y recuperan sus controles sin círculo', async () => {
   const p=page({visitada:true,rechazarLogin:true});await p.lista;
   const f=p.get('#login-form');f.elements.username.value='usuario';f.elements.password.value='errónea';
   f.submit({preventDefault(){}});for(let i=0;i<18;i++)await Promise.resolve();
   assert.equal(f.hidden,false);assert.equal(p.get('#startup-spinner').hidden,true);assert.equal(p.get('#startup-screen').hidden,true);
   assert.equal(p.get('.login').inert,false);assert.equal(p.get('submit').disabled,false);
   assert.equal(p.get('#login-error').textContent,'Revisa usuario y clave.');assert.equal(p.estado.destino,'');
+});
+
+test('un fallo de red recupera Continuar sin ocultar el formulario ni mostrar el círculo', async () => {
+  const p=page({visitada:true,falloRed:true});await p.lista;
+  const f=p.get('#login-form');f.elements.username.value='usuario';f.elements.password.value='clave';
+  f.submit({preventDefault(){}});for(let i=0;i<18;i++)await Promise.resolve();
+  assert.equal(p.estado.fadeCarga,undefined);assert.equal(f.hidden,false);
+  assert.equal(p.get('#startup-spinner').hidden,true);assert.equal(p.get('submit').disabled,false);
+  assert.equal(p.get('submit').textContent,'Continuar');assert.equal(p.estado.destino,'');
+  assert.match(p.get('#login-error').textContent,/No hay conexión/);
 });
 
 test('salir y volver al login también muestra bienvenida y vuelve a comprobar el acceso', async () => {
