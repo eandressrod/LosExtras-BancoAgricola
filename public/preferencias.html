@@ -2,10 +2,13 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8">
+    <script src="/js/arranque.js"></script>
+    <link rel="stylesheet" href="/css/inicio.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Mis preferencias · Los Extras</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
+    <link rel="stylesheet" href="/css/carga.css">
     <link rel="stylesheet" href="/css/promociones.css">
     <script type="module" src="/js/preferencias.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
@@ -20,6 +23,7 @@
     <script type="module" src="/pwa/pwa.js"></script>
   </head>
   <body class="preferences-page" data-session="pending">
+    <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <p id="session-profile" class="session-profile" hidden></p>

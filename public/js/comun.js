@@ -1,4 +1,6 @@
-import { actualizarSesion, iniciarInactividad, avisarCierre } from '../pwa/inactividad.js';
+import { actualizarSesion, iniciarInactividad, avisarCierre, expirarSesion } from '../pwa/inactividad.js';
+import { conMinimoCarga } from './carga-tiempo.js';
+import { leerSegundoPlano, limpiarSegundoPlano, vencioSegundoPlano } from '../pwa/inactividad-modelo.js';
 export const categories = ['Restaurantes', 'Compras', 'Entretenimiento'];
 const CARD_NAMES = { basica: 'Básica', black: 'Black' };
 const LOGIN_HINT_KEY = 'los-extras-sesion-iniciada';
@@ -44,18 +46,41 @@ export function rememberLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, '1')
 export function forgetLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, null); forgetCardSelections(); }
 export function mayHaveSession() { return readStorage(localStorage, LOGIN_HINT_KEY) === '1'; }
 
+export function revelarPagina() {
+  document.body.removeAttribute('data-session');
+  document.documentElement.removeAttribute('data-arranque');
+  document.documentElement.removeAttribute('aria-busy');
+}
+
+export function volverAlLogin() {
+  // En una página privada, un 401 o la pérdida de sesión también necesitan un aviso al regresar.
+  const anterior = mayHaveSession();
+  if (anterior) saveStorage(almacenSesion(), 'bancoagricola-motivo-salida', 'inactividad');
+  forgetLogin();
+  if (anterior) { expirarSesion(); return; }
+  location.replace('/index.html');
+}
+
 /** Perfil de la sesión activa, null si no hay sesión; lanza un error si no se pudo verificar. */
 export async function fetchSession() {
-  const response = await fetch('/api/auth/sesion', { cache: 'no-store' });
+  const response = await conMinimoCarga(() => fetch('/api/auth/sesion', { cache: 'no-store' }));
   if (response.status === 401) return null;
   if (!response.ok) throw new Error('No se pudo verificar la sesión.');
   const data = await response.json();
+  if (vencioSegundoPlano(leerSegundoPlano(data.sesion?.id,localStorage))) {
+    const cierre=await fetch('/api/auth/logout',{method:'POST',keepalive:true});
+    if (!cierre.ok) throw new Error('No se pudo cerrar la sesión. Intenta de nuevo.');
+    saveStorage(almacenSesion(),'bancoagricola-motivo-salida','inactividad');
+    limpiarSegundoPlano(data.sesion?.id,localStorage);forgetLogin();
+    return null;
+  }
+  if (typeof document==='undefined'||!document.hidden) limpiarSegundoPlano(data.sesion?.id,localStorage);
   actualizarSesion(data.sesion);
   return data.perfil;
 }
 
 /** Protege una página: sin sesión vuelve al login; con sesión muestra el perfil y la página. */
-export async function requireSession() {
+export async function requireSession({ revelar = true } = {}) {
   // Al volver con Atrás, el navegador puede restaurar la página de otro perfil: se verifica de nuevo.
   addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
   let profile;
@@ -66,8 +91,7 @@ export async function requireSession() {
     return null;
   }
   if (!profile) {
-    forgetLogin();
-    location.replace('/index.html');
+    volverAlLogin();
     return null;
   }
   const badge = document.querySelector('#session-profile');
@@ -75,7 +99,7 @@ export async function requireSession() {
     badge.textContent = `${profile.nombre} · ${cardName(profile)}`;
     badge.hidden = false;
   }
-  document.body.removeAttribute('data-session');
+  if (revelar) revelarPagina();
   iniciarInactividad();
   return profile;
 }
@@ -93,7 +117,7 @@ function showSessionError() {
   retry.textContent = 'Reintentar';
   retry.addEventListener('click', () => location.reload());
   main.replaceChildren(...[main.querySelector('h1'), message, actions].filter(Boolean));
-  document.body.removeAttribute('data-session');
+  revelarPagina();
 }
 
 export async function logout() {
@@ -120,8 +144,7 @@ export async function getJSON(url) {
   const errorCarga = 'No se pudieron cargar los datos. Intenta de nuevo.';
   const response = await fetch(url, { cache: 'no-store' }).catch(() => { throw new Error(errorCarga); });
   if (response.status === 401) {
-    forgetLogin();
-    location.replace('/index.html');
+    volverAlLogin();
     throw new Error('Inicia sesión para continuar.');
   }
   if (!response.ok) throw new Error(errorCarga);

@@ -54,10 +54,11 @@ export {};
 
 /** H19: referencia visual de producto; no determina elegibilidad en Promociones.
  * @typedef {{ id: string, nombre: string, modalidad: 'débito'|'crédito', red: 'Visa'|'Mastercard', descripcion: string }} ProductoTarjeta
- * @typedef {{ id: string, productoId: string, producto: ProductoTarjeta, numeroEnmascarado: string, saldo: number, moneda: string }} TarjetaMenu
+ * @typedef {{ id: string, cuentaId: string, cuenta: {id:string,numeroCompleto:string}, tipoTarjeta:'basica'|'black', productoId: string, producto: ProductoTarjeta, numeroEnmascarado: string, saldo: number, moneda: string }} TarjetaMenu
  * @typedef {{ id: string, nombre: string, objetivo: number, ahorrado: number, moneda: 'USD' }} MetaUsuario
  * @typedef {{ id: string, titulo: string, texto: string, fecha: string, leido: boolean }} MensajeUsuario
  * @typedef {Object} RepositorioProductosMenu
+ * @property {(perfilId:string) => Promise<TarjetaMenu[]>} listarTarjetas
  * @property {(perfilId: string) => Promise<{tarjetas: TarjetaMenu[], puntos: number, productosDisponibles: ProductoTarjeta[], mensajesPendientes: number}>} resumen
  * @property {(perfilId: string) => Promise<MensajeUsuario[]>} listarMensajes
  * @property {(perfilId: string, id: string) => Promise<MensajeUsuario|null>} leerMensaje

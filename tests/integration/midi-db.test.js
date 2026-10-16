@@ -38,7 +38,7 @@ test('lectura conjunta devuelve seis tablas, versiones y dependencias sin hashes
   const datos = await leer();
   assert.equal(datos.perfiles.length, 6);
   assert.ok(datos.perfiles.every(p => p._version && p._dependencias && !('contrasena_hash' in p)));
-  assert.equal(datos.perfiles.find(p => p.id === 'A')._conteos.cuentas, 4); // H16: dos cuentas de ahorro y dos tarjetas
+  assert.equal(datos.perfiles.find(p => p.id === 'A')._conteos.cuentas, 2); // Solo las dos cuentas bancarias.
   assert.ok(!('sesiones_revocadas' in datos));
 });
 

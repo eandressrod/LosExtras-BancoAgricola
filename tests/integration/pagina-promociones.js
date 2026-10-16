@@ -7,6 +7,7 @@ import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
 import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
+import { textoDisponibleHoy } from '../../public/js/promocion-vista.js';
 
 export const CATEGORIAS = ['Restaurantes', 'Compras', 'Entretenimiento'].map((id, orden) => ({ id, nombre: id, orden }));
 export const TARJETAS = {
@@ -25,7 +26,7 @@ export const PROMOS = {
 export const parametro = (url, nombre) => new URL(url, 'http://localhost').searchParams.get(nombre);
 
 const fuente = async archivo => (await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8')).replace(/^import[^\n]+\n/gm, '');
-const vista = { textoVigencia: () => '', mostrarImagen: () => {}, mostrarCondiciones: () => {} };
+const vista = { textoVigencia: () => '', textoDisponibleHoy, mostrarImagen: () => {}, mostrarCondiciones: () => {} };
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 
 export function elemento(extra = {}) {
@@ -52,7 +53,7 @@ export function almacen(inicial = {}) {
   };
 }
 
-function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion = almacen() } = {}) {
+function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion = almacen(), alRevelar = () => {} } = {}) {
   const elementos = new Map();
   const obtener = selector => {
     if (!elementos.has(selector)) elementos.set(selector, elemento());
@@ -61,12 +62,16 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
   const history = { state: estado, url: null, replaceState(nuevo, _titulo, url) { this.state = nuevo; this.url = url; } };
   const contexto = {
     URLSearchParams,
-    location: { search, hash, href: '/pagina' + search + hash },
+    location: { search, hash, href: '/pagina' + search + hash, replace(url) { this.destino=url; } },
     history,
-    requireSession: async () => ({ id: perfil, nombre: NOMBRES[perfil], tipoTarjeta: perfil === 'B' ? 'black' : 'basica' }),
+    requireSession: async ({revelar=true}={}) => {
+      if(revelar) alRevelar();
+      return { id: perfil, nombre: NOMBRES[perfil], tipoTarjeta: perfil === 'B' ? 'black' : 'basica' };
+    },
     almacenSesion: () => sesion,
     cardName,
-    conIndicador, destinoEntradaPromociones,
+    revelarPagina: alRevelar,
+    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
     ...vista, ...filtro, ...tarjeta
   };
   return { obtener, history, contexto, elementos, sesion };
@@ -103,6 +108,7 @@ export async function abrirListado(opciones = {}) {
       createElement: tagName => elemento({ tagName })
     },
     getJSON: async url => {
+      if (url === '/api/preferencias') return opciones.preferencias();
       if (url === '/api/categorias') { pedidas.categorias += 1; return categorias(); }
       if (url === '/api/tarjetas') { pedidas.tarjetas += 1; return tarjetas(); }
       consultas.push(url);
@@ -132,7 +138,7 @@ export async function abrirDetalle(opciones = {}) {
       consultas.push(url);
       if (opciones.falla) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');
       const black = parametro(url, 'tarjeta') === 'cta-a-4';
-      return { id: 'tienda', merchant: 'Siman', benefit: black ? '25 % de descuento' : '15 % de descuento', applicableCard: black ? 'black' : 'basica' };
+      return { id: 'tienda', merchant: 'Siman', benefit: black ? '25 % de descuento' : '15 % de descuento', applicableCard: black ? 'black' : 'basica', ...opciones.promocion };
     }
   });
   await vm.runInNewContext(`(async () => { ${await fuente('detalle.js')} })()`, nav.contexto);

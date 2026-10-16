@@ -13,20 +13,36 @@ export function categoriaVigente(categoria, categorias) {
   return categorias.find(item => item.id === categoria) ?? null;
 }
 
+/** H17: Disponibles hoy está activo solo con hoy=1 y si la entrada es del mismo perfil. */
+export function leerHoy(search, estado, perfilId) {
+  if (estado?.perfil && estado.perfil !== perfilId) return false;
+  const valores = new URLSearchParams(search).getAll('hoy');
+  return valores.length === 1 && valores[0] === '1';
+}
+
 export function estadoNavegacion(perfilId, categoria) {
   return { perfil: perfilId, categoria };
 }
 
-const parametro = categoria => 'categoria=' + encodeURIComponent(categoria);
+// Filtros temporales de la URL, en orden fijo: categoría (H5) y Disponibles hoy (H17).
+const parametros = (categoria, hoy) => [
+  categoria && 'categoria=' + encodeURIComponent(categoria),
+  hoy && 'hoy=1'
+].filter(Boolean);
 
-export function urlConsulta(categoria) {
-  return '/api/promociones' + (categoria ? '?' + parametro(categoria) : '');
+function consulta(categoria, hoy) {
+  const lista = parametros(categoria, hoy);
+  return lista.length ? '?' + lista.join('&') : '';
 }
 
-export function urlListado(categoria, promocionId) {
-  return '/promociones.html' + (categoria ? '?' + parametro(categoria) : '') + (promocionId ? '#promo-' + encodeURIComponent(promocionId) : '');
+export function urlConsulta(categoria, hoy = false) {
+  return '/api/promociones' + consulta(categoria, hoy);
 }
 
-export function urlDetalle(promocionId, categoria) {
-  return '/detalle.html?id=' + encodeURIComponent(promocionId) + (categoria ? '&' + parametro(categoria) : '');
+export function urlListado(categoria, promocionId, hoy = false) {
+  return '/promociones.html' + consulta(categoria, hoy) + (promocionId ? '#promo-' + encodeURIComponent(promocionId) : '');
+}
+
+export function urlDetalle(promocionId, categoria, hoy = false) {
+  return ['/detalle.html?id=' + encodeURIComponent(promocionId), ...parametros(categoria, hoy)].join('&');
 }

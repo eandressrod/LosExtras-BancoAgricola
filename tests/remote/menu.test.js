@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { obtenerRepositorioCuentas, obtenerRepositorioEstadoEncuesta } from '../../backend/repositorios/index.js';
 import { obtenerClienteSupabase } from '../../backend/config/supabase.js';
 
-test('cuentas reales de A/B/demo están separadas, enmascaradas y propietario sin filas queda vacío', async () => {
+test('cuentas reales de A/B/demo están separadas, completas y propietario sin filas queda vacío', async () => {
   assert.equal(process.env.DATA_SOURCE, 'supabase');
   const repo = obtenerRepositorioCuentas();
   const ids = new Set();
@@ -13,7 +13,8 @@ test('cuentas reales de A/B/demo están separadas, enmascaradas y propietario si
     for (const cuenta of cuentas) {
       assert.ok(!ids.has(cuenta.id), 'un identificador de cuenta no pertenece a varios perfiles');
       ids.add(cuenta.id);
-      assert.match(cuenta.numeroEnmascarado, /[*•]/);
+      assert.match(cuenta.numeroCompleto, /^[1-9]\d{9}$/);
+      assert.ok(!/tarjeta/i.test(cuenta.tipo));
       assert.ok(Number.isFinite(cuenta.saldo));
       assert.ok(cuenta.moneda);
     }
