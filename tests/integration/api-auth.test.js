@@ -55,9 +55,15 @@ test('sesión con cookie válida devuelve el perfil dueño', async () => {
   assert.equal((await res.json()).perfil.tipoTarjeta, 'basica');
 });
 
-test('sesión sin cookie o con identificador a mano: 401', async () => {
+// Sin sesión válida no es un error: el login lo consulta en cada primera visita.
+const sinSesion = async respuesta => {
+  assert.equal(respuesta.status, 200);
+  assert.deepEqual(await respuesta.json(), { perfil: null, sesion: null });
+};
+
+test('sesión sin cookie o con identificador a mano: 200 sin perfil', async () => {
   for (const cookie of [undefined, 'sesion_extras=perfil-b', 'sesion_extras=a.b']) {
-    assert.equal((await consultarSesion(cookie)).status, 401);
+    await sinSesion(await consultarSesion(cookie));
   }
 });
 
@@ -111,7 +117,7 @@ test('logout invalida la cookie copiada, conserva otra sesión y permite nuevo l
   const { cookie: otraCookie } = await entrar('demo.basica', 'Basica2026');
   const request = () => new Request(url('/api/auth/logout'), { method: 'POST', headers: { cookie } });
   assert.equal((await logout.fetch(request())).status, 204);
-  assert.equal((await consultarSesion(cookie)).status, 401);
+  await sinSesion(await consultarSesion(cookie));
   assert.equal((await consultarSesion(otraCookie)).status, 200);
   assert.equal((await logout.fetch(request())).status, 204);
   const { cookie: nuevaCookie } = await entrar('demo.basica', 'Basica2026');

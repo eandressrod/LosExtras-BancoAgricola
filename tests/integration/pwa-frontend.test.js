@@ -22,7 +22,10 @@ function pagina({ pathname='/menu.html', lecturaMensaje=false, fallaActividad=fa
     location:{pathname,replace(url){destino=url;},reload(){destino='reload';}},addEventListener(t,f){eventos[t]=f;}, avisoDiscreto,conMinimoCarga:async f=>f(),
     retirarCarga:async cubierta=>{llamadas.push('fade-carga');cubierta.hidden=true;},
     setInterval(fn){intervalo=fn;},clearTimeout(key){tareas.delete(key);},setTimeout(fn){tareas.set(++id,fn);return id;},estadoInactividad:(plazo)=>estadoInactividad(plazo,tiempo),plazoLocal:s=>plazoLocal(s,tiempo),
-    async fetch(url,options){llamadas.push(url);opciones.push(options);return {ok:!fallaActividad,status:sesionVencida?401:200,json:async()=>({perfil:{id:'A'},sesion:{...estado,ahora:tiempo,inactivaEn:tiempo+120000}})};}
+    async fetch(url,options){llamadas.push(url);opciones.push(options);
+      // Sin sesión válida, /api/auth/sesion responde 200 sin perfil; las demás API privadas, 401.
+      if(sesionVencida&&url==='/api/auth/sesion')return {ok:true,status:200,json:async()=>({perfil:null,sesion:null})};
+      return {ok:!fallaActividad,status:sesionVencida?401:200,json:async()=>({perfil:{id:'A'},sesion:{...estado,ahora:tiempo,inactivaEn:tiempo+120000}})};}
   };
   vm.runInNewContext(source+'\nactualizarSesion('+JSON.stringify(estado)+'); iniciarInactividad();',context);
   return {document,dialogoLectura,eventos,nodos,atributos,llamadas,opciones,get destino(){return destino;},reloj(ms){tiempo=ms;},avanzar(ms){tiempo=ms;intervalo();},finalizarSalida(){for(const fn of tareas.values())fn();tareas.clear();},async enviarActividad(){await eventos.pointerdown({isTrusted:true});for(const [key,fn] of tareas){tareas.delete(key);await fn();}},async ejecutar(t){await eventos[t]();},dialogo:()=>nodos.find(n=>n.className==='pwa-sesion')};
