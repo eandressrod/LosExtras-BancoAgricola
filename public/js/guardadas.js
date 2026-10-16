@@ -3,20 +3,35 @@ import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vi
 import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
 import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
 
-function pintarVacio(datos) {
+let ultimoDatos = null;
+let busqueda = '';
+
+function limpiarTexto(valor) {
+  if (typeof valor !== 'string') return '';
+  const limpio = valor.trim();
+  return limpio.length <= 100 ? limpio : '';
+}
+
+function pintarVacio(datos, visibles) {
   const ninguna = document.querySelector('#empty-none');
   const filtro = document.querySelector('#empty-filter');
+  const sinBusqueda = document.querySelector('#empty-search');
+  const limpiarVacio = document.querySelector('#clear-search-empty');
   const accion = document.querySelector('#empty-action');
-  const hayVisibles = datos.promociones.length > 0;
-  ninguna.hidden = hayVisibles || datos.sinCoincidencias;
+  const hayVisibles = visibles.length > 0;
+  const vacioPorBusqueda = !hayVisibles && Boolean(busqueda) && datos.promociones.length > 0;
+  ninguna.hidden = hayVisibles || datos.sinCoincidencias || vacioPorBusqueda;
   filtro.hidden = !datos.sinCoincidencias;
-  accion.hidden = hayVisibles;
+  if (sinBusqueda) sinBusqueda.hidden = !vacioPorBusqueda;
+  if (limpiarVacio) limpiarVacio.hidden = !vacioPorBusqueda;
+  accion.hidden = hayVisibles || vacioPorBusqueda;
 }
 
 function tarjeta(promotion, tarjetaId) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
   const link = card.querySelector('a');
-  link.href = '/detalle.html?id=' + encodeURIComponent(promotion.id) + '&desde=guardadas';
+  const extra = busqueda ? '&comercio=' + encodeURIComponent(busqueda) : '';
+  link.href = '/detalle.html?id=' + encodeURIComponent(promotion.id) + '&desde=guardadas' + extra;
   link.setAttribute('aria-label', `${promotion.merchant}: ${promotion.benefit}. Ver promoción`);
   card.querySelector('h2').textContent = promotion.merchant;
   card.querySelector('.promo-benefit').textContent = promotion.benefit;
@@ -38,6 +53,17 @@ function tarjeta(promotion, tarjetaId) {
   return card;
 }
 
+function renderizarGuardadas(datos, tarjetaId) {
+  const cards = document.querySelector('#cards');
+  cards.replaceChildren();
+  const termino = busqueda.toLowerCase();
+  const visibles = termino
+    ? datos.promociones.filter(promo => String(promo.merchant ?? '').trim().toLowerCase().includes(termino))
+    : datos.promociones;
+  for (const promotion of visibles) cards.append(tarjeta(promotion, tarjetaId));
+  pintarVacio(datos, visibles);
+}
+
 async function loadSaved(tarjetaId) {
   const status = document.querySelector('#list-status');
   const cards = document.querySelector('#cards');
@@ -48,13 +74,17 @@ async function loadSaved(tarjetaId) {
   cards.replaceChildren();
   document.querySelector('#empty-none').hidden = true;
   document.querySelector('#empty-filter').hidden = true;
+  const sinBusqueda = document.querySelector('#empty-search');
+  const limpiarVacio = document.querySelector('#clear-search-empty');
+  if (sinBusqueda) sinBusqueda.hidden = true;
+  if (limpiarVacio) limpiarVacio.hidden = true;
   document.querySelector('#empty-action').hidden = true;
   try {
     const datos = await consultarGuardadas(tarjetaId);
     if (!datos) return;
-    for (const promotion of datos.promociones) cards.append(tarjeta(promotion, tarjetaId));
+    ultimoDatos = datos;
     status.textContent = '';
-    pintarVacio(datos);
+    renderizarGuardadas(datos, tarjetaId);
   } catch (error) {
     status.textContent = error.message;
     status.className = 'error';
@@ -64,6 +94,15 @@ async function loadSaved(tarjetaId) {
 
 const profile = await requireSession();
 if (profile) {
+  const searchInput = document.querySelector('#merchant-search');
+  const clearSearch = document.querySelector('#clear-search');
+  const clearSearchEmpty = document.querySelector('#clear-search-empty');
+  if (typeof location !== 'undefined' && typeof URLSearchParams !== 'undefined') {
+    const mismoPerfil = typeof history === 'undefined' || !history.state?.perfil || history.state.perfil === profile.id;
+    busqueda = mismoPerfil ? limpiarTexto(new URLSearchParams(location.search).get('comercio')) : '';
+    if (searchInput) searchInput.value = busqueda;
+    if (clearSearch) clearSearch.hidden = !busqueda;
+  }
   let tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
   try {
     const activa = tarjetaActiva(await getJSON('/api/tarjetas'), tarjetaId);
@@ -73,6 +112,21 @@ if (profile) {
       if (badge) badge.textContent = `${profile.nombre} · ${cardName(activa)}`;
     }
   } catch { /* si las tarjetas fallan, la lista sigue con la elección guardada */ }
+
+  function actualizarBusqueda(texto) {
+    if (searchInput) searchInput.value = texto;
+    if (clearSearch) clearSearch.hidden = !texto;
+    busqueda = limpiarTexto(texto);
+    if (typeof history !== 'undefined' && typeof history.replaceState === 'function') {
+      const url = '/guardadas.html' + (busqueda ? '?comercio=' + encodeURIComponent(busqueda) : '');
+      history.replaceState({ perfil: profile.id }, '', url);
+    }
+    if (ultimoDatos) renderizarGuardadas(ultimoDatos, tarjetaId);
+  }
+
+  if (searchInput) searchInput.addEventListener('input', () => actualizarBusqueda(searchInput.value));
+  if (clearSearch) clearSearch.addEventListener('click', () => actualizarBusqueda(''));
+  if (clearSearchEmpty) clearSearchEmpty.addEventListener('click', () => actualizarBusqueda(''));
   document.querySelector('#retry').addEventListener('click', () => loadSaved(tarjetaId));
   await loadSaved(tarjetaId);
 }

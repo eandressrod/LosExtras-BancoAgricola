@@ -31,10 +31,11 @@ const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 
 export function elemento(extra = {}) {
   return {
-    hidden: false, textContent: '', className: '', id: '', href: '', type: '', dataset: {}, attributes: {}, listeners: {},
+    hidden: false, textContent: '', value: '', className: '', id: '', href: '', type: '', dataset: {}, attributes: {}, listeners: {},
     classList: { valores: new Set(), add(valor) { this.valores.add(valor); }, contains(valor) { return this.valores.has(valor); } },
     addEventListener(tipo, accion) { this.listeners[tipo] = accion; },
     click() { return this.listeners.click?.(); },
+    input(valor) { this.value = valor; return this.listeners.input?.({ target: this }); },
     setAttribute(nombre, valor) { this.attributes[nombre] = String(valor); },
     removeAttribute(nombre) { delete this.attributes[nombre]; },
     ...extra
