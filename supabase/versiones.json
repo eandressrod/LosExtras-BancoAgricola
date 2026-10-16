@@ -12,6 +12,7 @@
     { "pr": 10, "commit": "274d42b315905e3d2889cf2a47accf6eb6ee56b6", "migracion": "20261014024012", "regreso": false },
     { "pr": 11, "commit": "d8b2de9e2c1166e58484bb3b2e4f0beb5437fec8", "migracion": "20261014034922", "regreso": false },
     { "pr": 12, "commit": "dfb3f152b3c9784e33292658db30a4e4181b4a58", "migracion": "20261015014018", "regreso": false },
-    { "pr": 13, "commit": "451dbea1becb019e379b1adbcb4c275699fb8333", "migracion": "20261016015547", "regreso": true }
+    { "pr": 13, "commit": "451dbea1becb019e379b1adbcb4c275699fb8333", "migracion": "20261016015547", "regreso": true },
+    { "pr": 15, "commit": "313b9f8bd9ed7a5edab34046030751ac7f1e3f3d", "migracion": "20261016015547", "regreso": true }
   ]
 }
