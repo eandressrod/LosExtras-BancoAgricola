@@ -1,7 +1,7 @@
-import { requireSession, almacenSesion } from './comun.js';
+import { requireSession, almacenSesion, cardName, getJSON } from './comun.js';
 import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
 import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
-import { leerTarjetaElegida } from './tarjeta-elegida.js';
+import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
 
 function pintarVacio(datos) {
   const ninguna = document.querySelector('#empty-none');
@@ -64,7 +64,15 @@ async function loadSaved(tarjetaId) {
 
 const profile = await requireSession();
 if (profile) {
-  const tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
+  let tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
+  try {
+    const activa = tarjetaActiva(await getJSON('/api/tarjetas'), tarjetaId);
+    if (activa) {
+      tarjetaId = activa.id;
+      const badge = document.querySelector('#session-profile');
+      if (badge) badge.textContent = `${profile.nombre} · ${cardName(activa)}`;
+    }
+  } catch { /* si las tarjetas fallan, la lista sigue con la elección guardada */ }
   document.querySelector('#retry').addEventListener('click', () => loadSaved(tarjetaId));
   await loadSaved(tarjetaId);
 }

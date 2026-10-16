@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { abrirDetalle, abrirListado, almacen } from './pagina-promociones.js';
+import { cardName } from '../../public/js/comun.js';
+import { tarjetaActiva } from '../../public/js/tarjeta-elegida.js';
 
 const clic = boton => boton.onclick({ preventDefault() {}, stopPropagation() {} });
 
@@ -93,10 +95,20 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
     return partes.get(selector);
   } };
   const cards = { hijos: [], append(nodo) { this.hijos.push(nodo); }, replaceChildren() { this.hijos = []; } };
+  const badge = { hidden: false, textContent: 'Usuario A · Tarjeta Básica' };
   const elemento = () => ({ hidden: true, textContent: '', className: '', addEventListener() {} });
   await vm.runInNewContext(`(async () => { ${fuente} })()`, {
-    requireSession: async () => ({ id: 'A' }),
+    requireSession: async () => ({ id: 'A', nombre: 'Usuario A' }),
     almacenSesion: () => sesion,
+    cardName,
+    tarjetaActiva,
+    getJSON: async url => {
+      assert.equal(url, '/api/tarjetas');
+      return [
+        { id: 'cta-a-3', tipoTarjeta: 'basica', predeterminada: true },
+        { id: 'cta-a-4', tipoTarjeta: 'black', predeterminada: false }
+      ];
+    },
     leerTarjetaElegida: (storage, perfilId) => storage.getItem('los-extras-tarjeta:' + perfilId),
     consultarGuardadas: async tarjetaId => {
       consultas.push(tarjetaId);
@@ -109,10 +121,12 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
     mostrarCondiciones() {},
     document: { querySelector(selector) {
       if (selector === '#cards') return cards;
+      if (selector === '#session-profile') return badge;
       if (selector === '#promotion-card') return { content: { cloneNode: () => card } };
       return elemento();
     } }
   });
+  assert.equal(badge.textContent, 'Usuario A · Tarjeta Black');
   assert.deepEqual(consultas, ['cta-a-4']);
   assert.equal(cards.hijos[0].querySelector('a').href, '/detalle.html?id=siman-black&desde=guardadas');
   assert.equal(cards.hijos[0].querySelector('.promo-benefit').textContent, '30 % de descuento');
