@@ -1,0 +1,78 @@
+import { requireSession, almacenSesion, cardName, getJSON } from './comun.js';
+import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
+import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
+import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
+
+function pintarVacio(datos) {
+  const ninguna = document.querySelector('#empty-none');
+  const filtro = document.querySelector('#empty-filter');
+  const accion = document.querySelector('#empty-action');
+  const hayVisibles = datos.promociones.length > 0;
+  ninguna.hidden = hayVisibles || datos.sinCoincidencias;
+  filtro.hidden = !datos.sinCoincidencias;
+  accion.hidden = hayVisibles;
+}
+
+function tarjeta(promotion, tarjetaId) {
+  const card = document.querySelector('#promotion-card').content.cloneNode(true);
+  const link = card.querySelector('a');
+  link.href = '/detalle.html?id=' + encodeURIComponent(promotion.id) + '&desde=guardadas';
+  link.setAttribute('aria-label', `${promotion.merchant}: ${promotion.benefit}. Ver promoción`);
+  card.querySelector('h2').textContent = promotion.merchant;
+  card.querySelector('.promo-benefit').textContent = promotion.benefit;
+  card.querySelector('.promo-description').textContent = promotion.description;
+  card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
+  card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
+  card.querySelector('.promo-applicability').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+  const badge = card.querySelector('.promo-exclusive');
+  badge.hidden = !promotion.exclusive;
+  badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
+  mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
+  mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
+  mostrarCondiciones(card.querySelector('.promo-conditions'), promotion);
+  const boton = card.querySelector('.guardar-promo');
+  marcarBoton(boton, true);
+  alPulsarGuardar(boton, promotion.id, guardada => {
+    if (!guardada) loadSaved(tarjetaId);
+  });
+  return card;
+}
+
+async function loadSaved(tarjetaId) {
+  const status = document.querySelector('#list-status');
+  const cards = document.querySelector('#cards');
+  const retry = document.querySelector('#retry');
+  status.textContent = 'Cargando guardadas…';
+  status.className = 'note';
+  retry.hidden = true;
+  cards.replaceChildren();
+  document.querySelector('#empty-none').hidden = true;
+  document.querySelector('#empty-filter').hidden = true;
+  document.querySelector('#empty-action').hidden = true;
+  try {
+    const datos = await consultarGuardadas(tarjetaId);
+    if (!datos) return;
+    for (const promotion of datos.promociones) cards.append(tarjeta(promotion, tarjetaId));
+    status.textContent = '';
+    pintarVacio(datos);
+  } catch (error) {
+    status.textContent = error.message;
+    status.className = 'error';
+    retry.hidden = false;
+  }
+}
+
+const profile = await requireSession();
+if (profile) {
+  let tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
+  try {
+    const activa = tarjetaActiva(await getJSON('/api/tarjetas'), tarjetaId);
+    if (activa) {
+      tarjetaId = activa.id;
+      const badge = document.querySelector('#session-profile');
+      if (badge) badge.textContent = `${profile.nombre} · ${cardName(activa)}`;
+    }
+  } catch { /* si las tarjetas fallan, la lista sigue con la elección guardada */ }
+  document.querySelector('#retry').addEventListener('click', () => loadSaved(tarjetaId));
+  await loadSaved(tarjetaId);
+}

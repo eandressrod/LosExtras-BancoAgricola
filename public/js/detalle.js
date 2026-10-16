@@ -6,13 +6,22 @@ import { conMinimoCarga } from './carga-tiempo.js';
 
 const profile = await requireSession();
 if (profile) {
-  const id = new URLSearchParams(location.search).get('id');
+  const parametros = new URLSearchParams(location.search);
+  const id = parametros.get('id');
+  // Se lee antes de normalizar la URL: replaceState no debe borrar el origen.
+  const desdeGuardadas = parametros.get('desde') === 'guardadas';
   // H5 y H17: volver al listado conserva los filtros si esta entrada pertenece al mismo perfil.
   const categoria = leerCategoria(location.search, history.state, profile.id);
   const hoy = leerHoy(location.search, history.state, profile.id);
   const back = document.querySelector('#back-to-list');
-  history.replaceState(estadoNavegacion(profile.id, categoria), '', id ? urlDetalle(id, categoria, hoy) : location.href);
-  back.href = urlListado(categoria, null, hoy);
+  const destino = id ? urlDetalle(id, categoria, hoy) + (desdeGuardadas ? '&desde=guardadas' : '') : location.href;
+  history.replaceState(estadoNavegacion(profile.id, categoria), '', destino);
+  if (desdeGuardadas) {
+    back.href = '/guardadas.html';
+    back.textContent = 'Volver a guardadas';
+  } else {
+    back.href = urlListado(categoria, null, hoy);
+  }
   // H16: el detalle muestra el beneficio de la tarjeta elegida en "Para ti" (el backend valida que sea propia).
   const tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
 
@@ -40,9 +49,45 @@ if (profile) {
       mostrarImagen(document.querySelector('#promotion-image'), promotion.imageUrl, promotion.imageAlt);
       mostrarImagen(document.querySelector('#merchant-logo'), promotion.logoUrl);
       mostrarCondiciones(document.querySelector('#conditions'), promotion);
-      back.href = urlListado(categoria, promotion.id, hoy);
+      if (desdeGuardadas) {
+        back.href = '/guardadas.html';
+        back.textContent = 'Volver a guardadas';
+      } else {
+        back.href = urlListado(categoria, promotion.id, hoy);
+        back.textContent = 'Volver al listado';
+      }
       const sessionBadge = document.querySelector('#session-profile');
       if (sessionBadge) sessionBadge.textContent = `${profile.nombre} · ${cardName({ tipoTarjeta: promotion.applicableCard })}`;
+      const boton = document.querySelector('#guardar-promo');
+      if (boton && typeof fetch === 'function') {
+        boton.hidden = false;
+        let guardada = false;
+        try {
+          const lista = await fetch('/api/guardadas', { cache: 'no-store' });
+          if (lista.ok) guardada = ((await lista.json()).ids || []).includes(id);
+        } catch { /* el detalle sigue visible aunque no se lean las guardadas */ }
+        boton.dataset.guardada = guardada ? 'si' : 'no';
+        boton.textContent = guardada ? 'Quitar' : 'Guardar';
+        boton.onclick = async event => {
+          event.preventDefault();
+          const aviso = document.querySelector('#guardar-error');
+          if (aviso) aviso.textContent = '';
+          const quitar = boton.dataset.guardada === 'si';
+          try {
+            const response = await fetch('/api/guardadas', {
+              method: quitar ? 'DELETE' : 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ promocionId: id })
+            });
+            if (response.status === 401) { location.replace('/index.html'); return; }
+            if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
+            boton.dataset.guardada = quitar ? 'no' : 'si';
+            boton.textContent = quitar ? 'Guardar' : 'Quitar';
+          } catch (error) {
+            if (aviso) aviso.textContent = error.message;
+          }
+        };
+      }
       detail.hidden = false;
       status.textContent = '';
     } catch (error) {
