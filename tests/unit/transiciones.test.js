@@ -25,6 +25,23 @@ test('la entrada del menú se anima y consume una sola vez después de abandonar
   assert.equal(almacen.size,0); assert.equal(pantalla.inert,false);
 });
 
+test('el acceso desde el botón desliza el menú sin revelar la cubierta de carga', async () => {
+  const almacen = new Map([['los-extras-entrada-menu', 'login']]);
+  const cubierta = { hidden:true, animate() { throw new Error('No mostrar carga intermedia'); } };
+  let animaciones = 0;
+  const pantalla = { animate(frames) {
+    animaciones++;
+    assert.equal(frames[0].transform, 'translateX(100%)');
+    return { finished:Promise.resolve(), cancel() {} };
+  } };
+  const opciones = { storage:{getItem:k=>almacen.get(k),removeItem:k=>almacen.delete(k)}, cubierta,
+    reducirMovimiento:false, revelar() { assert.equal(cubierta.hidden, true); } };
+  await transiciones.animarEntradaMenu(pantalla, opciones);
+  await transiciones.animarEntradaMenu(pantalla, opciones);
+  assert.equal(animaciones, 1);
+  assert.equal(cubierta.hidden, true);
+});
+
 test('movimiento reducido navega sin deslizar ni bloquear la interfaz', async () => {
   let destino=''; const pantalla={inert:false,animate(){throw new Error('No animar');}};
   await transiciones.deslizarHaciaMenu(pantalla,{reducirMovimiento:true,storage:{setItem(){}},navegar:url=>destino=url});

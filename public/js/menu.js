@@ -91,6 +91,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function cargarMenu() {
     get('menu-content').hidden = true; get('menu-error').hidden = true; get('menu-loading').hidden = false; controles(false);
     try {
+      if (document.documentElement?.dataset.entradaMenu === 'login') {
+        await animarEntradaMenu(document.querySelector('.app-wrapper'), { revelar:() => {
+          revelarPagina(); document.documentElement.removeAttribute('data-entrada-menu');
+        } });
+      }
       perfil = await requireSession({ revelar:false });
       if (!perfil) return;
       // La cubierta de acceso permanece inmóvil mientras se preparan los datos.

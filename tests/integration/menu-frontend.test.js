@@ -19,18 +19,18 @@ function element() {
     classList: { add() {} }
   };
 }
-async function page({ statuses = [200], completed = false, logoutFails = false, cuentas, mensajes = [] } = {}) {
+async function page({ statuses = [200], completed = false, logoutFails = false, cuentas, mensajes = [], entrada } = {}) {
   const els = new Map(); let ready; let forgotten = false; const requests = [];
   const get = id => { if (!els.has(id)) els.set(id, { ...element(), id }); return els.get(id); };
   const location = { value: '', assign(url) { this.value = url; }, replace(url) { this.value = url; }, reload() {} };
   const state = { completed, logoutFails };
   const context = {
-    document: { body:{dataset:{}}, getElementById: get, querySelector: () => get('btn-ver-todas'), querySelectorAll: () => [], createElement: element, addEventListener(_, fn) { ready = fn; } },
+    document: { documentElement:{dataset:{entradaMenu:entrada},removeAttribute() { delete this.dataset.entradaMenu; }}, body:{dataset:{}}, getElementById: get, querySelector: () => get('btn-ver-todas'), querySelectorAll: () => [], createElement: element, addEventListener(_, fn) { ready = fn; } },
     window: { location }, location,
     requireSession: async () => ({ id: 'A', nombre: 'Usuario A', tipoTarjeta: 'basica' }),
     ...modeloMenu,
     cardName: () => 'Tarjeta Básica', compartirCuenta: async () => 'copiado',
-    animarEntradaMenu:async()=>{ requests.push('entrada-menu'); }, animarPantalla:async()=>{}, regresarEnVentana:async f=>f(), conMinimoCarga:async f=>f(), revelarPagina(){},
+    animarEntradaMenu:async(_,opciones)=>{ requests.push('entrada-menu'); opciones?.revelar(); }, animarPantalla:async()=>{}, regresarEnVentana:async f=>f(), conMinimoCarga:async f=>f(), revelarPagina(){},
     forgetLogin() { forgotten = true; },
     logout: async () => { if (state.logoutFails) throw new Error('No se pudo cerrar la sesión.'); forgotten = true; },
     fetch: async url => {
@@ -141,6 +141,13 @@ test('entrar carga el menú y no abre encuesta antes del clic', async () => {
   const tarjeta = p.get('productos-lista').children[0];
   assert.equal(tarjeta.children[0].children[0].children[0].textContent, '•••• 9876 Clásica');
   assert.equal(tarjeta.children[0].children[1].children[1].textContent, '•••• 9876');
+});
+
+test('el acceso desde login desliza el menú antes de esperar sus productos', async () => {
+  const p = await page({ entrada:'login' });
+  assert.equal(p.requests[0], 'entrada-menu');
+  assert.equal(p.requests[1], '/api/menu');
+  assert.equal(p.get('menu-content').hidden, false);
 });
 
 test('Promociones para ti entra en el módulo y delega encuesta y elegibilidad', async () => {
