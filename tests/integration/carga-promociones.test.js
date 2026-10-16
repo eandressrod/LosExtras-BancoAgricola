@@ -37,3 +37,23 @@ test('una respuesta antigua no retira el aro de la selección más reciente', as
   finSegunda([]); await segunda;
   assert.equal(p.obtener('#promotions-loading').hidden, true);
 });
+
+test('encuesta pendiente decide el destino sin revelar ni consultar el catálogo de Promociones', async () => {
+  let revelaciones=0;
+  const p=await abrirListado({search:'?entrada=menu',alRevelar:()=>revelaciones++,preferencias:()=>{
+    assert.equal(revelaciones,0);return {completed:false};
+  }});
+  assert.equal(p.contexto.location.destino,'/encuesta.html');assert.equal(revelaciones,0);
+  assert.equal(p.pedidas.categorias,0);assert.equal(p.pedidas.tarjetas,0);assert.equal(p.consultas.length,0);
+});
+
+test('encuesta completada revela solo tras resolver preferencias; fallo ofrece reintento', async () => {
+  let revelaciones=0;
+  const p=await abrirListado({search:'?entrada=menu',alRevelar:()=>revelaciones++,preferencias:()=>{
+    assert.equal(revelaciones,0);return {completed:true};
+  }});
+  assert.equal(p.contexto.location.destino,undefined);assert.equal(revelaciones,1);assert.equal(p.enlaces().length,3);
+  const error=await abrirListado({search:'?entrada=menu',preferencias:()=>{throw new Error('No se pudieron cargar tus preferencias.');}});
+  assert.equal(error.obtener('#retry').hidden,false);assert.match(error.obtener('#list-status').textContent,/preferencias/);
+  assert.equal(error.contexto.location.destino,undefined);
+});

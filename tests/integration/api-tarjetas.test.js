@@ -4,6 +4,7 @@ import tarjetas, { crearHandlerTarjetas } from '../../api/tarjetas.js';
 import promociones, { crearHandlerPromociones } from '../../api/promociones.js';
 import promocion from '../../api/promocion.js';
 import preferencias from '../../api/preferencias.js';
+import menu from '../../api/menu.js';
 import * as accesos from '../../backend/repositorios/accesos.mock.js';
 import { obtenerRepositorio, obtenerRepositorioPreferencias } from '../../backend/repositorios/index.js';
 import { crearToken } from '../../backend/servicios/sesion.js';
@@ -22,17 +23,29 @@ async function json(handler, ruta, perfilId) {
 }
 const beneficios = lista => lista.map(promo => `${promo.id}: ${promo.benefit}`);
 
+test('menú y promociones muestran las mismas tarjetas y cada una enlaza una cuenta propia',async()=>{
+  const datos=await json(menu,'/api/menu','A');
+  const selector=await json(tarjetas,'/api/tarjetas','A');
+  assert.deepEqual(datos.tarjetas.map(t=>t.id),selector.map(t=>t.id));
+  for(const tarjeta of datos.tarjetas) {
+    const cuenta=datos.cuentas.find(c=>c.id===tarjeta.cuentaId);
+    assert.ok(cuenta);assert.equal(cuenta.numeroCompleto,tarjeta.cuenta.numeroCompleto);
+    assert.equal(selector.find(t=>t.id===tarjeta.id).numeroEnmascarado,tarjeta.numeroEnmascarado);
+    assert.match(tarjeta.numeroEnmascarado,/^•••• \d{4}$/);
+  }
+});
+
 test('H16 GET /api/tarjetas sin sesión responde 401', async () => {
   assert.equal((await tarjetas.fetch(pedir('/api/tarjetas'))).status, 401);
 });
 
 test('H16 GET /api/tarjetas entrega solo las tarjetas del usuario, con tipo y referencia enmascarada', async () => {
   assert.deepEqual(await json(tarjetas, '/api/tarjetas?perfil=B&usuario_id=B', 'A'), [
-    { id: 'cta-a-3', tipoTarjeta: 'basica', nombre: 'Tarjeta de Crédito Básica', numeroEnmascarado: '•••• 4821', predeterminada: true },
-    { id: 'cta-a-4', tipoTarjeta: 'black', nombre: 'Tarjeta de Crédito Black', numeroEnmascarado: '•••• 7754', predeterminada: false }
+    { id: 'cta-a-3', cuentaId:'cta-a-1', tipoTarjeta: 'basica', nombre: 'Tarjeta de crédito Clásica', numeroEnmascarado: '•••• 6411', predeterminada: true },
+    { id: 'cta-a-4', cuentaId:'cta-a-2', tipoTarjeta: 'black', nombre: 'Tarjeta de crédito Black', numeroEnmascarado: '•••• 6412', predeterminada: false }
   ]);
   assert.deepEqual(await json(tarjetas, '/api/tarjetas', 'B'), [
-    { id: 'cta-b-2', tipoTarjeta: 'black', nombre: 'Tarjeta de Crédito Black', numeroEnmascarado: '•••• 1744', predeterminada: true }
+    { id: 'cta-b-2', cuentaId:'cta-b-1', tipoTarjeta: 'black', nombre: 'Tarjeta de crédito Black', numeroEnmascarado: '•••• 6421', predeterminada: true }
   ]);
   assert.deepEqual((await json(tarjetas, '/api/tarjetas', 'demo')).map(tarjeta => tarjeta.tipoTarjeta), ['basica']);
 });
@@ -81,21 +94,17 @@ test('H16 un usuario con una sola tarjeta la usa directamente', async () => {
   assert.deepEqual(await json(promociones, '/api/promociones?tarjeta=cta-b-2', 'B'), sinElegir);
 });
 
-test('H16 un perfil sin cuentas de tarjeta sigue viendo las ofertas de la tarjeta de su perfil (como Midi)', async () => {
-  const soloAhorro = { async listarPorPerfil() { return [{ id: 'ahorro', nombre: 'Ahorro', tipo: 'Cuenta de ahorro', segmento: 'Básica', numeroEnmascarado: '•••• 1' }]; } };
-  const repositorios = { accesos: () => accesos, cuentas: () => soloAhorro, preferencias: obtenerRepositorioPreferencias, catalogo: obtenerRepositorio };
-  assert.deepEqual(await json(crearHandlerTarjetas(repositorios), '/api/tarjetas', 'A'), [
-    { id: null, tipoTarjeta: 'basica', nombre: 'Tarjeta Básica', numeroEnmascarado: null, predeterminada: true }
-  ]);
-  const ofertas = await json(crearHandlerPromociones(repositorios), '/api/promociones', 'A');
-  assert.deepEqual(ofertas.map(promo => promo.id), ['restaurante', 'tienda', 'starbucks']);
-  assert.ok(ofertas.every(promo => promo.applicableCard === 'basica'));
-  assert.equal((await crearHandlerPromociones(repositorios).fetch(pedir('/api/promociones?tarjeta=cta-a-3', 'A'))).status, 404);
+test('H16 un usuario sin tarjetas asociadas no recibe ofertas ni tarjetas inventadas', async()=>{
+ const vacio={async listarTarjetas(){return [];}};
+ const repositorios={accesos:()=>accesos,tarjetas:()=>vacio,preferencias:obtenerRepositorioPreferencias,catalogo:obtenerRepositorio};
+ assert.deepEqual(await json(crearHandlerTarjetas(repositorios),'/api/tarjetas','A'),[]);
+ assert.deepEqual(await json(crearHandlerPromociones(repositorios),'/api/promociones','A'),[]);
+ assert.equal((await crearHandlerPromociones(repositorios).fetch(pedir('/api/promociones?tarjeta=cta-a-3','A'))).status,404);
 });
 
 test('H16 un error al consultar las tarjetas responde 503', async () => {
-  const falla = { async listarPorPerfil() { throw new Error('Cuentas no disponibles'); } };
-  const respuesta = await crearHandlerTarjetas({ accesos: () => accesos, cuentas: () => falla }).fetch(pedir('/api/tarjetas', 'A'));
+  const falla = { async listarTarjetas() { throw new Error('Cuentas no disponibles'); } };
+  const respuesta = await crearHandlerTarjetas({ accesos: () => accesos, tarjetas: () => falla }).fetch(pedir('/api/tarjetas', 'A'));
   assert.equal(respuesta.status, 503);
   assert.deepEqual(await respuesta.json(), { error: 'No se pudieron cargar tus tarjetas.' });
 });

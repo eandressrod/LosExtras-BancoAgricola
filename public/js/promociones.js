@@ -1,23 +1,29 @@
-import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
-import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
+import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
+import { textoVigencia, textoDisponibleHoy, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
 import { destinoEntradaPromociones } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
 import { conIndicador } from './transiciones.js';
+import { conMinimoCarga } from './carga-tiempo.js';
 
-import { leerCategoria, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
+import { leerCategoria, leerHoy, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
 
-function crearOferta(promotion, categoria) {
+let idsGuardados = [];
+
+function crearOferta(promotion, categoria, hoy) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
   const link = card.querySelector('a');
   link.id = 'promo-' + promotion.id;
-  link.href = urlDetalle(promotion.id, categoria);
+  link.href = urlDetalle(promotion.id, categoria, hoy);
   link.setAttribute('aria-label', `${promotion.merchant}: ${promotion.benefit}. Ver promoción`);
   card.querySelector('h2').textContent = promotion.merchant;
   card.querySelector('.promo-benefit').textContent = promotion.benefit;
   card.querySelector('.promo-description').textContent = promotion.description;
   card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
   card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
+  const disponible = card.querySelector('.promo-today');
+  disponible.textContent = textoDisponibleHoy(promotion);
+  disponible.hidden = !disponible.textContent;
   card.querySelector('.promo-applicability').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
   const badge = card.querySelector('.promo-exclusive');
   badge.hidden = !promotion.exclusive;
@@ -26,16 +32,44 @@ function crearOferta(promotion, categoria) {
   mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion);
+  const boton = card.querySelector('.guardar-promo');
+  const aviso = card.querySelector('.guardar-error');
+  if (boton) {
+    const guardada = idsGuardados.includes(promotion.id);
+    boton.dataset.guardada = guardada ? 'si' : 'no';
+    boton.textContent = guardada ? 'Quitar' : 'Guardar';
+    boton.onclick = async event => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (aviso) aviso.textContent = '';
+      const quitar = boton.dataset.guardada === 'si';
+      try {
+        const response = await fetch('/api/guardadas', {
+          method: quitar ? 'DELETE' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ promocionId: promotion.id })
+        });
+        if (response.status === 401) { location.replace('/index.html'); return; }
+        if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
+        boton.dataset.guardada = quitar ? 'no' : 'si';
+        boton.textContent = quitar ? 'Guardar' : 'Quitar';
+      } catch (error) {
+        if (aviso) aviso.textContent = error.message;
+      }
+    };
+  }
   return card;
 }
 
-const profile = await requireSession();
+const profile = await requireSession({ revelar:false });
 if (profile) {
   const status = document.querySelector('#list-status');
   const cards = document.querySelector('#cards');
   const retry = document.querySelector('#retry');
   const showAll = document.querySelector('#show-all');
+  const exitToday = document.querySelector('#exit-today');
   const emptyPreferences = document.querySelector('#empty-preferences');
+  const todayFilter = document.querySelector('#today-filter');
   const filtros = document.querySelector('#category-filter');
   const chips = [...document.querySelectorAll('.filter-chip')];
   const cardChoice = document.querySelector('#card-choice');
@@ -47,16 +81,24 @@ if (profile) {
   const opcionesTarjeta = [];
   let categorias = null;
   let categoria = null;
+  let hoy = leerHoy(location.search, history.state, profile.id);
   let tarjeta = null;
   let preparada = false;
   let consultaActual = 0;
   let aperturaRegistrada = false;
   const indicador = document.querySelector('#promotions-loading');
 
-  // H5: el filtro activo queda marcado y en la entrada del historial, para volver del detalle al mismo listado.
+  // H5 y H17: los filtros activos quedan marcados y en la entrada del historial, para volver del detalle al mismo listado.
   function mostrarFiltro(url) {
     for (const chip of chips) chip.setAttribute('aria-pressed', String((chip.dataset.category || null) === categoria));
+    todayFilter.setAttribute('aria-pressed', String(hoy));
     history.replaceState(estadoNavegacion(profile.id, categoria), '', url);
+  }
+
+  function textoVacio() {
+    const nombre = categoria && categoriaVigente(categoria, categorias).nombre;
+    if (hoy) return nombre ? `No hay promociones de ${nombre} disponibles hoy para tu perfil.` : 'No hay promociones disponibles hoy para tu perfil.';
+    return nombre ? `No hay promociones de ${nombre} para tu perfil.` : 'No hay promociones para tus intereses.';
   }
 
   function crearFiltro(item) {
@@ -92,6 +134,23 @@ if (profile) {
     status.textContent = 'No tienes tarjetas para consultar beneficios.';
     status.className = 'note';
     filtros.hidden = true;
+    todayFilter.hidden = true;
+  }
+
+  async function leerIdsGuardados() {
+    if (typeof fetch !== 'function') return [];
+    const aviso = document.querySelector('#saved-status');
+    try {
+      const response = await fetch('/api/guardadas', { cache: 'no-store' });
+      if (response.status === 401) { location.replace('/index.html'); return []; }
+      if (!response.ok) throw new Error('No se pudieron cargar las promociones guardadas.');
+      const datos = await response.json();
+      if (aviso) aviso.textContent = '';
+      return datos.ids || [];
+    } catch (error) {
+      if (aviso) aviso.textContent = error.message;
+      return [];
+    }
   }
 
   // Categorías vigentes (H5) y tarjetas propias (H16) se cargan juntas; si algo falla, Reintentar.
@@ -107,8 +166,10 @@ if (profile) {
         const destino = destinoEntradaPromociones(location.search, preferencias);
         if (destino) { location.replace(destino); return false; }
       }
+      revelarPagina();
       [categorias, tarjetas] = await Promise.all([getJSON('/api/categorias'), getJSON('/api/tarjetas')]);
     } catch (error) {
+      revelarPagina();
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;
@@ -116,7 +177,7 @@ if (profile) {
     }
     categorias.forEach(crearFiltro);
     categoria = categoriaVigente(pedida, categorias)?.id ?? null;
-    mostrarFiltro(urlListado(categoria) + location.hash);
+    mostrarFiltro(urlListado(categoria, null, hoy) + location.hash);
     tarjeta = tarjetaActiva(tarjetas, leerTarjetaElegida(sesion, profile.id));
     preparada = true;
     if (!tarjeta) {
@@ -140,18 +201,22 @@ if (profile) {
     status.className = 'note';
     retry.hidden = true;
     showAll.hidden = true;
+    exitToday.hidden = true;
     emptyPreferences.hidden = true;
     cards.replaceChildren();
     indicador.hidden = false;
     try {
-      // La API valida la tarjeta y aplica sus beneficios, los intereses y la categoría del dueño de la sesión.
-      const promotions = await getJSON(conTarjeta(urlConsulta(categoria), tarjeta.id));
+      // La API valida la tarjeta y aplica sus beneficios, los intereses, la categoría y Disponibles hoy del dueño de la sesión.
+      const promotions = await conMinimoCarga(() => getJSON(conTarjeta(urlConsulta(categoria, hoy), tarjeta.id)));
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
-      for (const promotion of promotions) cards.append(crearOferta(promotion, categoria));
-      if (promotions.length) status.textContent = '';
-      else status.textContent = categoria ? `No hay promociones de ${categoriaVigente(categoria, categorias).nombre} para tu perfil.` : 'No hay promociones para tus intereses.';
-      showAll.hidden = promotions.length !== 0 || !categoria;
-      emptyPreferences.hidden = promotions.length !== 0;
+      idsGuardados = await leerIdsGuardados();
+      if (turno !== consultaActual) return;
+      for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy));
+      const vacio = promotions.length === 0;
+      status.textContent = vacio ? textoVacio() : '';
+      showAll.hidden = !vacio || !categoria;
+      exitToday.hidden = !vacio || !hoy;
+      emptyPreferences.hidden = !vacio || hoy;
       const seleccionado = document.getElementById(decodeURIComponent(location.hash.slice(1)));
       if (seleccionado?.classList.contains('promo-card')) seleccionado.scrollIntoView({ block: 'center' });
     } catch (error) {
@@ -167,7 +232,14 @@ if (profile) {
   function elegir(nueva) {
     if (nueva === categoria) return;
     categoria = nueva;
-    mostrarFiltro(urlListado(categoria));
+    mostrarFiltro(urlListado(categoria, null, hoy));
+    return loadPromotions();
+  }
+
+  function cambiarHoy(activo) {
+    if (!tarjeta || activo === hoy) return;
+    hoy = activo;
+    mostrarFiltro(urlListado(categoria, null, hoy));
     return loadPromotions();
   }
 
@@ -187,6 +259,8 @@ if (profile) {
   const [todas] = chips;
   todas.addEventListener('click', () => elegir(null));
   showAll.addEventListener('click', () => elegir(null));
+  todayFilter.addEventListener('click', () => cambiarHoy(!hoy));
+  exitToday.addEventListener('click', () => cambiarHoy(false));
   retry.addEventListener('click', cargar);
   await cargar();
 }

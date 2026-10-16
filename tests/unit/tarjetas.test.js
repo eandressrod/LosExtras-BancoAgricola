@@ -1,36 +1,34 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { tarjetasPropias, tarjetasDelUsuario, elegirTarjeta } from '../../backend/servicios/tarjetas.js';
-import { crearRepositorioCuentasMock } from '../../backend/repositorios/cuentas.mock.js';
+import { crearRepositorioProductosMock } from '../../backend/repositorios/productos-menu.mock.js';
 
 // H16: las tarjetas propias son las cuentas de tipo tarjeta del usuario; su segmento define los beneficios.
-const tarjetasDe = async perfil => tarjetasPropias(await crearRepositorioCuentasMock().listarPorPerfil(perfil));
+const tarjetasDe = async perfil => tarjetasPropias(await crearRepositorioProductosMock().listarTarjetas(perfil));
 const consulta = texto => new URLSearchParams(texto);
 
-test('H16 las tarjetas propias son las cuentas de tipo tarjeta con su segmento, en su orden', async () => {
+test('la selección de beneficios usa tarjetas con cuenta asociada y no deriva tarjetas de cuentas bancarias',()=>{
+  const fila={id:'t1',cuentaId:'c1',tipoTarjeta:'black',producto:{nombre:'Black',modalidad:'crédito'},numeroEnmascarado:'•••• 6412',saldo:800};
+  assert.deepEqual(tarjetasPropias([fila]),[{id:'t1',cuentaId:'c1',tipoTarjeta:'black',nombre:'Tarjeta de crédito Black',numeroEnmascarado:'•••• 6412'}]);
+  assert.deepEqual(tarjetasDelUsuario([],{tipoTarjeta:'black'}),[]);
+});
+
+test('H16 las tarjetas propias son el catálogo único asociado a cuentas, en su orden', async () => {
   assert.deepEqual((await tarjetasDe('A')).map(t => [t.id, t.tipoTarjeta, t.numeroEnmascarado]), [
-    ['cta-a-3', 'basica', '•••• 4821'], ['cta-a-4', 'black', '•••• 7754']
+    ['cta-a-3', 'basica', '•••• 6411'], ['cta-a-4', 'black', '•••• 6412']
   ]);
   assert.deepEqual((await tarjetasDe('B')).map(t => [t.id, t.tipoTarjeta]), [['cta-b-2', 'black']]);
   assert.deepEqual((await tarjetasDe('demo')).map(t => t.tipoTarjeta), ['basica']);
 });
 
-test('H16 una cuenta que no es tarjeta o con segmento desconocido no se ofrece; no se exponen saldos', () => {
-  const cuentas = [
-    { id: 'ahorro', nombre: 'Ahorro', tipo: 'Cuenta de ahorro', segmento: 'Básica', numeroEnmascarado: '•••• 1', saldo: 10 },
-    { id: 'rara', nombre: 'Oro', tipo: 'Tarjeta de Débito', segmento: 'Oro', numeroEnmascarado: '•••• 2', saldo: 20 },
-    { id: 'debito', nombre: 'Débito Black', tipo: 'Tarjeta de Débito', segmento: 'Black', numeroEnmascarado: '•••• 3', saldo: 30 }
-  ];
-  assert.deepEqual(tarjetasPropias(cuentas), [{ id: 'debito', tipoTarjeta: 'black', nombre: 'Débito Black', numeroEnmascarado: '•••• 3' }]);
-  assert.deepEqual(tarjetasPropias([]), []);
+test('H16 ignora cuentas o tarjetas sin asociación y no expone saldos',()=>{
+  const filas=[{id:'cuenta',tipo:'Cuenta de ahorro'}, {id:'incompleta',tipoTarjeta:'black'},
+    {id:'t',cuentaId:'c',tipoTarjeta:'black',nombre:'Black',numeroEnmascarado:'•••• 1111',saldo:50}];
+  assert.deepEqual(tarjetasPropias(filas),[{id:'t',cuentaId:'c',tipoTarjeta:'black',nombre:'Black',numeroEnmascarado:'•••• 1111'}]);
 });
-
-test('H16 un perfil sin cuentas de tarjeta (como los que crea Midi) conserva la tarjeta de su perfil', async () => {
-  const ahorro = [{ id: 'ahorro', nombre: 'Ahorro', tipo: 'Cuenta de ahorro', segmento: 'Básica', numeroEnmascarado: '•••• 1' }];
-  assert.deepEqual(tarjetasDelUsuario(ahorro, { tipoTarjeta: 'black' }), [{ id: null, tipoTarjeta: 'black', nombre: 'Tarjeta Black', numeroEnmascarado: null }]);
-  assert.deepEqual(tarjetasDelUsuario([], { tipoTarjeta: 'basica' }).map(tarjeta => tarjeta.tipoTarjeta), ['basica']);
-  assert.deepEqual(tarjetasDelUsuario([], { tipoTarjeta: 'oro' }), []);
-  assert.deepEqual(tarjetasDelUsuario(await crearRepositorioCuentasMock().listarPorPerfil('A'), { tipoTarjeta: 'basica' }).map(tarjeta => tarjeta.id), ['cta-a-3', 'cta-a-4']);
+test('H16 un perfil sin tarjetas asociadas queda vacío sin inventar una tarjeta del perfil',()=>{
+  assert.deepEqual(tarjetasDelUsuario([],{tipoTarjeta:'black'}),[]);
+  assert.deepEqual(tarjetasDelUsuario([{tipo:'Cuenta de ahorro'}],{tipoTarjeta:'basica'}),[]);
 });
 
 test('H16 sin tarjeta pedida se usa la del perfil; si no coincide, la primera propia', async () => {

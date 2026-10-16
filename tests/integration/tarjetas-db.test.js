@@ -15,19 +15,10 @@ before(async () => {
 });
 after(async () => { await db?.close(); });
 
-test('H16 A tiene Tarjeta Básica y Black, B su Black y demo su Básica, cada una con su dueño', async () => {
-  const { rows } = await db.query("select perfil_id, id, segmento, numero_enmascarado from public.cuentas where tipo ilike 'tarjeta%' order by perfil_id, orden");
-  assert.deepEqual(rows.map(fila => `${fila.perfil_id} ${fila.id} ${fila.segmento} ${fila.numero_enmascarado}`), [
-    'A cta-a-3 Básica •••• 4821', 'A cta-a-4 Black •••• 7754', 'B cta-b-2 Black •••• 1744', 'demo cta-demo-3 Básica •••• 3390'
-  ]);
+test('H16 A tiene Básica y Black y ambas pertenecen a cuentas de A',async()=>{
+ const {rows}=await db.query("select id,cuenta_id,tipo_tarjeta from tarjetas_usuario where perfil_id='A' order by orden");
+ assert.deepEqual(rows,[{id:'cta-a-3',cuenta_id:'cta-a-1',tipo_tarjeta:'basica'},{id:'cta-a-4',cuenta_id:'cta-a-2',tipo_tarjeta:'black'}]);
 });
-
-test('H16 la migración de tarjetas es aditiva: reaplicarla no duplica ni pisa datos', async () => {
-  const archivo = (await readdir(carpeta)).find(nombre => nombre.endsWith('_tarjetas_propias.sql'));
-  assert.ok(archivo, 'falta la migración de tarjetas propias');
-  await db.query("update public.cuentas set saldo = 1 where id = 'cta-a-4'");
-  await db.exec(await readFile(new URL(archivo, carpeta), 'utf8'));
-  const { rows } = await db.query("select count(*)::integer as total, max(saldo) as saldo from public.cuentas where id = 'cta-a-4'");
-  assert.equal(rows[0].total, 1);
-  assert.equal(Number(rows[0].saldo), 1);
+test('no se pueden volver a insertar tarjetas dentro de cuentas',async()=>{
+ await assert.rejects(db.query("insert into cuentas(id,perfil_id,nombre,tipo,numero_completo,numero_enmascarado) values('invalida','A','Black','Tarjeta de Crédito','1234567890','1234567890')"),e=>e.code==='23514');
 });

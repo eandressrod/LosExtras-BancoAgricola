@@ -1,6 +1,7 @@
 import { tablas, filaNueva, claveFila, identidad } from './schema.js';
 
 const secuencias = new Map();
+const numerosGenerados = new Set();
 export function siguienteId(prefijo, filas = []) {
   const usados = new Set(filas.flatMap(f => [f.id, f.usuario_acceso]));
   let n = secuencias.get(prefijo) || 0, id;
@@ -13,11 +14,16 @@ export function generarPerfil(azar = Math.random, existentes = {}) {
   const id = siguienteId('usuario', existentes.perfiles);
   const perfil = { ...filaNueva('perfiles'), id, nombre: elegir(['Ana López', 'Luis Pérez', 'Marta García', 'Carlos Rivera', 'Sofía Torres', 'Diego Ramírez']),
     tipo_tarjeta: elegir(['basica', 'black']), usuario_acceso: id, contrasena: '123' };
-  const modelos = [['Max Electrónico', 'Cuenta de ahorro'], ['CUENTA DIGITAL', 'Cuenta de ahorro'], ['Cuenta Corriente', 'Corriente'], ['Tarjeta de Crédito', 'Tarjeta de Crédito']];
+  const modelos = [['Max Electrónico', 'Cuenta de ahorro'], ['CUENTA DIGITAL', 'Cuenta de ahorro'], ['Cuenta Corriente', 'Corriente']];
+  const usados = new Set([...numerosGenerados,...(existentes.cuentas ?? []).map(c => c.numero_completo)]);
   const cuentas = Array.from({ length: Math.min(3, Math.floor(azar() * 4)) }, (_, i) => {
     const [nombre, tipo] = elegir(modelos);
+    let numero = 1000000000 + Math.floor(azar() * 8999999997) + i;
+    while (usados.has(String(numero))) numero = 1000000000 + (numero - 999999999) % 9000000000;
+    usados.add(String(numero));
+    numerosGenerados.add(String(numero));
     return { ...filaNueva('cuentas'), id: siguienteId('cuenta', existentes.cuentas), perfil_id: perfil.id, nombre, tipo,
-      numero_enmascarado: `•••• ${elegir(['1320', '5376', '4120', '0341'])}`, saldo: elegir([0, 30, 150, 1200, 3450.75]),
+      numero_completo: String(numero), saldo: elegir([0, 30, 150, 1200, 3450.75]),
       segmento: perfil.tipo_tarjeta === 'black' ? 'Black' : 'Básica', orden: i + 1 };
   });
   return { perfiles: [perfil], cuentas, preferencias_usuario: [{ usuario_id: perfil.id, categorias: [], encuesta_completada: false }] };

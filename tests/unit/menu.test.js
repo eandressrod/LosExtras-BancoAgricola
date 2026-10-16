@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+test('Cuentas excluye tarjetas aunque el repositorio histórico mezcle ambos productos', async () => {
+  const { obtenerDatosMenu } = await import('../../backend/servicios/menu.js');
+  const cuenta={id:'ahorro',tipo:'Cuenta de ahorro',numeroCompleto:'8122104944',saldo:0};
+  const filas=[cuenta,{id:'credito',tipo:'Tarjeta de Crédito',numeroEnmascarado:'•••• 4821'},
+    {id:'debito',tipo:'tarjeta de débito',numeroEnmascarado:'•••• 7754'}];
+  const data=await obtenerDatosMenu({id:'A'}, {listarPorPerfil:async()=>filas}, {estaCompletada:async()=>false});
+  assert.deepEqual(data.cuentas,[cuenta]);assert.equal(filas.length,3);
+});
+
 test('menu conserva identidad y consulta cuentas y encuesta por el dueño', async () => {
   const { obtenerDatosMenu } = await import('../../backend/servicios/menu.js');
   const perfil = { id: 'A', nombre: 'Usuario A', tipoTarjeta: 'basica' };

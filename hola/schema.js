@@ -15,7 +15,7 @@ export const tablas = {
   ] },
   cuentas: { titulo: 'Cuentas', grupo: 'Usuarios', claves: ['id'], campos: [
     texto('id', 'ID'), texto('perfil_id', 'Perfil', { referencia: 'perfiles' }), texto('nombre', 'Nombre'), texto('tipo', 'Tipo'),
-    texto('numero_enmascarado', 'Número enmascarado'), numero('saldo', 'Saldo'), texto('moneda', 'Moneda', { inicial: 'USD' }),
+    texto('numero_completo', 'Número de cuenta'), numero('saldo', 'Saldo'), texto('moneda', 'Moneda', { inicial: 'USD' }),
     texto('segmento', 'Segmento', { inicial: 'Básica' }), numero('orden', 'Orden', 0, { entero: true })
   ] },
   preferencias_usuario: { titulo: 'Preferencias', grupo: 'Usuarios', claves: ['usuario_id'], campos: [

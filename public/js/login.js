@@ -1,7 +1,8 @@
 import { fetchSession, mayHaveSession, rememberLogin, forgetLogin, getJSON } from './comun.js';
 import { necesitaCargaInicial, prepararInicio, transicionarInicio } from './inicio.js';
 import { credencialesDePerfil } from './usuarios-prueba.js';
-import { deslizarHaciaMenu } from './transiciones.js';
+import { deslizarHaciaMenu, mostrarCargaAcceso, programarRetiroAviso } from './transiciones.js';
+import { conMinimoCarga } from './carga-tiempo.js';
 
 const form = document.querySelector('#login-form');
 const { username, password } = form.elements;
@@ -17,6 +18,18 @@ const usersStatus = document.querySelector('#testing-users-status');
 const usersRetry = document.querySelector('#retry-testing-users');
 const aboutDialog = document.querySelector('#login-about');
 let perfilesDisponibles = [];
+let preparando = null;
+let entrando = false;
+let cicloAcceso = 0;
+
+function prepararAcceso() {
+  if (!preparando) {
+    const actual = cargarAcceso(cicloAcceso);
+    preparando = actual;
+    actual.finally(() => { if (preparando === actual) preparando = null; });
+  }
+  return preparando;
+}
 
 function mostrarUsuarios(perfiles) {
   usersList.replaceChildren();
@@ -51,41 +64,58 @@ async function abrirUsuarios() {
   } catch (error) { usersStatus.textContent = error.message; usersRetry.hidden = false; }
 }
 
-async function prepararAcceso() {
-  const primeraEntrada = necesitaCargaInicial(sessionStorage) && !mayHaveSession();
-  startupScreen.hidden = !primeraEntrada;
+async function cargarAcceso(ciclo) {
+  const vigente = () => ciclo === cicloAcceso && !document.hidden;
+  if (!vigente()) return;
+  entrando = false;
+  loginScreen.inert = false;
+  form.reset();
+  showError('');
+  const primeraEntrada = necesitaCargaInicial(sessionStorage);
+  startupScreen.hidden = false;
   loginScreen.hidden = true;
   startupError.hidden = true;
   startupRetry.disabled = true;
   submitButton.disabled = true;
-  if (await redirectIfLoggedIn()) return;
-  if (!primeraEntrada) {
-    loginScreen.hidden = false;
+  if (await redirectIfLoggedIn(vigente,primeraEntrada?2000:1000) || !vigente()) return;
+  try {
+    const resultado = await transicionarInicio(startupScreen, loginScreen, {
+      indicador:document.querySelector('#startup-spinner'), formulario:form, vigente,
+      preparar:async () => {
+        if (!primeraEntrada) return {perfiles:perfilesDisponibles};
+        const datos=await prepararInicio({storage:sessionStorage,minimo:0,cargarPerfiles:()=>getJSON('/api/perfiles?testing=1')});
+        if (datos.error) throw datos.error;
+        return datos;
+      }
+    });
+    if (!vigente()) return;
+    perfilesDisponibles=resultado.perfiles;
     submitButton.disabled = false;
-    return;
-  }
-  const resultado = await prepararInicio({ storage: sessionStorage, cargarPerfiles: () => getJSON('/api/perfiles?testing=1') });
-  if (resultado.error) {
+    if (!document.querySelector('#session-expired').hidden) programarRetiroAviso(document.querySelector('#session-expired'));
+  } catch {
+    if (!vigente()) return;
     startupScreen.hidden = false;
     loginScreen.hidden = true;
     startupError.hidden = false;
     startupRetry.disabled = false;
-    return;
   }
-  perfilesDisponibles = resultado.perfiles;
-  await transicionarInicio(startupScreen, loginScreen, { indicador:document.querySelector('#startup-spinner'), formulario:form });
-  submitButton.disabled = false;
 }
 
 // Entrar siempre lleva primero al menú: con una sesión vigente no se muestra el login.
-async function redirectIfLoggedIn() {
+async function redirectIfLoggedIn(vigente,minimo) {
   try {
-    if (await fetchSession()) {
-      location.replace('/menu.html');
+    const perfil = await conMinimoCarga(fetchSession,{minimo});
+    if (!vigente()) return true;
+    if (perfil) {
+      await deslizarHaciaMenu(loginScreen, { modo:'fade' });
       return true;
     }
+    const habiaSesion = mayHaveSession();
     forgetLogin();
+    if (habiaSesion) document.querySelector('#session-expired').hidden = false;
+    mostrarMotivoSalida();
   } catch {
+    if (!vigente()) return true;
     startupScreen.hidden = false;
     startupError.hidden = false;
     startupRetry.disabled = false;
@@ -119,28 +149,42 @@ function setBusy(busy) {
 
 // El backend valida usuario y clave contra la base de datos y, si coinciden, crea la sesión.
 async function enter() {
+  if (entrando) return;
   const missing = missingFieldsError();
   if (missing) return showError(...missing);
   showError('');
+  document.querySelector('#session-expired').hidden = true;
   setBusy(true);
+  entrando = true;
+  loginScreen.inert = true;
+  const ciclo = cicloAcceso;
+  let aceptado=false;
   try {
-    const response = await fetch('/api/auth/login', {
+    const [response] = await Promise.all([conMinimoCarga(() => fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ usuario: username.value.trim(), contrasena: password.value })
-    });
+    })), mostrarCargaAcceso(form, document.querySelector('#startup-spinner'))]);
     if (response.ok) {
+      aceptado=true;
       rememberLogin();
+      if (ciclo !== cicloAcceso || document.hidden) return;
       await deslizarHaciaMenu(loginScreen);
       return;
     }
     const { error } = await response.json().catch(() => ({}));
     const invalid = response.status === 401 ? [username, password] : [];
+    loginScreen.inert=false;
+    form.hidden=false;
     showError(error || 'No se pudo iniciar sesión. Intenta de nuevo.', invalid);
   } catch {
     showError('No hay conexión con el servidor. Revisa tu conexión e intenta de nuevo.');
+  } finally {
+    if(!aceptado && ciclo===cicloAcceso && !document.hidden){
+      document.querySelector('#startup-spinner').hidden=true;form.hidden=false;loginScreen.inert=false;
+      setBusy(false);entrando=false;
+    }
   }
-  setBusy(false);
 }
 
 form.addEventListener('submit', event => {
@@ -150,6 +194,14 @@ form.addEventListener('submit', event => {
 form.addEventListener('input', event => event.target.removeAttribute('aria-invalid'));
 
 addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    cicloAcceso++;
+    preparando = null;
+    usersDialog.close(); aboutDialog.close();
+    startupScreen.hidden = false; loginScreen.hidden = true;
+  } else return prepararAcceso();
+});
 startupRetry.addEventListener('click', prepararAcceso);
 document.querySelector('#show-testing-users').addEventListener('click', abrirUsuarios);
 document.querySelector('#login-recover').addEventListener('click', abrirUsuarios);
@@ -157,9 +209,10 @@ usersRetry.addEventListener('click', abrirUsuarios);
 document.querySelector('#close-testing-users').addEventListener('click', () => usersDialog.close());
 for (const id of ['#login-contact','#login-help']) document.querySelector(id).addEventListener('click', () => aboutDialog.showModal());
 document.querySelector('#close-login-about').addEventListener('click', () => aboutDialog.close());
-try {
+function mostrarMotivoSalida() { try {
   const motivo = sessionStorage.getItem('bancoagricola-motivo-salida');
   sessionStorage.removeItem('bancoagricola-motivo-salida');
-  if (motivo === 'inactividad') showError('Tu sesión terminó por inactividad.');
-} catch { /* El acceso no depende del almacenamiento local. */ }
+  if (motivo === 'inactividad') document.querySelector('#session-expired').hidden = false;
+} catch { /* El acceso no depende del almacenamiento local. */ } }
+mostrarMotivoSalida();
 prepararAcceso();

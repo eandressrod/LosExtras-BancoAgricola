@@ -33,6 +33,7 @@ const routes = {
   '/api/mensajes': recursos,
   '/api/metas': recursos,
   '/api/promociones-apertura': recursos,
+  '/api/guardadas': recursos,
   '/api/tarjetas': tarjetas
 };
 const types = {
