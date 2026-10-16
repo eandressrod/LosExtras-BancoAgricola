@@ -2,10 +2,13 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8">
+    <script src="/js/arranque.js"></script>
+    <link rel="stylesheet" href="/css/inicio.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Detalle · Los Extras</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
+    <link rel="stylesheet" href="/css/carga.css">
     <link rel="stylesheet" href="/css/promociones.css">
     <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
     <script type="module" src="/js/detalle.js"></script>
@@ -21,6 +24,7 @@
     <script type="module" src="/pwa/pwa.js"></script>
   </head>
   <body class="detail-page" data-session="pending">
+    <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <div class="header-row">
@@ -43,6 +47,7 @@
           <p id="description" class="detail-description"></p>
           <p id="payment" class="promo-applicability"></p>
           <p id="validity" class="promo-validity"></p>
+          <p id="today" class="promo-today" hidden></p>
           <ul id="conditions" class="promo-conditions"></ul>
         </div>
       </div>

@@ -8,16 +8,26 @@ function resultado({ data, error }) {
 }
 
 export function crearRepositorioProductosSupabase(cliente) {
+  const listarTarjetas = async perfilId => (resultado(await cliente.from('tarjetas_usuario')
+    .select('id,cuenta_id,tipo_tarjeta,producto_id,numero_enmascarado,saldo,moneda,orden,producto:productos_tarjeta(id,nombre,modalidad,red,descripcion),cuenta:cuentas!tarjetas_usuario_cuenta_propietario_fkey(id,numero_completo)')
+    .eq('perfil_id',perfilId).order('orden')) ?? []).map(t => ({
+      id:t.id,cuentaId:t.cuenta_id,tipoTarjeta:t.tipo_tarjeta,productoId:t.producto_id,
+      numeroEnmascarado:t.numero_enmascarado,saldo:Number(t.saldo),moneda:t.moneda,
+      producto:t.producto,cuenta:{id:t.cuenta.id,numeroCompleto:t.cuenta.numero_completo}
+    }));
   return {
+    listarTarjetas,
     async resumen(perfilId) {
       const respuestas = await Promise.all([
-        cliente.from('tarjetas_usuario').select('id,producto_id,numero_enmascarado,saldo,moneda,orden').eq('perfil_id', perfilId).order('orden'),
+        listarTarjetas(perfilId),
         cliente.from('productos_tarjeta').select('id,nombre,modalidad,red,descripcion,orden').order('orden'),
         cliente.from('puntos_usuario').select('acumulados').eq('perfil_id', perfilId).maybeSingle(),
         cliente.from('mensajes_usuario').select('id', { count: 'exact', head: true }).eq('perfil_id', perfilId).eq('leido', false)
       ]);
-      const [tarjetas, productos, puntos] = respuestas.map(resultado);
-      return { tarjetas: (tarjetas ?? []).map(t => ({ id: t.id, productoId: t.producto_id, numeroEnmascarado: t.numero_enmascarado, saldo: Number(t.saldo), moneda: t.moneda, producto: productos.find(p => p.id === t.producto_id) })), puntos: puntos?.acumulados ?? 0, productosDisponibles: productos ?? [], mensajesPendientes: respuestas[3].count ?? 0 };
+      resultado(respuestas[3]);
+      const tarjetas=respuestas[0];
+      const [productos,puntos]=respuestas.slice(1,3).map(resultado);
+      return { tarjetas, puntos: puntos?.acumulados ?? 0, productosDisponibles: productos ?? [], mensajesPendientes: respuestas[3].count ?? 0 };
     },
     async listarMensajes(perfilId) {
       return (resultado(await cliente.from('mensajes_usuario').select('id,titulo,texto,fecha,leido').eq('perfil_id', perfilId).order('fecha', { ascending: false })) ?? []).map(mensajeVista);

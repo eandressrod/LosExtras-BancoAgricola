@@ -30,7 +30,7 @@ test('H2 TDD: usuario B recibe sus cuentas Black y destino a Para Ti si tiene en
   assert.equal(res.status, 200);
   const data = await res.json();
   assert.equal(data.perfil.tipoTarjeta, 'black');
-  assert.equal(data.cuentas.length, 2);
+  assert.equal(data.cuentas.length, 1);
   assert.ok(data.cuentas.every(c => c.segmento === 'Black'));
   assert.equal(data.destinoPromociones, '/promociones.html');
 });
@@ -50,6 +50,10 @@ test('menu consulta siempre el dueño de sesión aunque pidan otro usuario en la
   const data = await res.json();
   assert.equal(data.perfil.id, 'A');
   assert.ok(data.cuentas.every(c => c.perfilId === 'A'));
+  assert.equal(data.cuentas.length,2);
+  assert.ok(data.cuentas.every(c => !/tarjeta/i.test(c.tipo)));
+  assert.ok(data.cuentas.every(c => /^\d{10}$/.test(c.numeroCompleto)));
+  assert.ok(data.tarjetas.length>0);
 });
 
 test('el estado se puede releer al pulsar Promociones sin sustituir una fila pendiente', async () => {

@@ -4,12 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Iniciar sesión · Los Extras</title>
-    <script>
-      // Decidir antes del primer render evita un destello del splash al recargar.
-      try {
-        if (sessionStorage.getItem('los-extras-inicio-listo') === '1' || localStorage.getItem('los-extras-sesion-iniciada') === '1') document.documentElement.dataset.inicio = 'directo';
-      } catch { /* Con almacenamiento bloqueado se conserva la carga inicial. */ }
-    </script>
+    <script src="/js/arranque.js"></script>
     <link rel="preload" href="/recursos/fuentes/CIBFontSans-Light.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="/recursos/fuentes/CIBFontSans-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="/css/styles.css">
@@ -38,7 +33,6 @@
         <img class="startup-stroke startup-purple" src="/recursos/inicio/arco-morado.png" alt="" aria-hidden="true">
         <img class="startup-stroke startup-right" src="/recursos/inicio/arco-derecho.png" alt="" aria-hidden="true">
       </div>
-
       <div id="startup-error" class="startup-error" role="alert" hidden>
         <p>No se pudieron cargar los usuarios.</p>
         <button id="startup-retry" type="button">Reintentar</button>
@@ -53,6 +47,7 @@
       <div class="login__intro">
         <h1>Bienvenido a la aplicación de<br>Bancoagrícola</h1>
       </div>
+      <div id="session-expired" class="session-banner" role="status" hidden><span class="session-banner-icon"><img src="/recursos/menu/aviso.svg" alt=""></span><span>Tu sesión ha expirado</span></div>
 
       <div id="startup-spinner" class="startup-indicator" role="status" aria-label="Cargando acceso" hidden><svg class="loading-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="147 22.65" transform="rotate(230 32 32)"/></svg><span>CARGANDO...</span></div>
       <form id="login-form" class="login__form" novalidate>
@@ -77,8 +72,7 @@
     </dialog>
     <dialog id="login-about" class="login-dialog" aria-labelledby="login-about-title">
       <div class="login-dialog-header"><h2 id="login-about-title">Los Extras</h2><button id="close-login-about" class="login-dialog-close" type="button" aria-label="Cerrar información">×</button></div>
-      <p>Equipo del módulo de promociones de Bancoagrícola.</p>
-      <ul><li>David Ignacio Argueta Valles</li><li>Ernesto Andrés Rodríguez Sandoval</li><li>Sara Nicole Meléndez Ortez</li><li>Samuel André Mojica Mercado</li><li>German Eduardo Suazo Aparicio</li></ul>
+      <p>Somos Los Extras, un equipo que desarrolla desde cero el flujo de la zona de promociones.</p>
     </dialog>
     <noscript><style>.startup-screen { display: none !important; }</style>Activa JavaScript para usar la aplicación.</noscript>
   </body>

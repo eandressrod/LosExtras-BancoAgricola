@@ -12,6 +12,13 @@ export function textoVigencia(promo) {
   return (promo.expired ? 'Venció el ' : 'Válida hasta el ') + fecha(promo.validUntil);
 }
 
+/** H17: por qué se puede usar hoy. No afirma que ya se cumpla una compra mínima. */
+export function textoDisponibleHoy(promo) {
+  if (!promo.availableToday) return '';
+  const motivo = promo.usageDays?.length ? 'es uno de sus días válidos' : 'aplica todos los días de su vigencia';
+  return `Disponible hoy: ${motivo}${promo.minimumPurchase != null ? ', con la compra mínima indicada' : ''}.`;
+}
+
 export function condicionesVisibles(promo) {
   const condiciones = [];
   if (promo.usageDays?.length) {

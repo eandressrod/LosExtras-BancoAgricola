@@ -8,8 +8,53 @@
   background: #fff;
   z-index: 10;
 }
+@view-transition { navigation:auto; }
+::view-transition-group(root) { animation:none; }
+::view-transition-image-pair(root) { isolation:isolate; }
+::view-transition-old(root) { animation:none; z-index:1; }
+::view-transition-new(root) { animation:entrada-pantalla 320ms cubic-bezier(.25,.1,.25,1) both; mix-blend-mode:normal; z-index:2; }
+@keyframes entrada-pantalla { from { transform:translateX(100%); } to { transform:translateX(0); } }
+html[data-direccion="volver"]::view-transition-old(root) { animation:salida-pantalla 320ms cubic-bezier(.25,.1,.25,1) both;z-index:2; }
+html[data-direccion="volver"]::view-transition-new(root) { animation:none;z-index:1; }
+@keyframes salida-pantalla { from { transform:translateX(0); } to { transform:translateX(100%); } }
+@media (prefers-reduced-motion:reduce) {
+  @view-transition { navigation:none; }
+  ::view-transition-new(root) { animation:none; }
+  html[data-direccion="volver"]::view-transition-old(root) { animation:none; }
+}
 .startup-screen[hidden], .login[hidden] { display: none !important; }
-html[data-inicio="directo"] .startup-screen { display: none !important; }
+html[data-entrada-menu="carga"] #menu-entry-loading,
+html[data-entrada-menu="login"] #menu-entry-loading { display:flex !important; visibility:visible; }
+html[data-entrada-menu="fade"] #menu-resume-loading { display:block !important; visibility:visible; }
+.bank-loading-screen { position:fixed;inset:0;width:min(100%,480px);height:100dvh;margin-inline:auto;background:#fff;overflow:hidden; }
+.bank-loading-indicator { position:absolute;inset:0;pointer-events:none;color:#8b8b8b; }
+.bank-loading-indicator .loading-ring { position:absolute;top:calc(40.6% - 28px);left:calc(50% - 28px);width:56px;height:56px;opacity:.52; }
+.bank-loading-indicator > span { position:absolute;top:80.5%;left:0;width:100%;text-align:center;font:300 16px/1 'CIB Sans',Arial,sans-serif; }
+.bank-loading-screen > img,
+#menu-resume-loading > img { opacity:.5; }
+/* Cubierta previa al render para recargas/reaperturas; usa los mismos recursos de bienvenida. */
+html[data-arranque="pending"]::before,
+html[data-arranque="pending"]::after,
+html[data-arranque="pending"] .pwa-privacidad::before,
+html[data-arranque="pending"] .pwa-privacidad::after {
+  content:''; position:fixed; inset:0; width:min(100%,480px); height:100dvh; margin-inline:auto;
+  z-index:2147483646; pointer-events:auto;
+}
+html[data-arranque="pending"]::before,
+html[data-arranque="pending"] .pwa-privacidad::before {
+  background:#fff url('/recursos/inicio/marca.png') no-repeat 50% 45.84%;
+  background-size:69.49% auto;
+}
+html[data-arranque="pending"]::after,
+html[data-arranque="pending"] .pwa-privacidad::after {
+  background-image:url('/recursos/inicio/arco-amarillo.png'),url('/recursos/inicio/arco-izquierdo.png'),url('/recursos/inicio/arco-morado.png'),url('/recursos/inicio/arco-derecho.png');
+  background-repeat:no-repeat;
+  background-size:34.32% auto,8.16% auto,44.17% auto,24.36% auto;
+  background-position:0 66.21dvh,0 69.58dvh,calc(min(100vw,480px) * .1186) 73.63dvh,100% 71.47dvh;
+}
+html[data-arranque="pending"] body { visibility:hidden; }
+html[data-arranque="pending"] dialog::backdrop { background:transparent; }
+html[data-arranque="pending"] .pwa-privacidad > .bank-loading-screen { visibility:visible;z-index:2147483647; }
 .startup-brand {
   position: absolute;
   top: 45.84%;

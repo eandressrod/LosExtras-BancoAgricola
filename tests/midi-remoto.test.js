@@ -46,9 +46,9 @@ test('Midi remoto: alta conjunta, login, cuentas, encuesta, promoción, edición
     await pausa(2100); ultima = await servicio.guardar(crypto.randomUUID(),b.cambios());
     respuesta = await menu.fetch(new Request('http://localhost/api/menu',{headers})); assert.equal(respuesta.status,200); datos = await respuesta.json();
     assert.equal(datos.destinoPromociones,'/promociones.html');
-    assert.deepEqual(datos.cuentas,[], 'El perfil con acceso puede probar promociones sin cuentas.');
+    assert.deepEqual(datos.cuentas,[]);
     respuesta = await promociones.fetch(new Request('http://localhost/api/promociones',{headers})); assert.equal(respuesta.status,200);
-    assert.ok((await respuesta.json()).some(p => p.id === promo && p.benefit === '5 %' && p.categoryName === 'Categoría QA Midi'));
+    assert.deepEqual(await respuesta.json(),[], 'Sin tarjetas asociadas no se inventan beneficios del perfil.');
     const temporal = `midi-qa-${crypto.randomUUID()}`;
     const malLote = [
       { tabla:'comercios',operacion:'crear',clave:{id:temporal},datos:{...filaNueva('comercios'),id:temporal,nombre:'Rollback'} },
