@@ -26,7 +26,7 @@ La sesión vence a los **120 segundos** desde la última actividad aceptada por 
 
 Corrección del 15 de octubre: Promociones, detalle y lectura de mensajes muestran un aviso discreto con contador; una interacción real solicita renovar y lo retira tras confirmación. Las demás zonas conservan el diálogo con Continuar/Cerrar sesión. Apertura, recarga y retorno del segundo plano muestran la bienvenida bancaria mientras se comprueba sesión; no repetirla al navegar internamente ni consultar perfiles en cada recarga. La cubierta de retorno es un diálogo a pantalla completa para permitir Reintentar incluso si ya estaba abierto Mensajes u otro diálogo. El login conserva bienvenida y comprobación también al volver del segundo plano. La expiración detectada por una API privada conserva el motivo para avisar en el login; la primera visita sin sesión no se presenta como una sesión expirada. No cambia el contrato de las API ni requiere migraciones.
 
-`POST /api/auth/actividad` exige cookie válida y mismo origen. Login, sesión y actividad devuelven `{perfil, sesion:{id, ahora, inactivaEn, expiraEn}}`, con fechas en milisegundos; `GET /api/auth/sesion` no renueva. La validación compartida de todas las API privadas consulta `sesiones_actividad` mediante `estado_actividad_sesion`, con reloj/bloqueo de PostgreSQL, RLS y permisos exclusivos del backend. Las sesiones vencidas o revocadas no reviven, ni con copia de la cookie. La firma incorpora la fecha de creación; cookies anteriores requieren iniciar sesión nuevamente. La marca local del login ya no determina si se consulta la sesión.
+`POST /api/auth/actividad` exige cookie válida y mismo origen. Login, sesión y actividad devuelven `{perfil, sesion:{id, ahora, inactivaEn, expiraEn}}`, con fechas en milisegundos; `GET /api/auth/sesion` no renueva y, sin sesión válida (ausente, alterada, revocada o vencida), responde 200 con `{perfil:null, sesion:null}` para que la primera visita al login no registre un 4xx en consola; las demás API privadas mantienen 401. La validación compartida de todas las API privadas consulta `sesiones_actividad` mediante `estado_actividad_sesion`, con reloj/bloqueo de PostgreSQL, RLS y permisos exclusivos del backend. Las sesiones vencidas o revocadas no reviven, ni con copia de la cookie. La firma incorpora la fecha de creación; cookies anteriores requieren iniciar sesión nuevamente. La marca local del login ya no determina si se consulta la sesión.
 
 Antes de ejecutar/desplegar este código en otra base, aplicar en orden las migraciones `20261015013734_h13_sesion_inactividad.sql` y `20261015014018_h13_actividad_eliminar_perfil.sql`. La segunda permite que Midi retire un perfil con su estado efímero de actividad. Ambas están aplicadas en el proyecto compartido. No volver a ejecutar migraciones anteriores. No se usa Supabase Auth ni se exponen claves privadas al navegador.
 
@@ -170,6 +170,7 @@ Antes de desplegar esta revisión con Supabase, aplicar la migración nueva `202
 | `tests/unit/` | Pruebas unitarias de lógica |
 | `tests/integration/` | Pruebas de API y base PostgreSQL en memoria |
 | `tests/remote/` | Verificación contra Supabase real |
+| `tests/e2e/` | Camino principal en navegador real (Playwright) con servidor local mock |
 
 **Toda lógica nueva comienza con una prueba:** escribir la prueba unitaria, ejecutarla y observar el fallo esperado; implementar lo mínimo y verla pasar. Para cambios de esquema, escribir primero la prueba de integración de la regla de datos. Cada endpoint nuevo o modificado necesita al menos una prueba de integración. Antes de entregar, la suite completa debe pasar en verde; siguen aplicando los demás criterios de aceptación y la DoD de la historia.
 
@@ -177,7 +178,11 @@ Antes de desplegar esta revisión con Supabase, aplicar la migración nueva `202
 npm run test:unit
 npm run test:integration
 npm test
+npx playwright install chromium   # solo la primera vez
+npm run test:e2e
 ```
+
+`test:e2e` recorre login → menú → encuesta → listado → detalle → listado con el perfil A del mock y falla ante errores de consola, excepciones no controladas o respuestas 4xx/5xx del sitio. No está incluida en `npm test`; CI la ejecuta en un paso propio.
 
 Las pruebas locales no necesitan claves ni modifican la base compartida. Las pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si las migraciones `accesos_prueba`, `acceso_demo` y `revocacion_sesiones` no están aplicadas. Agregar pruebas después de desarrollar no acredita TDD.
 

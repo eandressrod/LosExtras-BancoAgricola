@@ -23,7 +23,7 @@ export async function deslizarHaciaMenu(pantalla, {
   storage = sessionStorage, navegar = url => location.replace(url), modo = 'login'
 } = {}) {
   saveStorage(storage, ENTRADA_MENU, modo);
-  // El destino conserva la cabecera/círculo actuales hasta tener los datos del menú.
+  // El destino consume el marcador para animar una sola entrada al menú.
   navegar('/menu.html');
 }
 
@@ -34,7 +34,7 @@ export async function animarEntradaMenu(pantalla, { storage = sessionStorage, re
   const modo = readStorage(storage, ENTRADA_MENU);
   if (!modo) return;
   saveStorage(storage, ENTRADA_MENU, null);
-  if (cubierta && ['login','carga','fade'].includes(modo)) {
+  if (cubierta && ['carga','fade'].includes(modo)) {
     cubierta.hidden = false;
     revelar();
     if (modo === 'fade') await retirarCarga(cubierta, { reducirMovimiento });
