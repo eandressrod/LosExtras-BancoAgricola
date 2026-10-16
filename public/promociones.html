@@ -45,6 +45,14 @@
         <div id="card-options" class="card-options" role="group" aria-labelledby="card-choice-label"></div>
       </section>
       <p id="card-single" class="card-single" hidden></p>
+      <!-- H10: búsqueda temporal por nombre de comercio sobre el catálogo aplicable. -->
+      <div id="search-box" class="search-box" role="search">
+        <label for="merchant-search" class="search-label">Buscar comercio</label>
+        <div class="search-field">
+          <input id="merchant-search" type="search" class="search-input" placeholder="Escribe el nombre del comercio" autocomplete="off" maxlength="100">
+          <button id="clear-search" type="button" class="secondary search-clear" hidden>Limpiar</button>
+        </div>
+      </div>
       <!-- H17: Disponibles hoy; filtro temporal que no cambia las preferencias guardadas. -->
       <button id="today-filter" type="button" class="today-filter" aria-pressed="false">Disponibles hoy</button>
       <!-- H5: filtro temporal; no cambia las preferencias guardadas. Las categorías llegan de /api/categorias. -->
@@ -57,6 +65,7 @@
       <button id="retry" class="secondary" hidden>Reintentar</button>
       <div id="cards" class="promo-list"></div>
       <div class="empty-actions">
+        <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
         <button id="show-all" type="button" class="secondary" hidden>Ver todas</button>
         <button id="exit-today" type="button" class="secondary" hidden>Quitar Disponibles hoy</button>
         <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>

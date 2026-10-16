@@ -5,16 +5,16 @@ import { registrarAperturaPromociones } from './usuarios-prueba.js';
 import { conIndicador } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
 
-import { leerCategoria, leerHoy, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
+import { leerCategoria, leerHoy, leerBusqueda, normalizarBusqueda, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
 
 let idsGuardados = [];
 
-function crearOferta(promotion, categoria, hoy) {
+function crearOferta(promotion, categoria, hoy, busqueda) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
   const link = card.querySelector('a');
   link.id = 'promo-' + promotion.id;
-  link.href = urlDetalle(promotion.id, categoria, hoy);
+  link.href = urlDetalle(promotion.id, categoria, hoy, busqueda);
   link.setAttribute('aria-label', `${promotion.merchant}: ${promotion.benefit}. Ver promoción`);
   card.querySelector('h2').textContent = promotion.merchant;
   card.querySelector('.promo-benefit').textContent = promotion.benefit;
@@ -68,7 +68,11 @@ if (profile) {
   const retry = document.querySelector('#retry');
   const showAll = document.querySelector('#show-all');
   const exitToday = document.querySelector('#exit-today');
+  const clearSearchEmpty = document.querySelector('#clear-search-empty');
   const emptyPreferences = document.querySelector('#empty-preferences');
+  const searchBox = document.querySelector('#search-box');
+  const searchInput = document.querySelector('#merchant-search');
+  const clearSearch = document.querySelector('#clear-search');
   const todayFilter = document.querySelector('#today-filter');
   const filtros = document.querySelector('#category-filter');
   const chips = [...document.querySelectorAll('.filter-chip')];
@@ -82,13 +86,17 @@ if (profile) {
   let categorias = null;
   let categoria = null;
   let hoy = leerHoy(location.search, history.state, profile.id);
+  let busqueda = leerBusqueda(location.search, history.state, profile.id);
   let tarjeta = null;
   let preparada = false;
   let consultaActual = 0;
   let aperturaRegistrada = false;
   const indicador = document.querySelector('#promotions-loading');
 
-  // H5 y H17: los filtros activos quedan marcados y en la entrada del historial, para volver del detalle al mismo listado.
+  searchInput.value = busqueda ?? '';
+  clearSearch.hidden = !searchInput.value;
+
+  // H5, H17 y H10: los filtros activos quedan marcados y en la entrada del historial, para volver del detalle al mismo listado.
   function mostrarFiltro(url) {
     for (const chip of chips) chip.setAttribute('aria-pressed', String((chip.dataset.category || null) === categoria));
     todayFilter.setAttribute('aria-pressed', String(hoy));
@@ -97,6 +105,10 @@ if (profile) {
 
   function textoVacio() {
     const nombre = categoria && categoriaVigente(categoria, categorias).nombre;
+    if (busqueda) {
+      if (hoy) return nombre ? `No hay promociones de ${nombre} disponibles hoy para "${busqueda}".` : `No hay promociones disponibles hoy para "${busqueda}".`;
+      return nombre ? `No hay promociones de ${nombre} para "${busqueda}".` : `No hay promociones para "${busqueda}".`;
+    }
     if (hoy) return nombre ? `No hay promociones de ${nombre} disponibles hoy para tu perfil.` : 'No hay promociones disponibles hoy para tu perfil.';
     return nombre ? `No hay promociones de ${nombre} para tu perfil.` : 'No hay promociones para tus intereses.';
   }
@@ -135,6 +147,7 @@ if (profile) {
     status.className = 'note';
     filtros.hidden = true;
     todayFilter.hidden = true;
+    searchBox.hidden = true;
   }
 
   async function leerIdsGuardados() {
@@ -177,7 +190,7 @@ if (profile) {
     }
     categorias.forEach(crearFiltro);
     categoria = categoriaVigente(pedida, categorias)?.id ?? null;
-    mostrarFiltro(urlListado(categoria, null, hoy) + location.hash);
+    mostrarFiltro(urlListado(categoria, null, hoy, busqueda) + location.hash);
     tarjeta = tarjetaActiva(tarjetas, leerTarjetaElegida(sesion, profile.id));
     preparada = true;
     if (!tarjeta) {
@@ -200,23 +213,25 @@ if (profile) {
     status.textContent = '';
     status.className = 'note';
     retry.hidden = true;
+    clearSearchEmpty.hidden = true;
     showAll.hidden = true;
     exitToday.hidden = true;
     emptyPreferences.hidden = true;
     cards.replaceChildren();
     indicador.hidden = false;
     try {
-      // La API valida la tarjeta y aplica sus beneficios, los intereses, la categoría y Disponibles hoy del dueño de la sesión.
-      const promotions = await conMinimoCarga(() => getJSON(conTarjeta(urlConsulta(categoria, hoy), tarjeta.id)));
+      // La API valida la tarjeta y aplica sus beneficios, intereses, categoría, Disponibles hoy y búsqueda por comercio.
+      const promotions = await conMinimoCarga(() => getJSON(conTarjeta(urlConsulta(categoria, hoy, busqueda), tarjeta.id)));
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
       idsGuardados = await leerIdsGuardados();
       if (turno !== consultaActual) return;
-      for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy));
+      for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda));
       const vacio = promotions.length === 0;
       status.textContent = vacio ? textoVacio() : '';
+      clearSearchEmpty.hidden = !vacio || !busqueda;
       showAll.hidden = !vacio || !categoria;
       exitToday.hidden = !vacio || !hoy;
-      emptyPreferences.hidden = !vacio || hoy;
+      emptyPreferences.hidden = !vacio || hoy || Boolean(busqueda);
       const seleccionado = document.getElementById(decodeURIComponent(location.hash.slice(1)));
       if (seleccionado?.classList.contains('promo-card')) seleccionado.scrollIntoView({ block: 'center' });
     } catch (error) {
@@ -232,14 +247,25 @@ if (profile) {
   function elegir(nueva) {
     if (nueva === categoria) return;
     categoria = nueva;
-    mostrarFiltro(urlListado(categoria, null, hoy));
+    mostrarFiltro(urlListado(categoria, null, hoy, busqueda));
     return loadPromotions();
   }
 
   function cambiarHoy(activo) {
     if (!tarjeta || activo === hoy) return;
     hoy = activo;
-    mostrarFiltro(urlListado(categoria, null, hoy));
+    mostrarFiltro(urlListado(categoria, null, hoy, busqueda));
+    return loadPromotions();
+  }
+
+  function buscarComercio(texto) {
+    searchInput.value = texto;
+    clearSearch.hidden = !texto;
+    const nueva = normalizarBusqueda(texto);
+    if (nueva === busqueda) return;
+    busqueda = nueva;
+    mostrarFiltro(urlListado(categoria, null, hoy, busqueda));
+    if (!tarjeta) return;
     return loadPromotions();
   }
 
@@ -261,6 +287,9 @@ if (profile) {
   showAll.addEventListener('click', () => elegir(null));
   todayFilter.addEventListener('click', () => cambiarHoy(!hoy));
   exitToday.addEventListener('click', () => cambiarHoy(false));
+  searchInput.addEventListener('input', () => buscarComercio(searchInput.value));
+  clearSearch.addEventListener('click', () => buscarComercio(''));
+  clearSearchEmpty.addEventListener('click', () => buscarComercio(''));
   retry.addEventListener('click', cargar);
   await cargar();
 }
