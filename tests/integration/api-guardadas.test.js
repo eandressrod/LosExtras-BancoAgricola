@@ -94,6 +94,31 @@ test('quitar actualiza la lista y repetir el borrado no falla', async () => {
   assert.equal(lista.sinCoincidencias, false);
 });
 
+test('A con su Black ve la exclusiva y el beneficio de esa tarjeta; con la Básica no', async () => {
+  reiniciarGuardadasMock();
+  const cookie = await cookieDe('demo.basica', 'Basica2026');
+  assert.equal((await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'siman-black' })).status, 200);
+  assert.equal((await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'tienda' })).status, 200);
+
+  const black = await (await pedir('/api/guardadas?tarjeta=cta-a-4', 'GET', cookie)).json();
+  assert.deepEqual(black.ids, ['siman-black', 'tienda']);
+  assert.equal(black.promociones.find(promo => promo.id === 'siman-black').benefit, '30 % de descuento');
+  assert.equal(black.promociones.find(promo => promo.id === 'tienda').benefit, '25 % de descuento');
+
+  const basica = await (await pedir('/api/guardadas?tarjeta=cta-a-3', 'GET', cookie)).json();
+  assert.equal(basica.promociones.find(promo => promo.id === 'siman-black'), undefined);
+  assert.equal(basica.promociones.find(promo => promo.id === 'tienda').benefit, '15 % de descuento');
+  assert.equal(basica.sinCoincidencias, false);
+});
+
+test('una tarjeta ajena, vacía o repetida no se puede usar en Guardadas', async () => {
+  reiniciarGuardadasMock();
+  const cookie = await cookieDe('demo.basica', 'Basica2026');
+  assert.equal((await pedir('/api/guardadas?tarjeta=cta-b-2', 'GET', cookie)).status, 404);
+  assert.equal((await pedir('/api/guardadas?tarjeta=', 'GET', cookie)).status, 400);
+  assert.equal((await pedir('/api/guardadas?tarjeta=cta-a-3&tarjeta=cta-a-4', 'GET', cookie)).status, 400);
+});
+
 test('una exclusiva de otra tarjeta queda guardada pero no se muestra como utilizable', async () => {
   reiniciarGuardadasMock();
   const cookie = await cookieDe('demo.basica', 'Basica2026');

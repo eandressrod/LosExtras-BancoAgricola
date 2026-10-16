@@ -1,6 +1,7 @@
-import { requireSession } from './comun.js';
+import { requireSession, almacenSesion } from './comun.js';
 import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
 import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
+import { leerTarjetaElegida } from './tarjeta-elegida.js';
 
 function pintarVacio(datos) {
   const ninguna = document.querySelector('#empty-none');
@@ -12,7 +13,7 @@ function pintarVacio(datos) {
   accion.hidden = hayVisibles;
 }
 
-function tarjeta(promotion) {
+function tarjeta(promotion, tarjetaId) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
   const link = card.querySelector('a');
   link.href = '/detalle.html?id=' + encodeURIComponent(promotion.id) + '&desde=guardadas';
@@ -32,12 +33,12 @@ function tarjeta(promotion) {
   const boton = card.querySelector('.guardar-promo');
   marcarBoton(boton, true);
   alPulsarGuardar(boton, promotion.id, guardada => {
-    if (!guardada) loadSaved();
+    if (!guardada) loadSaved(tarjetaId);
   });
   return card;
 }
 
-async function loadSaved() {
+async function loadSaved(tarjetaId) {
   const status = document.querySelector('#list-status');
   const cards = document.querySelector('#cards');
   const retry = document.querySelector('#retry');
@@ -49,9 +50,9 @@ async function loadSaved() {
   document.querySelector('#empty-filter').hidden = true;
   document.querySelector('#empty-action').hidden = true;
   try {
-    const datos = await consultarGuardadas();
+    const datos = await consultarGuardadas(tarjetaId);
     if (!datos) return;
-    for (const promotion of datos.promociones) cards.append(tarjeta(promotion));
+    for (const promotion of datos.promociones) cards.append(tarjeta(promotion, tarjetaId));
     status.textContent = '';
     pintarVacio(datos);
   } catch (error) {
@@ -61,7 +62,9 @@ async function loadSaved() {
   }
 }
 
-if (await requireSession()) {
-  document.querySelector('#retry').addEventListener('click', loadSaved);
-  loadSaved();
+const profile = await requireSession();
+if (profile) {
+  const tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
+  document.querySelector('#retry').addEventListener('click', () => loadSaved(tarjetaId));
+  await loadSaved(tarjetaId);
 }
