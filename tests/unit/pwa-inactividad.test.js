@@ -4,6 +4,28 @@ import { estadoInactividad, plazoLocal } from '../../public/pwa/inactividad-mode
 import { crearToken, datosDeToken } from '../../backend/servicios/sesion.js';
 import { estadoDeSesion } from '../../backend/servicios/autenticacion.js';
 import * as repo from '../../backend/repositorios/accesos.mock.js';
+import * as modelo from '../../public/pwa/inactividad-modelo.js';
+
+test('salida de la app conserva la hora inicial y vence exactamente a los veinte segundos', () => {
+  const valores=new Map(),storage={getItem:k=>valores.get(k)??null,setItem:(k,v)=>valores.set(k,v),removeItem:k=>valores.delete(k)};
+  modelo.registrarSegundoPlano('sid',storage,1000);modelo.registrarSegundoPlano('sid',storage,5000);
+  assert.equal(modelo.leerSegundoPlano('sid',storage),1000);
+  assert.equal(modelo.vencioSegundoPlano(1000,20999),false);assert.equal(modelo.vencioSegundoPlano(1000,21000),true);
+  assert.equal(modelo.leerSegundoPlano('otro-sid',storage),null);
+  modelo.limpiarSegundoPlano('otro-sid',storage);assert.equal(modelo.leerSegundoPlano('sid',storage),1000);
+  modelo.limpiarSegundoPlano('sid',storage);assert.equal(modelo.leerSegundoPlano('sid',storage),null);
+  assert.equal(modelo.vencioSegundoPlano(null,99999),false);
+});
+
+test('solo promociones, detalle y lectura de mensajes usan aviso sin bloquear', () => {
+  for (const pathname of ['/promociones.html', '/detalle.html']) {
+    assert.equal(modelo.avisoDiscreto(pathname, false), true);
+  }
+  assert.equal(modelo.avisoDiscreto('/menu.html', true), true);
+  for (const pathname of ['/menu.html', '/encuesta.html', '/preferencias.html']) {
+    assert.equal(modelo.avisoDiscreto(pathname, false), false);
+  }
+});
 
 process.env.SESSION_SECRET = 'i'.repeat(40);
 test('avisa a los 100 segundos y vence exactamente a los 120', () => {

@@ -165,14 +165,13 @@ test('revocación persistida en PostgreSQL se respeta desde otra instancia del r
   }
 });
 
-test('cuentas tienen propietario, números enmascarados y permiten añadir filas sin cambiar el menú', async () => {
+test('cuentas tienen propietario, números completos y permiten añadir filas sin cambiar el menú', async () => {
   const { rows } = await db.query("select perfil_id, count(*)::integer as total from public.cuentas where perfil_id in ('A','B','demo') group by perfil_id order by perfil_id");
-  // H16: A suma su Tarjeta Básica y su Tarjeta Black; demo, su Tarjeta Básica.
-  assert.deepEqual(rows, [{ perfil_id: 'A', total: 4 }, { perfil_id: 'B', total: 2 }, { perfil_id: 'demo', total: 3 }]);
-  await db.query("insert into public.cuentas (id, perfil_id, nombre, tipo, numero_enmascarado) values ('extra-a', 'A', 'Cuenta adicional', 'Ahorro', '•••• 4567')");
+  assert.deepEqual(rows, [{ perfil_id: 'A', total: 2 }, { perfil_id: 'B', total: 1 }, { perfil_id: 'demo', total: 2 }]);
+  await db.query("insert into public.cuentas (id, perfil_id, nombre, tipo, numero_completo) values ('extra-a', 'A', 'Cuenta adicional', 'Ahorro', '9876543210')");
   const extra = await db.query("select count(*)::integer as total from public.cuentas where perfil_id='A'");
-  assert.equal(extra.rows[0].total, 5);
-  await assert.rejects(db.query("insert into public.cuentas (id, perfil_id, nombre, tipo, numero_enmascarado) values ('sin-dueno', 'inexistente', 'Prueba', 'Ahorro', '•••• 4567')"), error => error.code === '23503');
+  assert.equal(extra.rows[0].total, 3);
+  await assert.rejects(db.query("insert into public.cuentas (id, perfil_id, nombre, tipo, numero_completo) values ('sin-dueno', 'inexistente', 'Prueba', 'Ahorro', '9876543211')"), error => error.code === '23503');
   for (const rol of ['anon', 'authenticated']) {
     await db.exec(`set role ${rol}`);
     try {
@@ -182,13 +181,22 @@ test('cuentas tienen propietario, números enmascarados y permiten añadir filas
 });
 
 test('la migración de cuentas es aditiva y no sobrescribe datos existentes al registrar la base', async () => {
+  // Esta garantía es histórica: se comprueba antes de la regeneración expresamente destructiva.
+  const historica = new PGlite();
+  try {
+  await historica.exec('create role anon;create role authenticated;create role service_role bypassrls;');
   const carpeta = new URL('../../supabase/migrations/', import.meta.url);
   const archivo = (await readdir(carpeta)).find(nombre => nombre.endsWith('_cuentas_menu.sql'));
   assert.ok(archivo, 'falta migración reproducible de cuentas');
-  await db.query("update public.cuentas set saldo=99 where id='cta-a-1'");
-  await db.exec(await readFile(new URL(archivo, carpeta), 'utf8'));
-  const actual = await db.query("select saldo from public.cuentas where id='cta-a-1'");
+  for(const f of (await readdir(carpeta)).filter(f=>f.endsWith('.sql')).sort()) {
+    await historica.exec(await readFile(new URL(f,carpeta),'utf8'));
+    if(f===archivo) break;
+  }
+  await historica.query("update public.cuentas set saldo=99 where id='cta-a-1'");
+  await historica.exec(await readFile(new URL(archivo, carpeta), 'utf8'));
+  const actual = await historica.query("select saldo from public.cuentas where id='cta-a-1'");
   assert.equal(Number(actual.rows[0].saldo), 99);
+  } finally { await historica.close(); }
 });
 
 test('estado de encuesta usa el booleano real de PostgreSQL y mantiene aislamiento por usuario', async () => {
