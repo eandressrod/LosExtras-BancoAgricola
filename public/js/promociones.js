@@ -8,6 +8,8 @@ import { conMinimoCarga } from './carga-tiempo.js';
 import { leerCategoria, leerHoy, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
 
+let idsGuardados = [];
+
 function crearOferta(promotion, categoria, hoy) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
   const link = card.querySelector('a');
@@ -30,6 +32,32 @@ function crearOferta(promotion, categoria, hoy) {
   mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion);
+  const boton = card.querySelector('.guardar-promo');
+  if (boton) {
+    const guardada = idsGuardados.includes(promotion.id);
+    boton.dataset.guardada = guardada ? 'si' : 'no';
+    boton.textContent = guardada ? 'Quitar' : 'Guardar';
+    boton.onclick = async event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const aviso = card.querySelector('.guardar-error');
+      if (aviso) aviso.textContent = '';
+      const quitar = boton.dataset.guardada === 'si';
+      try {
+        const response = await fetch('/api/guardadas', {
+          method: quitar ? 'DELETE' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ promocionId: promotion.id })
+        });
+        if (response.status === 401) { location.replace('/index.html'); return; }
+        if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
+        boton.dataset.guardada = quitar ? 'no' : 'si';
+        boton.textContent = quitar ? 'Guardar' : 'Quitar';
+      } catch (error) {
+        if (aviso) aviso.textContent = error.message;
+      }
+    };
+  }
   return card;
 }
 
@@ -109,6 +137,22 @@ if (profile) {
     todayFilter.hidden = true;
   }
 
+  async function leerIdsGuardados() {
+    if (typeof fetch !== 'function') return [];
+    const aviso = document.querySelector('#saved-status');
+    try {
+      const response = await fetch('/api/guardadas', { cache: 'no-store' });
+      if (response.status === 401) { location.replace('/index.html'); return []; }
+      if (!response.ok) throw new Error('No se pudieron cargar las promociones guardadas.');
+      const datos = await response.json();
+      if (aviso) aviso.textContent = '';
+      return datos.ids || [];
+    } catch (error) {
+      if (aviso) aviso.textContent = error.message;
+      return [];
+    }
+  }
+
   // Categorías vigentes (H5) y tarjetas propias (H16) se cargan juntas; si algo falla, Reintentar.
   async function prepararPagina() {
     status.textContent = '';
@@ -165,6 +209,8 @@ if (profile) {
       // La API valida la tarjeta y aplica sus beneficios, los intereses, la categoría y Disponibles hoy del dueño de la sesión.
       const promotions = await conMinimoCarga(() => getJSON(conTarjeta(urlConsulta(categoria, hoy), tarjeta.id)));
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
+      idsGuardados = await leerIdsGuardados();
+      if (turno !== consultaActual) return;
       for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy));
       const vacio = promotions.length === 0;
       status.textContent = vacio ? textoVacio() : '';
