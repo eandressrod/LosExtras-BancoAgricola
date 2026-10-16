@@ -33,7 +33,7 @@ function page({ visitada = false, sesion = false, fallo = false, sesionPendiente
     mayHaveSession: () => sesion, fetchSession: () => sesionPendiente ? consultaSesion : Promise.resolve(sesion ? { id:'A' } : null), forgetLogin() {}, rememberLogin() {},
     necesitaCargaInicial,
     transicionarInicio:(carga,acceso,opciones)=>transicionarInicio(carga,acceso,{...opciones,reducirMovimiento:true}),conMinimoCarga:async f=>f(),
-    deslizarHaciaMenu:async(_,opciones)=>{estado.slide=true;estado.modo=opciones?.modo;estado.destino='/menu.html';}, mostrarCargaAcceso:async(pantalla,circulo)=>{assert.equal(pantalla,form);assert.equal(circulo,get('#startup-spinner'));estado.fadeCarga=true;}, programarRetiroAviso(){},
+    deslizarHaciaMenu:async(_,opciones)=>{estado.slide=true;estado.modo=opciones?.modo;estado.destino='/menu.html';}, mostrarCargaAcceso:async(pantalla,circulo)=>{assert.equal(pantalla,form);assert.equal(circulo,get('#startup-spinner'));estado.fadeCarga=true;pantalla.hidden=true;circulo.hidden=false;}, programarRetiroAviso(){},
     fetch:async()=>{ if (loginPendiente) await consultaLogin; if (falloRed) throw new Error('Sin red'); return {ok:!rechazarLogin,status:rechazarLogin?401:200,json:async()=>({error:'Revisa usuario y clave.'})}; },
     credencialesDePerfil,
     prepararInicio: opciones => prepararInicio({ ...opciones, esperar() { estado.espera++; return tiempo; } }),
@@ -116,19 +116,19 @@ test('Contacto y Ayuda muestran información del equipo; recuperación abre usua
   await p.get('#login-recover').click(); assert.equal(p.get('#testing-users-dialog').open,true);
 });
 
-test('el botón conserva Ingresando y el formulario visible hasta el slide directo al menú', async () => {
+test('Continuar oculta el formulario y conserva el círculo en su cabecera hasta autenticar', async () => {
   const p=page({visitada:true,loginPendiente:true}); await p.lista;
   const f=p.get('#login-form');f.elements.username.value='usuario';f.elements.password.value='clave';
   f.submit({preventDefault(){}});for(let i=0;i<12;i++)await Promise.resolve();
-  assert.equal(p.estado.fadeCarga,undefined);
-  assert.equal(f.hidden,false);assert.equal(p.get('#startup-spinner').hidden,true);
+  assert.equal(p.estado.fadeCarga,true);
+  assert.equal(f.hidden,true);assert.equal(p.get('#startup-spinner').hidden,false);
   assert.equal(p.get('submit').textContent,'Ingresando…');assert.equal(p.get('submit').disabled,true);
   assert.equal(p.estado.destino,'');
   p.resolverLogin();for(let i=0;i<18;i++)await Promise.resolve();
   assert.equal(p.estado.slide,true);assert.equal(p.estado.destino,'/menu.html');
 });
 
-test('credenciales rechazadas conservan el formulario y recuperan sus controles sin círculo', async () => {
+test('credenciales rechazadas recuperan el formulario y sus controles sin círculo', async () => {
   const p=page({visitada:true,rechazarLogin:true});await p.lista;
   const f=p.get('#login-form');f.elements.username.value='usuario';f.elements.password.value='errónea';
   f.submit({preventDefault(){}});for(let i=0;i<18;i++)await Promise.resolve();
@@ -137,11 +137,11 @@ test('credenciales rechazadas conservan el formulario y recuperan sus controles 
   assert.equal(p.get('#login-error').textContent,'Revisa usuario y clave.');assert.equal(p.estado.destino,'');
 });
 
-test('un fallo de red recupera Continuar sin ocultar el formulario ni mostrar el círculo', async () => {
+test('un fallo de red retira el círculo y recupera Continuar y el formulario', async () => {
   const p=page({visitada:true,falloRed:true});await p.lista;
   const f=p.get('#login-form');f.elements.username.value='usuario';f.elements.password.value='clave';
   f.submit({preventDefault(){}});for(let i=0;i<18;i++)await Promise.resolve();
-  assert.equal(p.estado.fadeCarga,undefined);assert.equal(f.hidden,false);
+  assert.equal(p.estado.fadeCarga,true);assert.equal(f.hidden,false);
   assert.equal(p.get('#startup-spinner').hidden,true);assert.equal(p.get('submit').disabled,false);
   assert.equal(p.get('submit').textContent,'Continuar');assert.equal(p.estado.destino,'');
   assert.match(p.get('#login-error').textContent,/No hay conexión/);
