@@ -23,27 +23,23 @@ function vigilarErrores(page) {
 }
 
 for (const movimiento of ['no-preference', 'reduce']) {
-  test(`login pasa del botón al menú sin carga intermedia (${movimiento})`, async ({ page }) => {
+  test(`login se retira a la derecha sobre el home preparado (${movimiento})`, async ({ page }) => {
     const errores = vigilarErrores(page);
     await page.emulateMedia({ reducedMotion:movimiento });
     await page.addInitScript(() => {
       const animate = Element.prototype.animate;
       Element.prototype.animate = function (...args) {
-        if (this.matches('.app-wrapper')) sessionStorage.setItem('qa-slide-menu', '1');
-        return animate.apply(this, args);
-      };
-      const observar = () => {
-        if (sessionStorage.getItem('qa-acceso') === '1') {
-          for (const id of ['startup-spinner', 'menu-entry-loading']) {
-            const nodo = document.getElementById(id);
-            if (nodo?.getBoundingClientRect().height && getComputedStyle(nodo).visibility === 'visible') {
-              sessionStorage.setItem('qa-carga-intermedia', id);
-            }
-          }
+        const animacion = animate.apply(this, args);
+        if (this.id === 'menu-entry-loading') {
+          const home = document.querySelector('.app-wrapper');
+          sessionStorage.setItem('qa-slide-login', JSON.stringify({
+            fotogramas:args[0], homeTransform:getComputedStyle(home).transform,
+            contenidoVisible:!document.getElementById('menu-content').hidden
+          }));
         }
-        requestAnimationFrame(observar);
+        if (this.matches('.app-wrapper')) sessionStorage.setItem('qa-slide-menu', '1');
+        return animacion;
       };
-      requestAnimationFrame(observar);
     });
     let aceptarLogin, entregarProductos;
     const login = new Promise(resolve => { aceptarLogin = resolve; });
@@ -55,24 +51,57 @@ for (const movimiento of ['no-preference', 'reduce']) {
     await expect(formulario).toBeVisible({ timeout:15000 });
     await formulario.locator('[name="username"]').fill('demo.basica');
     await formulario.locator('[name="password"]').fill('Basica2026');
-    await page.evaluate(() => sessionStorage.setItem('qa-acceso', '1'));
     await formulario.locator('[type="submit"]').click();
-    await expect(formulario.locator('[type="submit"]')).toHaveText('Ingresando…');
-    await expect(formulario).toBeVisible();
-    await expect(page.locator('#startup-spinner')).toBeHidden();
+    await expect(formulario).toBeHidden();
+    await expect(page.locator('#startup-spinner')).toBeVisible();
+    await expect(page.locator('#startup-screen')).toBeHidden();
     aceptarLogin();
     await expect(page).toHaveURL(/\/menu\.html/);
     await expect(page.locator('.app-wrapper')).toBeInViewport();
-    await expect(page.locator('#menu-entry-loading')).toBeHidden();
+    await expect(page.locator('#menu-entry-loading')).toBeVisible();
     await expect(page.locator('#menu-resume-loading')).toBeHidden();
-    await expect(page.locator('#menu-loading')).toBeVisible();
+    expect(await page.evaluate(() => sessionStorage.getItem('qa-slide-login'))).toBeNull();
     entregarProductos();
     await expect(page.locator('#menu-content')).toBeVisible({ timeout:15000 });
-    expect(await page.evaluate(() => sessionStorage.getItem('qa-carga-intermedia'))).toBeNull();
-    expect(await page.evaluate(() => sessionStorage.getItem('qa-slide-menu'))).toBe(movimiento === 'reduce' ? null : '1');
+    await expect(page.locator('#menu-entry-loading')).toBeHidden();
+    const slide = await page.evaluate(() => JSON.parse(sessionStorage.getItem('qa-slide-login')));
+    if (movimiento === 'reduce') expect(slide).toBeNull();
+    else expect(slide).toEqual({ fotogramas:[{transform:'translateX(0)'},{transform:'translateX(100%)'}], homeTransform:'none', contenidoVisible:true });
+    expect(await page.evaluate(() => sessionStorage.getItem('qa-slide-menu'))).toBeNull();
     expect(errores, errores.join('\n')).toEqual([]);
   });
 }
+
+test('el acceso recupera el formulario tras rechazo y permite reintentar una carga fallida del home', async ({ page }) => {
+  const excepciones=[];
+  page.on('pageerror',error=>excepciones.push(error.message));
+  await page.goto(origen()+'/');
+  const formulario=page.locator('#login-form');
+  await expect(formulario).toBeVisible({timeout:15000});
+  await formulario.locator('[name="username"]').fill('demo.basica');
+  await formulario.locator('[name="password"]').fill('clave-incorrecta');
+  const rechazo=page.waitForResponse(r=>r.url().endsWith('/api/auth/login'));
+  await formulario.locator('[type="submit"]').click();
+  expect((await rechazo).status()).toBe(401);
+  await expect(page.locator('#login-error')).not.toBeEmpty();
+  await expect(formulario).toBeVisible();
+  await expect(page.locator('#startup-spinner')).toBeHidden();
+  await expect(formulario.locator('[type="submit"]')).toBeEnabled();
+  await formulario.locator('[name="password"]').fill('Basica2026');
+  let primera=true;
+  await page.route('**/api/menu',async ruta=>{
+    if (primera) { primera=false;await ruta.fulfill({status:503,json:{error:'No se pudieron cargar los datos del menú.'}}); }
+    else await ruta.continue();
+  });
+  await formulario.locator('[type="submit"]').click();
+  await expect(page.locator('#menu-error')).toBeVisible({timeout:15000});
+  await expect(page.locator('#menu-entry-loading')).toBeHidden();
+  await page.getByRole('button',{name:'Reintentar',exact:true}).click();
+  await expect(page.locator('#menu-content')).toBeVisible({timeout:15000});
+  await expect(page.locator('#menu-entry-loading')).toBeHidden();
+  await expect(page.locator('#tab-cuentas')).toBeEnabled();
+  expect(excepciones).toEqual([]);
+});
 
 test('perfil A completa el camino principal de Promociones sin errores', async ({ page }) => {
   const errores = vigilarErrores(page);
