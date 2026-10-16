@@ -1,7 +1,7 @@
 import { fetchSession, mayHaveSession, rememberLogin, forgetLogin, getJSON } from './comun.js';
 import { necesitaCargaInicial, prepararInicio, transicionarInicio } from './inicio.js';
 import { credencialesDePerfil } from './usuarios-prueba.js';
-import { deslizarHaciaMenu, programarRetiroAviso } from './transiciones.js';
+import { deslizarHaciaMenu, mostrarCargaAcceso, programarRetiroAviso } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
 
 const form = document.querySelector('#login-form');
@@ -160,11 +160,11 @@ async function enter() {
   const ciclo = cicloAcceso;
   let aceptado=false;
   try {
-    const response = await conMinimoCarga(() => fetch('/api/auth/login', {
+    const [response] = await Promise.all([conMinimoCarga(() => fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ usuario: username.value.trim(), contrasena: password.value })
-    }));
+    })), mostrarCargaAcceso(form, document.querySelector('#startup-spinner'))]);
     if (response.ok) {
       aceptado=true;
       rememberLogin();

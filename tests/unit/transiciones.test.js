@@ -2,30 +2,33 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as transiciones from '../../public/js/transiciones.js';
 
-test('el login permanece debajo de la pantalla entrante, sin un segundo slide de salida', async () => {
+test('el acceso conserva la cabecera del login hasta retirar su cubierta sobre el menú', async () => {
   const pantalla = { hidden:false, inert:false, animate() { throw new Error('No repetir slide en login'); } };
   let destino;
-  await transiciones.deslizarHaciaMenu(pantalla, { storage:{setItem(){}}, navegar(url) {
+  let modo;
+  await transiciones.deslizarHaciaMenu(pantalla, { storage:{setItem(k,v){ modo=v; }}, navegar(url) {
     assert.equal(pantalla.hidden,false);
     destino=url;
   } });
   assert.equal(destino,'/menu.html');
+  assert.equal(modo,'carga');
 });
 
-test('la entrada del menú se anima y consume una sola vez después de abandonar el login', async () => {
+test('la cubierta del login se anima y consume una sola vez después de navegar al home', async () => {
   let resolver; const fin = new Promise(r => resolver=r); let destino=''; const almacen=new Map();
   const storage={getItem:k=>almacen.get(k),setItem:(k,v)=>almacen.set(k,v),removeItem:k=>almacen.delete(k)};
   let fotogramas;
   const pantalla={inert:false,animate(frames) {fotogramas=frames; return {finished:fin,cancel(){}};}};
   await transiciones.deslizarHaciaMenu(pantalla,{storage,navegar:url=>destino=url});
   assert.equal(destino,'/menu.html'); assert.equal(fotogramas,undefined);
-  const entrada = transiciones.animarEntradaMenu(pantalla,{storage});
-  assert.equal(pantalla.inert,true); assert.equal(fotogramas[0].transform,'translateX(100%)'); assert.equal(fotogramas.at(-1).transform,'translateX(0)');
+  const cubierta={hidden:false,animate:pantalla.animate};
+  const entrada = transiciones.animarEntradaMenu({animate(){throw new Error('El home permanece inmóvil');}},{storage,cubierta,reducirMovimiento:false});
+  assert.equal(cubierta.inert,true); assert.equal(fotogramas[0].transform,'translateX(0)'); assert.equal(fotogramas.at(-1).transform,'translateX(100%)');
   resolver(); await entrada;
-  assert.equal(almacen.size,0); assert.equal(pantalla.inert,false);
+  assert.equal(almacen.size,0); assert.equal(cubierta.inert,false); assert.equal(cubierta.hidden,true);
 });
 
-test('el acceso desde el botón desliza el menú sin revelar la cubierta de carga', async () => {
+test('el marcador legado login conserva su entrada anterior sin revelar la cubierta de carga', async () => {
   const almacen = new Map([['los-extras-entrada-menu', 'login']]);
   const cubierta = { hidden:true, animate() { throw new Error('No mostrar carga intermedia'); } };
   let animaciones = 0;

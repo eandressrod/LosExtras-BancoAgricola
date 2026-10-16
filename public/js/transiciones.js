@@ -20,7 +20,7 @@ async function deslizar(pantalla, fotogramas, reducirMovimiento, alIniciar = () 
 }
 
 export async function deslizarHaciaMenu(pantalla, {
-  storage = sessionStorage, navegar = url => location.replace(url), modo = 'login'
+  storage = sessionStorage, navegar = url => location.replace(url), modo = 'carga'
 } = {}) {
   saveStorage(storage, ENTRADA_MENU, modo);
   // El destino consume el marcador para animar una sola entrada al menú.
