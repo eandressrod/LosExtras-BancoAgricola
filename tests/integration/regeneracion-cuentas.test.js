@@ -43,6 +43,18 @@ test('regenerar productos conserva intactas las otras entidades',async()=>{
   assert.ok(antes,'falta la migración de regeneración');assert.deepEqual(await estado(),antes);
 });
 
+test('SCRUM-72: rechaza altas de tarjetas sin cuenta propia y permite cuentas sin tarjeta',async()=>{
+  for (const [cuenta,codigo] of [[null,'23502'],['no-existe','23503'],[(await db.query("select id from cuentas where perfil_id='B' limit 1")).rows[0].id,'23503']]) {
+    await assert.rejects(db.query(`insert into tarjetas_usuario(id,perfil_id,cuenta_id,producto_id,tipo_tarjeta,numero_enmascarado,saldo,moneda,orden)
+      select 'qa-tarjeta-invalida',perfil_id,$1,producto_id,tipo_tarjeta,numero_enmascarado,saldo,moneda,orden
+      from tarjetas_usuario where id='cta-a-3'`,[cuenta]),e=>e.code===codigo);
+  }
+  const sinCuenta=await db.query('select t.id from tarjetas_usuario t left join cuentas c on c.id=t.cuenta_id and c.perfil_id=t.perfil_id where c.id is null');
+  assert.equal(sinCuenta.rows.length,0);
+  const sinTarjeta=await db.query('select c.id from cuentas c where not exists(select 1 from tarjetas_usuario t where t.cuenta_id=c.id)');
+  assert.ok(sinTarjeta.rows.length>0,'Las cuentas sin tarjeta siguen siendo válidas');
+});
+
 test('la regeneración incluye perfiles adicionales sin inventar o cambiar sus accesos',async()=>{
   const {rows}=await db.query("select t.id,c.perfil_id from tarjetas_usuario t join cuentas c on c.id=t.cuenta_id where t.perfil_id='qa-otro-perfil'");
   assert.equal(rows.length,1);assert.equal(rows[0].perfil_id,'qa-otro-perfil');
