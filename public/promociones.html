@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/css/fuentes.css">
     <link rel="stylesheet" href="/css/carga.css">
     <link rel="stylesheet" href="/css/promociones.css">
+    <link rel="stylesheet" href="/css/guardadas.css">
     <script type="module" src="/js/promociones.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -35,6 +36,7 @@
       <h1>Para ti</h1>
       <nav class="module-nav" aria-label="Promociones">
         <a href="/promociones.html" aria-current="page">Para ti</a>
+        <a href="/guardadas.html">Guardadas</a>
         <a href="/preferencias.html">Mis preferencias</a>
       </nav>
       <!-- H16: tarjetas propias. El selector solo aparece con dos o más tarjetas. -->
@@ -50,6 +52,7 @@
         <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
       </div>
       <p id="list-status" class="note" role="status"></p>
+      <p id="saved-status" class="error" role="alert"></p>
       <div id="promotions-loading" class="module-loading" role="status" aria-label="Cargando promociones" hidden><svg class="loading-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="147 22.65" transform="rotate(230 32 32)"/></svg><span>CARGANDO...</span></div>
       <button id="retry" class="secondary" hidden>Reintentar</button>
       <div id="cards" class="promo-list"></div>
@@ -74,6 +77,8 @@
             <p class="promo-validity"></p>
             <p class="promo-today" hidden></p>
             <ul class="promo-conditions"></ul>
+            <button type="button" class="secondary guardar-promo">Guardar</button>
+            <p class="error guardar-error" role="alert"></p>
             <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
           </div>
         </a>
