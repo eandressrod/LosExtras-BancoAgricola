@@ -33,6 +33,7 @@ function crearOferta(promotion, categoria, hoy) {
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion);
   const boton = card.querySelector('.guardar-promo');
+  const aviso = card.querySelector('.guardar-error');
   if (boton) {
     const guardada = idsGuardados.includes(promotion.id);
     boton.dataset.guardada = guardada ? 'si' : 'no';
@@ -40,7 +41,6 @@ function crearOferta(promotion, categoria, hoy) {
     boton.onclick = async event => {
       event.preventDefault();
       event.stopPropagation();
-      const aviso = card.querySelector('.guardar-error');
       if (aviso) aviso.textContent = '';
       const quitar = boton.dataset.guardada === 'si';
       try {

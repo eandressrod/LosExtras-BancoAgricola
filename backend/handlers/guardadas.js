@@ -1,8 +1,9 @@
 import { filtrarPromociones } from '../promociones.js';
-import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioPreferencias } from '../repositorios/index.js';
+import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioPreferencias, obtenerRepositorioProductosMenu } from '../repositorios/index.js';
 import { obtenerRepositorioGuardadas } from '../repositorios/guardadas.js';
 import { guardarPromocion, quitarPromocion, seleccionarGuardadasVisibles } from '../servicios/guardadas.js';
 import { perfilDeSesion } from '../servicios/autenticacion.js';
+import { tarjetasDelUsuario, elegirTarjeta, rechazoDeTarjeta } from '../servicios/tarjetas.js';
 import { leerCookie } from '../servicios/sesion.js';
 import { responderJson, metodoNoPermitido } from '../http.js';
 
@@ -20,10 +21,20 @@ export default {
 
       if (request.method === 'GET') {
         const ids = await repo.listar(perfil.id);
+        const parametros = new URL(request.url).searchParams;
         const preferencias = await obtenerRepositorioPreferencias().obtenerPreferencias(perfil.id);
         const catalogo = await obtenerRepositorio().listarPromocionesConBeneficios();
+        // La misma regla que Promociones: la tarjeta pedida tiene que ser del dueño de la sesión.
+        const propias = tarjetasDelUsuario(await obtenerRepositorioProductosMenu().listarTarjetas(perfil.id));
+        const eleccion = elegirTarjeta(propias, parametros, perfil.tipoTarjeta);
+        if (!eleccion.ok) {
+          const { cuerpo, estado } = rechazoDeTarjeta(eleccion);
+          return responderJson(cuerpo, estado);
+        }
         const categorias = preferencias.completed ? preferencias.categories : [];
-        const filtradas = filtrarPromociones(catalogo, perfil.tipoTarjeta, categorias);
+        const filtradas = eleccion.tarjeta
+          ? filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, categorias)
+          : [];
         return responderJson(seleccionarGuardadasVisibles(filtradas, ids));
       }
 

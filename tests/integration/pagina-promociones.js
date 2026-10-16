@@ -59,10 +59,18 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     if (!elementos.has(selector)) elementos.set(selector, elemento());
     return elementos.get(selector);
   };
-  const history = { state: estado, url: null, replaceState(nuevo, _titulo, url) { this.state = nuevo; this.url = url; } };
+  const location = { search, hash, href: '/pagina' + search + hash, replace(url) { this.destino=url; } };
+  const history = { state: estado, url: null, replaceState(nuevo, _titulo, url) {
+    this.state = nuevo; this.url = url;
+    if (typeof url === 'string') {
+      const pregunta = url.indexOf('?');
+      const numeral = url.indexOf('#');
+      location.search = pregunta < 0 ? '' : url.slice(pregunta, numeral < 0 ? undefined : numeral);
+    }
+  } };
   const contexto = {
     URLSearchParams,
-    location: { search, hash, href: '/pagina' + search + hash, replace(url) { this.destino=url; } },
+    location,
     history,
     requireSession: async ({revelar=true}={}) => {
       if(revelar) alRevelar();
@@ -133,6 +141,7 @@ export async function abrirDetalle(opciones = {}) {
   const nav = navegador(opciones);
   const consultas = [];
   Object.assign(nav.contexto, {
+    fetch: opciones.fetch,
     document: { querySelector: nav.obtener, title: '' },
     getJSON: async url => {
       consultas.push(url);

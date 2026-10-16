@@ -1,5 +1,6 @@
-export async function consultarGuardadas() {
-  const response = await fetch('/api/guardadas', { cache: 'no-store' });
+export async function consultarGuardadas(tarjetaId) {
+  const ruta = tarjetaId ? '/api/guardadas?tarjeta=' + encodeURIComponent(tarjetaId) : '/api/guardadas';
+  const response = await fetch(ruta, { cache: 'no-store' });
   if (response.status === 401) {
     location.replace('/index.html');
     return null;
