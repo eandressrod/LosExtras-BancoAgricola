@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Obtener código
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
@@ -32,3 +34,12 @@ jobs:
 
       - name: Ejecutar pruebas unitarias e integración
         run: npm test
+
+      - name: Instalar Chromium para e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Ejecutar prueba e2e del camino principal
+        run: npm run test:e2e
+
+      - name: Probar regreso a la versión en producción
+        run: npm run test:regreso

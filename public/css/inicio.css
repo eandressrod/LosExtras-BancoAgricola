@@ -23,8 +23,8 @@ html[data-direccion="volver"]::view-transition-new(root) { animation:none;z-inde
   html[data-direccion="volver"]::view-transition-old(root) { animation:none; }
 }
 .startup-screen[hidden], .login[hidden] { display: none !important; }
-html[data-entrada-menu="carga"] #menu-entry-loading,
-html[data-entrada-menu="login"] #menu-entry-loading { display:flex !important; visibility:visible; }
+html[data-entrada-menu="carga"] #menu-entry-loading { display:flex !important; visibility:visible; }
+html[data-entrada-menu="login"] .app-wrapper { transform:translateX(100%); }
 html[data-entrada-menu="fade"] #menu-resume-loading { display:block !important; visibility:visible; }
 .bank-loading-screen { position:fixed;inset:0;width:min(100%,480px);height:100dvh;margin-inline:auto;background:#fff;overflow:hidden; }
 .bank-loading-indicator { position:absolute;inset:0;pointer-events:none;color:#8b8b8b; }
