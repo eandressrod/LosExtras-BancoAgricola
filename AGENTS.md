@@ -19,6 +19,7 @@
 - Mantener preferencias por categorías, elegibilidad por tarjeta y datos ficticios del catálogo. No inventar promociones, condiciones, exclusividad, datos financieros o resultados de pruebas.
 - Conservar sesión, validación de propietario y persistencia acordadas. No sustituir el backend por el login visual del kit, conectar servicios bancarios ni añadir pagos, canje real, analítica, panel analítico o ranking por consumo.
 - Midi mantiene su estética Regedit autorizada; la guía visual bancaria no ordena rediseñar la herramienta administrativa.
+- Instrucción posterior del usuario, 15 de octubre de 2026: no actualizar Midi hasta que solicite expresamente ponerlo al día. Cambios de la aplicación no autorizan adaptar su editor o esquema.
 
 ## Implementación y verificación
 

@@ -1,8 +1,9 @@
-import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
+import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
 import { textoVigencia, textoDisponibleHoy, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
 import { destinoEntradaPromociones } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
 import { conIndicador } from './transiciones.js';
+import { conMinimoCarga } from './carga-tiempo.js';
 
 import { leerCategoria, leerHoy, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
@@ -32,7 +33,7 @@ function crearOferta(promotion, categoria, hoy) {
   return card;
 }
 
-const profile = await requireSession();
+const profile = await requireSession({ revelar:false });
 if (profile) {
   const status = document.querySelector('#list-status');
   const cards = document.querySelector('#cards');
@@ -121,8 +122,10 @@ if (profile) {
         const destino = destinoEntradaPromociones(location.search, preferencias);
         if (destino) { location.replace(destino); return false; }
       }
+      revelarPagina();
       [categorias, tarjetas] = await Promise.all([getJSON('/api/categorias'), getJSON('/api/tarjetas')]);
     } catch (error) {
+      revelarPagina();
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;
@@ -160,7 +163,7 @@ if (profile) {
     indicador.hidden = false;
     try {
       // La API valida la tarjeta y aplica sus beneficios, los intereses, la categoría y Disponibles hoy del dueño de la sesión.
-      const promotions = await getJSON(conTarjeta(urlConsulta(categoria, hoy), tarjeta.id));
+      const promotions = await conMinimoCarga(() => getJSON(conTarjeta(urlConsulta(categoria, hoy), tarjeta.id)));
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
       for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy));
       const vacio = promotions.length === 0;

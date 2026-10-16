@@ -4,10 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Mis Productos · Los Extras</title>
-    <script>try { if (sessionStorage.getItem('los-extras-entrada-menu') === '1') document.documentElement.dataset.entradaMenu = 'pending'; } catch {}</script>
+  <script src="/js/arranque.js"></script>
+  <link rel="stylesheet" href="/css/inicio.css">
+    <script>try { const modo = sessionStorage.getItem('los-extras-entrada-menu'); if (modo) document.documentElement.dataset.entradaMenu = modo === '1' ? 'pending' : modo; } catch {}</script>
   <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
   <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/login.css">
   <link rel="stylesheet" href="/css/carga.css">
   <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -21,6 +24,23 @@
     <script type="module" src="/pwa/pwa.js"></script>
   </head>
 <body class="menu-page" data-session="pending">
+  <section id="menu-entry-loading" class="login login-entry-loading" role="status" aria-label="Cargando productos" hidden>
+    <header class="login-header" aria-hidden="true">
+      <span class="login-entry-action"><img src="/recursos/login/llamada.svg" alt=""></span>
+      <img class="login-logo" src="/recursos/inicio/logo.svg" alt="Bancoagrícola">
+      <span class="login-entry-action"><img src="/recursos/login/ayuda.svg" alt=""></span>
+    </header>
+    <div class="login__intro"><h1>Bienvenido a la aplicación de<br>Bancoagrícola</h1></div>
+    <div class="startup-indicator"><svg class="loading-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="147 22.65" transform="rotate(230 32 32)"/></svg><span>CARGANDO...</span></div>
+  </section>
+  <section id="menu-resume-loading" class="startup-screen" role="status" aria-label="Cargando productos" hidden>
+    <img class="startup-brand" src="/recursos/inicio/marca.png" alt="Bancoagrícola">
+    <img class="startup-stroke startup-yellow" src="/recursos/inicio/arco-amarillo.png" alt="">
+    <img class="startup-stroke startup-left" src="/recursos/inicio/arco-izquierdo.png" alt="">
+    <img class="startup-stroke startup-purple" src="/recursos/inicio/arco-morado.png" alt="">
+    <img class="startup-stroke startup-right" src="/recursos/inicio/arco-derecho.png" alt="">
+    <div class="bank-loading-indicator"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
+  </section>
   <div class="app-wrapper">
     <header class="ba-header">
       <img class="menu-brand" src="/recursos/menu/simbolo.svg" alt="Bancoagrícola">
@@ -29,7 +49,8 @@
         <button class="header-action" id="btn-perfil" disabled><img src="/recursos/menu/perfil.svg" alt=""><span>Perfil</span></button>
       </div>
     </header>
-    <button id="btn-disponibles" class="available-products" disabled><img src="/recursos/menu/plus.svg" alt=""><span>Tienes productos disponibles</span></button>
+    <button id="btn-disponibles" class="available-products" aria-expanded="false" aria-controls="panel-disponibles" disabled><img src="/recursos/menu/plus.svg" alt=""><span>Tienes productos disponibles</span></button>
+    <section id="panel-disponibles" class="available-panel" aria-label="Productos disponibles" hidden><div class="available-card"><img src="/recursos/menu/cerdito_ahorro.svg" alt=""><span>Cuenta de ahorro</span><button type="button" disabled>ACTIVAR</button></div></section>
     <button id="btn-promociones" class="promotions-entry" disabled><span class="promotions-entry-icon"><img src="/recursos/menu/para_ti.svg" alt=""></span><span>Promociones para ti</span><span class="promotions-entry-arrow" aria-hidden="true">›</span></button>
     <div class="product-tabs" role="tablist" aria-label="Mis productos">
       <button id="tab-cuentas" role="tab" aria-selected="true" aria-controls="panel-productos" tabindex="0">Cuentas</button>
@@ -52,10 +73,12 @@
     </nav>
   </div>
   <dialog id="menu-dialog" aria-labelledby="dialog-title">
+    <div class="bank-screen-header"><button id="dialog-back" aria-label="Volver al menú"><span aria-hidden="true"></span></button><img src="/recursos/menu/simbolo.svg" alt="Bancoagrícola"></div>
     <div class="dialog-header"><h2 id="dialog-title"></h2><button id="dialog-close" class="close-dialog" aria-label="Cerrar">×</button></div>
+    <div class="inbox-heading">Bandeja de entrada</div>
     <div id="dialog-body"></div><p id="dialog-alert" class="error" role="alert" hidden></p>
     <button id="btn-ver-todas" hidden>Ver todas mis cuentas</button>
-    <button id="btn-logout" hidden>Cerrar sesión</button><p id="alerta-logout" class="error" role="alert" hidden></p>
+    <button id="btn-logout" hidden><img src="/recursos/menu/salir.svg" alt=""><span>Cerrar sesión</span></button><p id="alerta-logout" class="error" role="alert" hidden></p>
   </dialog>
   <script type="module" src="/js/menu.js"></script>
   <noscript>Activa JavaScript para usar la aplicación.</noscript>

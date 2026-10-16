@@ -22,7 +22,15 @@
 }
 
 * { box-sizing: border-box; }
+html { height:100%; overflow:hidden; overscroll-behavior:none; }
 body { width: min(100%, 480px); margin: auto; min-height: 100dvh; background: var(--surface); }
+body { height:100dvh; overflow:hidden; overscroll-behavior:none; display:flex; flex-direction:column; }
+body > header { flex-shrink:0; }
+body > main { flex:1; min-height:0; overflow:hidden; }
+body.promotions-page > main, body.detail-page > main { overflow-y:auto; overscroll-behavior:contain; }
+body > main:has(#survey-form), body.preferences-page > main { display:flex; flex-direction:column; }
+#survey-form, #preferences-form { min-height:0; flex:1; display:flex; flex-direction:column; gap:12px; }
+#survey-form fieldset, #preferences-form fieldset { min-height:0; overflow-y:auto; overscroll-behavior:contain; }
 header, main { width: min(100%, 480px); margin: auto; padding: 20px; }
 header { border-bottom: 4px solid var(--primary); background: var(--surface); padding-top: max(20px, env(safe-area-inset-top)); }
 header p { margin: 0; font-weight: 600; }
@@ -53,6 +61,7 @@ main > .actions { margin-top: 24px; }
 
 /* Sesión (H1) */
 body[data-session="pending"] main { visibility: hidden; }
+body[data-session="pending"] > :not(.pwa-privacidad) { visibility: hidden; }
 button:disabled, button:disabled:hover { cursor: progress; opacity: .65; background: var(--primary); }
 button.secondary:disabled, button.secondary:disabled:hover { background: var(--surface); }
 input[aria-invalid="true"] { border-color: var(--error); box-shadow: 0 0 0 1px var(--error); }

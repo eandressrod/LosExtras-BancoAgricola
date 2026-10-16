@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+test('fecha de entrada usa el día de El Salvador y omite fechas ausentes o inválidas', async () => {
+  const { fechaMensaje } = await import('../../public/js/menu-modelo.js');
+  assert.equal(fechaMensaje('2026-10-14T15:00:00.000Z'), '14/10/2026');
+  assert.equal(fechaMensaje('2026-10-14T01:00:00.000Z'), '13/10/2026');
+  assert.equal(fechaMensaje(null), '');
+  assert.equal(fechaMensaje('incorrecta'), '');
+});
+
 test('menú integrado: tarjetas usan referencia enmascarada aunque exista número completo', async () => {
   const { referenciaCuenta } = await import('../../public/js/menu-modelo.js');
   assert.equal(referenciaCuenta({ tipo: 'Tarjeta de Crédito', numeroCompleto: null, numeroEnmascarado: '•••• 4821' }), '•••• 4821');

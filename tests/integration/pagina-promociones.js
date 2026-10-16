@@ -53,7 +53,7 @@ export function almacen(inicial = {}) {
   };
 }
 
-function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion = almacen() } = {}) {
+function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion = almacen(), alRevelar = () => {} } = {}) {
   const elementos = new Map();
   const obtener = selector => {
     if (!elementos.has(selector)) elementos.set(selector, elemento());
@@ -62,12 +62,16 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
   const history = { state: estado, url: null, replaceState(nuevo, _titulo, url) { this.state = nuevo; this.url = url; } };
   const contexto = {
     URLSearchParams,
-    location: { search, hash, href: '/pagina' + search + hash },
+    location: { search, hash, href: '/pagina' + search + hash, replace(url) { this.destino=url; } },
     history,
-    requireSession: async () => ({ id: perfil, nombre: NOMBRES[perfil], tipoTarjeta: perfil === 'B' ? 'black' : 'basica' }),
+    requireSession: async ({revelar=true}={}) => {
+      if(revelar) alRevelar();
+      return { id: perfil, nombre: NOMBRES[perfil], tipoTarjeta: perfil === 'B' ? 'black' : 'basica' };
+    },
     almacenSesion: () => sesion,
     cardName,
-    conIndicador, destinoEntradaPromociones,
+    revelarPagina: alRevelar,
+    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
     ...vista, ...filtro, ...tarjeta
   };
   return { obtener, history, contexto, elementos, sesion };
@@ -104,6 +108,7 @@ export async function abrirListado(opciones = {}) {
       createElement: tagName => elemento({ tagName })
     },
     getJSON: async url => {
+      if (url === '/api/preferencias') return opciones.preferencias();
       if (url === '/api/categorias') { pedidas.categorias += 1; return categorias(); }
       if (url === '/api/tarjetas') { pedidas.tarjetas += 1; return tarjetas(); }
       consultas.push(url);

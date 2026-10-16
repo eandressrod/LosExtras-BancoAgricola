@@ -2,6 +2,13 @@ export function destinoEntradaPromociones(search, preferencias) {
   return new URLSearchParams(search).get('entrada') === 'menu' && !preferencias.completed ? '/encuesta.html' : null;
 }
 
+export function fechaMensaje(valor) {
+  if (!valor) return '';
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return '';
+  return new Intl.DateTimeFormat('es-SV', { day:'2-digit', month:'2-digit', year:'numeric', timeZone:'America/El_Salvador' }).format(fecha);
+}
+
 export function partesSaldo(producto, visible) {
   if (!visible) return { entero:'$••••', centavos:'' };
   const partes = new Intl.NumberFormat('es-SV', { style:'currency', currency:producto.moneda }).formatToParts(producto.saldo);

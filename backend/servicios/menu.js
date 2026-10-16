@@ -16,7 +16,7 @@ export async function obtenerDatosMenu(perfil, cuentasRepo, encuestaRepo, prefer
 
   return {
     perfil,
-    cuentas,
+    cuentas: cuentas.filter(cuenta => !/tarjeta/i.test(cuenta.tipo)),
     encuestaPendiente: !completada,
     destinoPromociones: completada ? '/promociones.html' : '/encuesta.html'
   };
