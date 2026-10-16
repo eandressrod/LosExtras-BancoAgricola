@@ -181,9 +181,9 @@ async function verificar() {
   try {
     const response = await conMinimoCarga(() => fetch('/api/auth/sesion', { cache: 'no-store' }));
     if (finalizada || document.hidden || version !== versionCubierta) return;
-    if (response.status === 401) return terminar();
     if (!response.ok) throw new Error();
     const datos = await response.json();
+    if (!datos.perfil) return terminar();
     // Si se cambió de usuario en otra pestaña, recargar antes de revelar el perfil anterior.
     if (sesion && datos.sesion.id !== sesion.id) { location.reload(); return; }
     actualizarSesion(datos.sesion);

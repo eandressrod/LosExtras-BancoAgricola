@@ -64,9 +64,9 @@ export function volverAlLogin() {
 /** Perfil de la sesión activa, null si no hay sesión; lanza un error si no se pudo verificar. */
 export async function fetchSession() {
   const response = await conMinimoCarga(() => fetch('/api/auth/sesion', { cache: 'no-store' }));
-  if (response.status === 401) return null;
   if (!response.ok) throw new Error('No se pudo verificar la sesión.');
   const data = await response.json();
+  if (!data.perfil) return null;
   if (vencioSegundoPlano(leerSegundoPlano(data.sesion?.id,localStorage))) {
     const cierre=await fetch('/api/auth/logout',{method:'POST',keepalive:true});
     if (!cierre.ok) throw new Error('No se pudo cerrar la sesión. Intenta de nuevo.');
