@@ -170,6 +170,7 @@ Antes de desplegar esta revisión con Supabase, aplicar la migración nueva `202
 | `tests/unit/` | Pruebas unitarias de lógica |
 | `tests/integration/` | Pruebas de API y base PostgreSQL en memoria |
 | `tests/remote/` | Verificación contra Supabase real |
+| `tests/e2e/` | Camino principal en navegador real (Playwright) con servidor local mock |
 
 **Toda lógica nueva comienza con una prueba:** escribir la prueba unitaria, ejecutarla y observar el fallo esperado; implementar lo mínimo y verla pasar. Para cambios de esquema, escribir primero la prueba de integración de la regla de datos. Cada endpoint nuevo o modificado necesita al menos una prueba de integración. Antes de entregar, la suite completa debe pasar en verde; siguen aplicando los demás criterios de aceptación y la DoD de la historia.
 
@@ -177,7 +178,11 @@ Antes de desplegar esta revisión con Supabase, aplicar la migración nueva `202
 npm run test:unit
 npm run test:integration
 npm test
+npx playwright install chromium   # solo la primera vez
+npm run test:e2e
 ```
+
+`test:e2e` recorre login → menú → encuesta → listado → detalle → listado con el perfil A del mock y falla ante errores de consola, excepciones no controladas o respuestas 4xx/5xx del sitio. No está incluida en `npm test`; CI la ejecuta en un paso propio.
 
 Las pruebas locales no necesitan claves ni modifican la base compartida. Las pruebas remotas necesitan `.env` y solo consultan datos; la de accesos falla si las migraciones `accesos_prueba`, `acceso_demo` y `revocacion_sesiones` no están aplicadas. Agregar pruebas después de desarrollar no acredita TDD.
 

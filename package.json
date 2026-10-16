@@ -15,6 +15,7 @@
     "test:unit": "node --test tests/unit/*.test.js",
     "test:integration": "node --test tests/integration/*.test.js",
     "test:remote": "node --env-file-if-exists=.env --test tests/remote/*.test.js",
+    "test:e2e": "playwright test",
     "test:regreso": "node scripts/prueba-regreso.js",
     "respaldo": "node --env-file-if-exists=.env scripts/respaldo.js",
     "hash": "node scripts/generar-hash.js"
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
+    "@playwright/test": "1.63.0",
     "supabase": "2.120.0"
   }
 }
