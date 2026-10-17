@@ -118,7 +118,8 @@ function filtrarGuardadas(tarjetaId, comercio) {
   const visibles = termino
     ? GUARDADAS_MOCK.filter(p => p.merchant.toLowerCase().includes(termino))
     : GUARDADAS_MOCK;
-  return { promociones: visibles, sinCoincidencias: false };
+  // Como /api/guardadas: ids son todas las guardadas y sinCoincidencias solo describe la tarjeta, no la búsqueda.
+  return { ids: GUARDADAS_MOCK.map(p => p.id), promociones: visibles, sinCoincidencias: false };
 }
 
 test('H10 Guardadas: búsqueda delega en la API y la lista muestra solo coincidencias', async () => {
@@ -147,11 +148,32 @@ test('H10 Guardadas: sin coincidencias muestra estado vacío y permite limpiar',
   const p = await abrirGuardadas({ consultarGuardadas: filtrarGuardadas });
   await p.obtener('#merchant-search').input('Zara');
   assert.equal(p.enlaces().length, 0);
+  assert.equal(p.obtener('#empty-search').hidden, false);
+  assert.equal(p.obtener('#empty-filter').hidden, true);
+  assert.equal(p.obtener('#empty-none').hidden, true);
 
   const limpiar = p.obtener('#clear-search-empty');
+  assert.equal(limpiar.hidden, false);
   await limpiar.click();
   assert.equal(p.obtener('#merchant-search').value, '');
   assert.equal(p.enlaces().length, 3);
+  assert.equal(p.obtener('#empty-search').hidden, true);
+  assert.equal(p.obtener('#clear-search-empty').hidden, true);
+});
+
+test('H10 Guardadas: sin promociones guardadas, buscar sigue indicando que no hay guardadas', async () => {
+  const p = await abrirGuardadas({ consultarGuardadas: () => ({ ids: [], promociones: [], sinCoincidencias: false }) });
+  await p.obtener('#merchant-search').input('Siman');
+  assert.equal(p.obtener('#empty-none').hidden, false);
+  assert.equal(p.obtener('#empty-search').hidden, true);
+  assert.equal(p.obtener('#clear-search-empty').hidden, true);
+});
+
+test('H10 Guardadas: si ninguna guardada aplica a la tarjeta, buscar no lo presenta como búsqueda sin resultados', async () => {
+  const p = await abrirGuardadas({ consultarGuardadas: () => ({ ids: ['siman-black'], promociones: [], sinCoincidencias: true }) });
+  await p.obtener('#merchant-search').input('Siman');
+  assert.equal(p.obtener('#empty-filter').hidden, false);
+  assert.equal(p.obtener('#empty-search').hidden, true);
 });
 
 test('H10 Guardadas: el link de detalle incluye desde=guardadas y comercio al haber búsqueda', async () => {
