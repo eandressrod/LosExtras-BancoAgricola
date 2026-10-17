@@ -20,7 +20,7 @@ function pintarVacio(datos, visibles) {
   const limpiarVacio = document.querySelector('#clear-search-empty');
   const accion = document.querySelector('#empty-action');
   const hayVisibles = visibles.length > 0;
-  const vacioPorBusqueda = !hayVisibles && Boolean(busqueda) && datos.promociones.length === 0 && !datos.sinCoincidencias;
+  const vacioPorBusqueda = !hayVisibles && Boolean(busqueda) && datos.ids?.length > 0 && !datos.sinCoincidencias;
   ninguna.hidden = hayVisibles || datos.sinCoincidencias || vacioPorBusqueda;
   filtro.hidden = !datos.sinCoincidencias;
   if (sinBusqueda) sinBusqueda.hidden = !vacioPorBusqueda;

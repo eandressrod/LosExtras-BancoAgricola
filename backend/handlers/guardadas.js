@@ -35,9 +35,11 @@ export default {
         }
         const categorias = preferencias.completed ? preferencias.categories : [];
         const filtradas = eleccion.tarjeta
-          ? filtrarPorComercio(filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, categorias), busqueda.comercio)
+          ? filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, categorias)
           : [];
-        return responderJson(seleccionarGuardadasVisibles(filtradas, ids));
+        // H10: sinCoincidencias describe la tarjeta; la búsqueda solo recorta la lista visible.
+        const visibles = seleccionarGuardadasVisibles(filtradas, ids);
+        return responderJson({ ...visibles, promociones: filtrarPorComercio(visibles.promociones, busqueda.comercio) });
       }
 
       let cuerpo;

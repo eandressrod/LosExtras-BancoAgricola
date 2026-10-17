@@ -72,6 +72,19 @@ test('H10 intersecta con intereses, categoría, Disponibles hoy y Guardadas sin 
   assert.deepEqual(despues, antes);
 });
 
+test('H10 GET /api/guardadas?comercio sin coincidencias no se confunde con guardadas que no aplican a la tarjeta', async () => {
+  await guardadas.fetch(pedir('/api/guardadas', 'B', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ promocionId: 'tienda' })
+  }));
+  const respuesta = await guardadas.fetch(pedir('/api/guardadas?comercio=zzz', 'B'));
+  assert.equal(respuesta.status, 200);
+  const datos = await respuesta.json();
+  assert.deepEqual(datos.promociones, []);
+  assert.equal(datos.sinCoincidencias, false);
+  assert.ok(datos.ids.includes('tienda'));
+});
+
 test('H10 rechaza sin sesión (401), parámetros inválidos (400) y propaga fallo del catálogo (503)', async () => {
   assert.equal((await handler().fetch(pedir('/api/promociones?comercio=siman'))).status, 401);
   assert.equal((await handler().fetch(pedir('/api/promociones?comercio=a&comercio=b', 'A'))).status, 400);
