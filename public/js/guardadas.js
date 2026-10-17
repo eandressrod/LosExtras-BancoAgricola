@@ -5,6 +5,7 @@ import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
 
 let ultimoDatos = null;
 let busqueda = '';
+let timerBusqueda = null;
 
 function limpiarTexto(valor) {
   if (typeof valor !== 'string') return '';
@@ -19,7 +20,7 @@ function pintarVacio(datos, visibles) {
   const limpiarVacio = document.querySelector('#clear-search-empty');
   const accion = document.querySelector('#empty-action');
   const hayVisibles = visibles.length > 0;
-  const vacioPorBusqueda = !hayVisibles && Boolean(busqueda) && datos.promociones.length > 0;
+  const vacioPorBusqueda = !hayVisibles && Boolean(busqueda) && datos.promociones.length === 0 && !datos.sinCoincidencias;
   ninguna.hidden = hayVisibles || datos.sinCoincidencias || vacioPorBusqueda;
   filtro.hidden = !datos.sinCoincidencias;
   if (sinBusqueda) sinBusqueda.hidden = !vacioPorBusqueda;
@@ -53,13 +54,11 @@ function tarjeta(promotion, tarjetaId) {
   return card;
 }
 
+// La API ya aplica el filtro de comercio; aquí solo renderizamos lo que llegó.
 function renderizarGuardadas(datos, tarjetaId) {
   const cards = document.querySelector('#cards');
   cards.replaceChildren();
-  const termino = busqueda.toLowerCase();
-  const visibles = termino
-    ? datos.promociones.filter(promo => String(promo.merchant ?? '').trim().toLowerCase().includes(termino))
-    : datos.promociones;
+  const visibles = datos.promociones;
   for (const promotion of visibles) cards.append(tarjeta(promotion, tarjetaId));
   pintarVacio(datos, visibles);
 }
@@ -80,7 +79,8 @@ async function loadSaved(tarjetaId) {
   if (limpiarVacio) limpiarVacio.hidden = true;
   document.querySelector('#empty-action').hidden = true;
   try {
-    const datos = await consultarGuardadas(tarjetaId);
+    // La búsqueda se delega a la API para que sea la única fuente de verdad.
+    const datos = await consultarGuardadas(tarjetaId, busqueda || null);
     if (!datos) return;
     ultimoDatos = datos;
     status.textContent = '';
@@ -113,6 +113,12 @@ if (profile) {
     }
   } catch { /* si las tarjetas fallan, la lista sigue con la elección guardada */ }
 
+  // Registrar el perfil en el historial al cargar para evitar arrastre entre sesiones (CDA 5).
+  if (typeof history !== 'undefined' && typeof history.replaceState === 'function') {
+    const url = '/guardadas.html' + (busqueda ? '?comercio=' + encodeURIComponent(busqueda) : '');
+    history.replaceState({ perfil: profile.id }, '', url);
+  }
+
   function actualizarBusqueda(texto) {
     if (searchInput) searchInput.value = texto;
     if (clearSearch) clearSearch.hidden = !texto;
@@ -121,7 +127,12 @@ if (profile) {
       const url = '/guardadas.html' + (busqueda ? '?comercio=' + encodeURIComponent(busqueda) : '');
       history.replaceState({ perfil: profile.id }, '', url);
     }
-    if (ultimoDatos) renderizarGuardadas(ultimoDatos, tarjetaId);
+    // Debounce: espera 300 ms antes de consultar la API para evitar peticiones con cada tecla.
+    if (timerBusqueda != null) clearTimeout(timerBusqueda);
+    timerBusqueda = setTimeout(() => {
+      timerBusqueda = null;
+      loadSaved(tarjetaId);
+    }, 300);
   }
 
   if (searchInput) searchInput.addEventListener('input', () => actualizarBusqueda(searchInput.value));

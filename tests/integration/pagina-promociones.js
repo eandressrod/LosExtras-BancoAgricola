@@ -69,10 +69,16 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
       location.search = pregunta < 0 ? '' : url.slice(pregunta, numeral < 0 ? undefined : numeral);
     }
   } };
+  // Timers falsos: ejecutan el callback de forma inmediata para que el debounce no introduzca
+  // retardos asíncronos entre contextos VM que no se puedan awaitar desde el host.
+  let timerIdActual = 0;
+  const timerFake = { flush: async () => {} }; // no-op; las callbacks ya se ejecutan solas
   const contexto = {
     URLSearchParams,
     location,
     history,
+    setTimeout: (fn, _ms) => { ++timerIdActual; Promise.resolve().then(() => fn()); return timerIdActual; },
+    clearTimeout: (_id) => { /* no se puede cancelar una microtarea ya encolada */ },
     requireSession: async ({revelar=true}={}) => {
       if(revelar) alRevelar();
       return { id: perfil, nombre: NOMBRES[perfil], tipoTarjeta: perfil === 'B' ? 'black' : 'basica' };
@@ -83,7 +89,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
     ...vista, ...filtro, ...tarjeta
   };
-  return { obtener, history, contexto, elementos, sesion };
+  return { obtener, history, contexto, elementos, sesion, timerFake };
 }
 
 export async function abrirListado(opciones = {}) {
@@ -127,8 +133,20 @@ export async function abrirListado(opciones = {}) {
   await vm.runInNewContext(`(async () => { ${await fuente('promociones.js')} })()`, nav.contexto);
   const chips = () => [todas, ...filtros.hijos];
   const pulsados = lista => lista.filter(boton => boton.attributes['aria-pressed'] === 'true').map(boton => boton.textContent);
+  // Envuelve obtener para que input() espere a que las microtareas del debounce completen
+  // (el setTimout fake encola via Promise.resolve; setImmediate del host las deja ejecutar).
+  const esperarMicrotareas = () => new Promise(r => setImmediate(r));
+  const obtenerConFlush = selector => {
+    const el = nav.obtener(selector);
+    const inputOriginal = el.input.bind(el);
+    const clickOriginal = el.click.bind(el);
+    el.input = async valor => { const r = await inputOriginal(valor); await esperarMicrotareas(); return r; };
+    el.click = async () => { const r = await clickOriginal(); await esperarMicrotareas(); return r; };
+    return el;
+  };
   return {
     ...nav, cards, consultas, pedidas, chips,
+    obtener: obtenerConFlush,
     activo: () => pulsados(chips()),
     chip: nombre => chips().find(chip => chip.textContent === nombre),
     enlaces: () => cards.hijos.map(oferta => oferta.querySelector('a')),
@@ -153,4 +171,67 @@ export async function abrirDetalle(opciones = {}) {
   });
   await vm.runInNewContext(`(async () => { ${await fuente('detalle.js')} })()`, nav.contexto);
   return { ...nav, consultas, volver: () => nav.obtener('#back-to-list').href };
+}
+
+/**
+ * Abre la página de Guardadas con un DOM y fetch controlados.
+ * @param {object} opciones
+ * @param {string}   [opciones.search]           Query string inicial (e.g. '?comercio=Siman')
+ * @param {object}   [opciones.estado]            Estado inicial de history
+ * @param {string}   [opciones.perfil]            'A' | 'B'
+ * @param {object}   [opciones.sesion]            Almacén de sesión simulado
+ * @param {Function} [opciones.consultarGuardadas] Mock de consultarGuardadas(tarjetaId, comercio)
+ */
+export async function abrirGuardadas(opciones = {}) {
+  const nav = navegador(opciones);
+  const perfil = opciones.perfil ?? 'A';
+  const conHijos = extra => elemento({ hijos: [], append(nodo) { this.hijos.push(nodo); }, ...extra });
+  const cards = conHijos({ replaceChildren() { this.hijos = []; } });
+  nav.elementos.set('#cards', cards);
+  nav.elementos.set('#promotion-card', { content: { cloneNode() {
+    const partes = new Map();
+    return { querySelector(selector) { if (!partes.has(selector)) partes.set(selector, elemento()); return partes.get(selector); } };
+  } } });
+  const consultas = [];
+  const tarjetas = opciones.tarjetas ?? (() => TARJETAS[perfil] ?? []);
+  const responderGuardadas = opciones.consultarGuardadas ?? ((_tarjetaId, comercio) => {
+    const termino = (comercio ?? '').toLowerCase();
+    const promos = PROMOS.todas.map(p => ({ ...p, merchant: p.id, benefit: '10%', applicableCard: 'basica' }));
+    return { promociones: termino ? promos.filter(p => p.merchant.includes(termino)) : promos, sinCoincidencias: false };
+  });
+  Object.assign(nav.contexto, {
+    document: { querySelector: nav.obtener },
+    getJSON: async url => {
+      if (url === '/api/tarjetas') return tarjetas();
+      consultas.push(url);
+      return null;
+    },
+    consultarGuardadas: async (tarjetaId, comercio) => {
+      consultas.push(`/api/guardadas?tarjeta=${tarjetaId ?? ''}&comercio=${comercio ?? ''}`);
+      return responderGuardadas(tarjetaId, comercio);
+    },
+    marcarBoton: () => {},
+    alPulsarGuardar: () => {},
+    textoVigencia: () => '',
+    mostrarImagen: () => {},
+    mostrarCondiciones: () => {},
+    leerTarjetaElegida: (storage, perfilId) => storage.getItem('los-extras-tarjeta:' + perfilId),
+    tarjetaActiva: (lista, id) => lista.find(t => t.id === id) ?? lista.find(t => t.predeterminada) ?? lista[0] ?? null,
+    cardName
+  });
+  await vm.runInNewContext(`(async () => { ${await fuente('guardadas.js')} })()`, nav.contexto);
+  const esperarMicrotareas = () => new Promise(r => setImmediate(r));
+  const obtenerConFlush = selector => {
+    const el = nav.obtener(selector);
+    const inputOriginal = el.input.bind(el);
+    const clickOriginal = el.click.bind(el);
+    el.input = async valor => { const r = await inputOriginal(valor); await esperarMicrotareas(); return r; };
+    el.click = async () => { const r = await clickOriginal(); await esperarMicrotareas(); return r; };
+    return el;
+  };
+  return {
+    ...nav, cards, consultas,
+    obtener: obtenerConFlush,
+    enlaces: () => cards.hijos.map(oferta => oferta.querySelector('a'))
+  };
 }
