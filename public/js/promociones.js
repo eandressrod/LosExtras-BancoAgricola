@@ -90,6 +90,7 @@ if (profile) {
   let tarjeta = null;
   let preparada = false;
   let consultaActual = 0;
+  let timerBusqueda = null;
   let aperturaRegistrada = false;
   const indicador = document.querySelector('#promotions-loading');
 
@@ -266,7 +267,12 @@ if (profile) {
     busqueda = nueva;
     mostrarFiltro(urlListado(categoria, null, hoy, busqueda));
     if (!tarjeta) return;
-    return loadPromotions();
+    // Debounce: actualiza URL de inmediato pero espera 300 ms antes de consultar la API.
+    if (timerBusqueda != null) clearTimeout(timerBusqueda);
+    timerBusqueda = setTimeout(() => {
+      timerBusqueda = null;
+      loadPromotions();
+    }, 300);
   }
 
   function cambiarTarjeta(nueva) {

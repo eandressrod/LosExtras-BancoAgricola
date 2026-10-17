@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { abrirListado, abrirDetalle, parametro } from './pagina-promociones.js';
+import { abrirListado, abrirDetalle, abrirGuardadas, parametro, almacen } from './pagina-promociones.js';
 
 const BASICA_A = 'tarjeta=cta-a-3';
 const OFERTAS = [
@@ -104,3 +104,104 @@ test('H10 un fallo de consulta ofrece reintento conservando el texto escrito', a
   assert.equal(p.obtener('#merchant-search').value, 'Starbucks');
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-starbucks']);
 });
+
+// ── Casos específicos de Guardadas (H10 – CDA 5) ───────────────────────────
+
+const GUARDADAS_MOCK = [
+  { id: 'siman-black', merchant: 'Siman', benefit: '25%', applicableCard: 'black', category: 'Compras' },
+  { id: 'mcdo', merchant: "McDonald's", benefit: '10%', applicableCard: 'basica', category: 'Restaurantes' },
+  { id: 'cinemark', merchant: 'Cinemark', benefit: '2×1', applicableCard: 'basica', category: 'Entretenimiento' }
+];
+
+function filtrarGuardadas(tarjetaId, comercio) {
+  const termino = (comercio ?? '').trim().toLowerCase();
+  const visibles = termino
+    ? GUARDADAS_MOCK.filter(p => p.merchant.toLowerCase().includes(termino))
+    : GUARDADAS_MOCK;
+  return { promociones: visibles, sinCoincidencias: false };
+}
+
+test('H10 Guardadas: búsqueda delega en la API y la lista muestra solo coincidencias', async () => {
+  const p = await abrirGuardadas({ consultarGuardadas: filtrarGuardadas });
+  assert.equal(p.enlaces().length, 3);
+
+  await p.obtener('#merchant-search').input('Siman');
+  // El comercio se pasó a consultarGuardadas como segundo argumento (API source of truth).
+  assert.ok(p.consultas.some(q => q.includes('comercio=Siman')), `Consultas: ${p.consultas}`);
+  assert.equal(p.enlaces().length, 1);
+  assert.equal(p.obtener('#clear-search').hidden, false);
+});
+
+test('H10 Guardadas: limpiar buscador restaura el listado completo', async () => {
+  const p = await abrirGuardadas({ consultarGuardadas: filtrarGuardadas });
+  await p.obtener('#merchant-search').input('Cinemark');
+  assert.equal(p.enlaces().length, 1);
+
+  await p.obtener('#clear-search').click();
+  assert.equal(p.obtener('#merchant-search').value, '');
+  assert.equal(p.obtener('#clear-search').hidden, true);
+  assert.equal(p.enlaces().length, 3);
+});
+
+test('H10 Guardadas: sin coincidencias muestra estado vacío y permite limpiar', async () => {
+  const p = await abrirGuardadas({ consultarGuardadas: filtrarGuardadas });
+  await p.obtener('#merchant-search').input('Zara');
+  assert.equal(p.enlaces().length, 0);
+
+  const limpiar = p.obtener('#clear-search-empty');
+  await limpiar.click();
+  assert.equal(p.obtener('#merchant-search').value, '');
+  assert.equal(p.enlaces().length, 3);
+});
+
+test('H10 Guardadas: el link de detalle incluye desde=guardadas y comercio al haber búsqueda', async () => {
+  const p = await abrirGuardadas({ consultarGuardadas: filtrarGuardadas });
+  await p.obtener('#merchant-search').input('Siman');
+  const href = p.enlaces()[0].href;
+  assert.ok(href.includes('desde=guardadas'), `href: ${href}`);
+  assert.ok(href.includes('comercio=Siman'), `href: ${href}`);
+});
+
+test('H10 Guardadas: al volver desde detalle con desde=guardadas&comercio=... el buscador se restaura', async () => {
+  const p = await abrirGuardadas({
+    search: '?comercio=Siman',
+    consultarGuardadas: filtrarGuardadas
+  });
+  assert.equal(p.obtener('#merchant-search').value, 'Siman');
+  assert.equal(p.enlaces().length, 1);
+  // El historial fue actualizado con el perfil (CDA 5).
+  assert.ok(p.history.url?.includes('comercio=Siman') || p.history.state?.perfil, `history: ${JSON.stringify(p.history)}`);
+});
+
+test('H10 Guardadas: cambiar de perfil limpia la búsqueda y no arrastra datos del perfil anterior (CDA 5)', async () => {
+  const p = await abrirGuardadas({
+    search: '?comercio=Siman',
+    estado: { perfil: 'A' },
+    perfil: 'B',
+    consultarGuardadas: filtrarGuardadas
+  });
+  // Perfil distinto: la URL tenía comercio del perfil A; debe descartarse.
+  assert.equal(p.obtener('#merchant-search').value, '');
+  // El historial debe registrar el perfil B.
+  assert.equal(p.history.state?.perfil, 'B');
+});
+
+test('H10 Guardadas: un fallo al cargar permite reintentar conservando el texto', async () => {
+  let falla = false;
+  const p = await abrirGuardadas({
+    consultarGuardadas: (tarjetaId, comercio) => {
+      if (falla) throw new Error('No se pudieron cargar las promociones guardadas. Intenta de nuevo.');
+      return filtrarGuardadas(tarjetaId, comercio);
+    }
+  });
+  falla = true;
+  await p.obtener('#merchant-search').input('Siman');
+  assert.equal(p.obtener('#list-status').className, 'error');
+  assert.equal(p.obtener('#retry').hidden, false);
+  assert.equal(p.obtener('#merchant-search').value, 'Siman');
+
+  falla = false;
+  await p.obtener('#retry').click();
+  assert.equal(p.obtener('#retry').hidden, true);
+  assert.equal(p.enlaces().length, 1);
+});
