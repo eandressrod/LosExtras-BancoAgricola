@@ -39,11 +39,20 @@
         <a href="/guardadas.html" aria-current="page">Guardadas</a>
         <a href="/preferencias.html">Mis preferencias</a>
       </nav>
+      <div id="search-box" class="search-box" role="search">
+        <label for="merchant-search" class="search-label">Buscar comercio</label>
+        <div class="search-field">
+          <input id="merchant-search" type="search" class="search-input" placeholder="Escribe el nombre del comercio" autocomplete="off" maxlength="100">
+          <button id="clear-search" type="button" class="secondary search-clear" hidden>Limpiar</button>
+        </div>
+      </div>
       <p id="list-status" class="note" role="status">Cargando guardadas…</p>
       <button id="retry" class="secondary" type="button" hidden>Reintentar</button>
       <div id="cards" class="promo-list"></div>
       <p id="empty-none" hidden>No tienes promociones guardadas.</p>
       <p id="empty-filter" hidden>Ninguna promoción guardada aplica ahora a tu tarjeta.</p>
+      <p id="empty-search" hidden>Ninguna promoción guardada coincide con tu búsqueda.</p>
+      <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
       <p id="empty-action" hidden><a class="button secondary" href="/promociones.html">Ver el listado</a></p>
       <template id="promotion-card">
         <div class="promo-card-wrap">

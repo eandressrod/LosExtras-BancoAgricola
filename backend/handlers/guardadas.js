@@ -1,4 +1,4 @@
-import { filtrarPromociones } from '../promociones.js';
+import { filtrarPromociones, leerBusquedaComercio, filtrarPorComercio } from '../promociones.js';
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioPreferencias, obtenerRepositorioProductosMenu } from '../repositorios/index.js';
 import { obtenerRepositorioGuardadas } from '../repositorios/guardadas.js';
 import { guardarPromocion, quitarPromocion, seleccionarGuardadasVisibles } from '../servicios/guardadas.js';
@@ -20,8 +20,10 @@ export default {
       const repo = obtenerRepositorioGuardadas();
 
       if (request.method === 'GET') {
-        const ids = await repo.listar(perfil.id);
         const parametros = new URL(request.url).searchParams;
+        const busqueda = leerBusquedaComercio(parametros);
+        if (!busqueda.ok) return responderJson({ error: 'Búsqueda por comercio no válida.' }, 400);
+        const ids = await repo.listar(perfil.id);
         const preferencias = await obtenerRepositorioPreferencias().obtenerPreferencias(perfil.id);
         const catalogo = await obtenerRepositorio().listarPromocionesConBeneficios();
         // La misma regla que Promociones: la tarjeta pedida tiene que ser del dueño de la sesión.
@@ -35,7 +37,9 @@ export default {
         const filtradas = eleccion.tarjeta
           ? filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, categorias)
           : [];
-        return responderJson(seleccionarGuardadasVisibles(filtradas, ids));
+        // H10: sinCoincidencias describe la tarjeta; la búsqueda solo recorta la lista visible.
+        const visibles = seleccionarGuardadasVisibles(filtradas, ids);
+        return responderJson({ ...visibles, promociones: filtrarPorComercio(visibles.promociones, busqueda.comercio) });
       }
 
       let cuerpo;

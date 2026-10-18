@@ -92,3 +92,27 @@ export function leerDisponibleHoy(parametros) {
 export function filtrarDisponiblesHoy(promociones, hoy) {
   return hoy ? promociones.filter(promo => promo.availableToday) : promociones;
 }
+/**
+ * Búsqueda temporal por nombre de comercio de H10. Recorta espacios al inicio/final;
+ * vacío o ausente equivale a no filtrar por comercio. No modifica las preferencias.
+ * @param {URLSearchParams} parametros
+ * @returns {{ ok: true, comercio: string | null } | { ok: false }}
+ */
+export function leerBusquedaComercio(parametros) {
+  const valores = parametros.getAll('comercio');
+  if (valores.length === 0) return { ok: true, comercio: null };
+  if (valores.length > 1) return { ok: false };
+  const limpio = valores[0].trim();
+  if (limpio.length > 100) return { ok: false };
+  return { ok: true, comercio: limpio || null };
+}
+
+/** Filtra por coincidencia parcial en el nombre del comercio sin distinguir mayúsculas/minúsculas. */
+export function filtrarPorComercio(promociones, comercio) {
+  const termino = typeof comercio === 'string' ? comercio.trim().toLowerCase() : '';
+  if (!termino) return promociones;
+  return (promociones ?? []).filter(promo => {
+    const nombre = String(promo.merchant ?? promo.comercio?.nombre ?? '').trim().toLowerCase();
+    return nombre.includes(termino);
+  });
+}
