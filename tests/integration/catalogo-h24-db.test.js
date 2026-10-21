@@ -152,7 +152,8 @@ test('H24 la carga es idempotente y sincroniza lo que define la fuente sin borra
 test('H24 la última carga generada coincide con la fuente actual', async () => {
   const generadas = [];
   for (const archivo of migraciones) {
-    const sql = await readFile(new URL(archivo, carpeta), 'utf8');
+    // Git en Windows (core.autocrlf) entrega los .sql con CRLF; el generador escribe LF.
+    const sql = (await readFile(new URL(archivo, carpeta), 'utf8')).replaceAll('\r\n', '\n');
     if (sql.startsWith('-- Generado desde catalogo/catalogo.json')) generadas.push(sql);
   }
   assert.ok(generadas.length > 0, 'Falta la migración generada con npm run catalogo:generar.');
