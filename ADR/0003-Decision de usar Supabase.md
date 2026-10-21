@@ -2,14 +2,14 @@
 
 - Estado: aceptada; registro retrospectivo de una decisión existente.
 - Fecha del registro: 20 de octubre de 2026.
-- Antecedentes: preparación autorizada el 7 de octubre y distribución de persistencia aceptada para la preparación del 8 de octubre de 2026.
+- Fecha de la decisión: 8 de octubre de 2026; la preparación de la capa de repositorios comenzó el 7 de octubre.
 - Clasificación: puerta de dos vías, con reversibilidad condicionada.
 
 ## Contexto
 
 El catálogo es compartido y las preferencias y promociones guardadas pertenecen a cada usuario. El alcance inicial exclusivamente local fue sustituido por persistencia y validación de sesión en backend.
 
-El PDF identifica `backend/repositorios/contrato.js` como un punto de coordinación importante. Los nombres y tipos de las promociones conectan adaptadores, API y pantallas: cambiar campos como `benefit` o `applicableCard` puede producir cambios en cadena.
+El contrato de repositorios es un punto de coordinación entre adaptadores, API y pantallas. Los nombres y tipos de las promociones conectan esas capas: cambiar campos como `benefit` o `applicableCard` puede producir cambios en cadena.
 
 ## Decisión
 
@@ -43,12 +43,11 @@ El antecedente de almacenamiento local está documentado. Las restantes opciones
 
 Se considera puerta de dos vías porque los consumidores pueden conservar los contratos de los repositorios y de la API. La salida exige exportar y migrar datos, adaptar consultas y funciones específicas, preservar identidad y propiedad y verificar el comportamiento de las operaciones afectadas. No se ha realizado una migración de proveedor que demuestre ese costo.
 
-La propuesta del PDF de estabilizar campos y verificar la misma estructura entre adaptadores sigue siendo una orientación para trabajo futuro; este ADR no implementa cambios al contrato ni pruebas adicionales.
+Mantener estables los campos y comprobar la equivalencia entre adaptadores sigue siendo una orientación de trabajo. Este ADR no implementa cambios al contrato ni pruebas adicionales.
 
 ## Evidencia y referencias
 
-- Documento aportado: *Decisiones de arquitectura*, página 1, tercera decisión y apartado 2; página 2, continuación sobre acoplamiento.
-- Registros históricos consultados: «Base de Supabase preparada», 7 de octubre; «Recomendación de persistencia» y «Base Supabase y entorno TDD preparados», 8 de octubre de 2026. Su evidencia remota corresponde a esas fechas.
+- Decisión del equipo: «Base de Supabase preparada», 7 de octubre; «Recomendación de persistencia» y «Base Supabase y entorno TDD preparados», 8 de octubre de 2026. Su evidencia remota corresponde a esas fechas.
 - [Contrato](../backend/repositorios/contrato.js), [selección de repositorios](../backend/repositorios/index.js), [adaptador mock](../backend/repositorios/mock.js) y [adaptador Supabase](../backend/repositorios/supabase.js).
 - [Configuración privada del cliente](../backend/config/supabase.js) y [adaptador de accesos con RPC](../backend/repositorios/accesos.supabase.js).
 - [Migraciones SQL](../supabase/migrations/) y [guía de desarrollo](../docs/GUIA_DESARROLLO.md).
