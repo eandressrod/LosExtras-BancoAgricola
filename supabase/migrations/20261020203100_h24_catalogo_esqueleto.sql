@@ -1,0 +1,267 @@
+-- Generado desde catalogo/catalogo.json con npm run catalogo:generar; no editar a mano.
+-- Fuente versión 1.
+
+insert into public.ocasiones (id, nombre, ejemplos, orden) values
+  ('dia-a-dia', 'Compras del día a día', 'Supermercados, farmacias, gasolineras, panaderías', 1),
+  ('rapido-practico', 'Rápido y práctico', 'Comida rápida, tiendas de conveniencia, servicios exprés', 2),
+  ('darse-un-gusto', 'Darse un gusto', 'Postres, restaurantes de mesa, spa, perfumería', 3),
+  ('salir', 'Salir con amigos o pareja', 'Restaurantes, bares, cine, eventos', 4),
+  ('familia', 'Planes en familia', 'Restaurantes familiares, cine, juguetes, parques', 5),
+  ('bienestar', 'Bienestar y vida activa', 'Gimnasios, artículos deportivos, comida saludable, yoga', 6),
+  ('entretenimiento', 'Entretenimiento', 'Cine, videojuegos, conciertos, streaming', 7),
+  ('estilo-personal', 'Estilo personal', 'Ropa, calzado, belleza, accesorios', 8),
+  ('tecnologia', 'Tecnología', 'Electrónica, celulares, videojuegos, telefonía', 9),
+  ('hogar', 'Hogar', 'Muebles, electrodomésticos, ferretería, decoración', 10),
+  ('viajes', 'Viajes y escapadas', 'Aerolíneas, hoteles, turismo local, renta de autos', 11)
+on conflict (id) do update set nombre = excluded.nombre, ejemplos = excluded.ejemplos, orden = excluded.orden;
+
+insert into public.zonas (id, nombre, latitud, longitud, orden) values
+  ('san-salvador-centro', 'San Salvador Centro', 13.6989, -89.1914, 1),
+  ('escalon', 'Escalón', 13.7036, -89.2418, 2),
+  ('antiguo-cuscatlan', 'Antiguo Cuscatlán', 13.6736, -89.2486, 3),
+  ('santa-tecla', 'Santa Tecla', 13.6769, -89.2797, 4),
+  ('soyapango', 'Soyapango', 13.71, -89.14, 5),
+  ('santa-ana', 'Santa Ana', 13.9942, -89.5597, 6),
+  ('san-miguel', 'San Miguel', 13.4833, -88.1833, 7)
+on conflict (id) do update set nombre = excluded.nombre, latitud = excluded.latitud, longitud = excluded.longitud, orden = excluded.orden;
+
+insert into public.categorias (id, nombre, icono_url, imagen_url, orden) values
+  ('Restaurantes', 'Restaurantes', '/recursos/categorias/restaurantes.svg', null, 1),
+  ('Compras', 'Compras', '/recursos/categorias/compras.svg', null, 2),
+  ('Entretenimiento', 'Entretenimiento', '/recursos/categorias/entretenimiento.svg', null, 3),
+  ('Supermercados', 'Supermercados', '/recursos/categorias/supermercados.svg', null, 4),
+  ('Salud', 'Salud', '/recursos/categorias/salud.svg', null, 5),
+  ('Tecnología', 'Tecnología', '/recursos/categorias/tecnologia.svg', null, 6)
+on conflict (id) do update set nombre = excluded.nombre, icono_url = excluded.icono_url, imagen_url = excluded.imagen_url, orden = excluded.orden;
+
+insert into public.subcategorias (id, nombre, categoria_id) values
+  ('comida-rapida', 'Comida rápida', 'Restaurantes'),
+  ('cafeterias', 'Cafeterías', 'Restaurantes'),
+  ('pizzerias', 'Pizzerías', 'Restaurantes'),
+  ('tiendas-departamento', 'Tiendas por departamento', 'Compras'),
+  ('calzado', 'Calzado', 'Compras'),
+  ('cines', 'Cines', 'Entretenimiento'),
+  ('hipermercados', 'Hipermercados', 'Supermercados'),
+  ('clubes-de-precios', 'Clubes de precios', 'Supermercados'),
+  ('farmacias', 'Farmacias', 'Salud'),
+  ('opticas', 'Ópticas', 'Salud'),
+  ('vitaminas-suplementos', 'Vitaminas y suplementos', 'Salud'),
+  ('electrodomesticos', 'Electrónica y electrodomésticos', 'Tecnología'),
+  ('telefonia', 'Telefonía e internet', 'Tecnología')
+on conflict (id) do update set nombre = excluded.nombre, categoria_id = excluded.categoria_id;
+
+insert into public.comercios (id, nombre, logo_url, categoria_id, subcategoria_id, ocasiones, nivel_precio, reconocible, sensible, afinar_por) values
+  ('restaurante', 'McDonald''s', '/recursos/comercios/restaurante.png', 'Restaurantes', 'comida-rapida', '{"dia-a-dia":0,"rapido-practico":1,"darse-un-gusto":0,"salir":0.5,"familia":0.5,"bienestar":0,"entretenimiento":0,"estilo-personal":0,"tecnologia":0,"hogar":0,"viajes":0}'::jsonb, 1, true, false, 'comercio'),
+  ('pollo-campero', 'Pollo Campero', '/recursos/comercios/pollo-campero.png', 'Restaurantes', 'comida-rapida', '{"dia-a-dia":0,"rapido-practico":1,"darse-un-gusto":0,"salir":0.5,"familia":1,"bienestar":0,"entretenimiento":0,"estilo-personal":0,"tecnologia":0,"hogar":0,"viajes":0}'::jsonb, 1, true, false, 'comercio'),
+  ('starbucks', 'Starbucks', '/recursos/comercios/starbucks.png', 'Restaurantes', 'cafeterias', '{"dia-a-dia":0,"rapido-practico":0.5,"darse-un-gusto":1,"salir":0.5,"familia":0,"bienestar":0,"entretenimiento":0,"estilo-personal":0,"tecnologia":0,"hogar":0,"viajes":0}'::jsonb, 3, true, false, 'comercio'),
+  ('pizza-hut', 'Pizza Hut', '/recursos/comercios/pizza-hut.png', 'Restaurantes', 'pizzerias', '{"dia-a-dia":0,"rapido-practico":0.5,"darse-un-gusto":0,"salir":0.5,"familia":1,"bienestar":0,"entretenimiento":0.5,"estilo-personal":0,"tecnologia":0,"hogar":0,"viajes":0}'::jsonb, 2, true, false, 'comercio'),
+  ('tienda', 'Siman', '/recursos/comercios/tienda.png', 'Compras', 'tiendas-departamento', '{"dia-a-dia":0,"rapido-practico":0,"darse-un-gusto":0,"salir":0,"familia":0,"bienestar":0,"entretenimiento":0,"estilo-personal":1,"tecnologia":0.5,"hogar":0.5,"viajes":0}'::jsonb, 3, true, false, 'comercio'),
+  ('payless', 'Payless ShoeSource', '/recursos/comercios/payless.png', 'Compras', 'calzado', '{"dia-a-dia":0,"rapido-practico":0,"darse-un-gusto":0,"salir":0,"familia":0.5,"bienestar":0,"entretenimiento":0,"estilo-personal":1,"tecnologia":0,"hogar":0,"viajes":0}'::jsonb, 1, true, false, 'subcategoria'),
+  ('cine', 'Cinemark', '/recursos/comercios/cine.png', 'Entretenimiento', 'cines', '{"dia-a-dia":0,"rapido-practico":0,"darse-un-gusto":0,"salir":1,"familia":0.5,"bienestar":0,"entretenimiento":1,"estilo-personal":0,"tecnologia":0,"hogar":0,"viajes":0}'::jsonb, 2, true, false, 'no'),
+  ('walmart', 'Walmart', '/recursos/comercios/walmart.png', 'Supermercados', 'hipermercados', '{"dia-a-dia":1,"rapido-practico":0,"darse-un-gusto":0,"salir":0,"familia":0,"bienestar":0,"entretenimiento":0,"estilo-personal":0,"tecnologia":0.5,"hogar":0.5,"viajes":0}'::jsonb, 1, true, false, 'comercio'),
+  ('pricesmart', 'PriceSmart', '/recursos/comercios/pricesmart.png', 'Supermercados', 'clubes-de-precios', '{"dia-a-dia":1,"rapido-practico":0,"darse-un-gusto":0,"salir":0,"familia":0.5,"bienestar":0,"entretenimiento":0,"estilo-personal":0,"tecnologia":0,"hogar":0.5,"viajes":0}'::jsonb, 2, true, false, 'comercio'),
+  ('gnc', 'GNC', '/recursos/comercios/gnc.png', 'Salud', 'vitaminas-suplementos', '{}'::jsonb, 3, true, true, 'subcategoria'),
+  ('la-curacao', 'La Curacao', '/recursos/comercios/la-curacao.png', 'Tecnología', 'electrodomesticos', '{"dia-a-dia":0,"rapido-practico":0,"darse-un-gusto":0,"salir":0,"familia":0,"bienestar":0,"entretenimiento":0,"estilo-personal":0,"tecnologia":1,"hogar":1,"viajes":0}'::jsonb, 2, true, false, 'comercio'),
+  ('claro', 'Claro', '/recursos/comercios/claro.png', 'Tecnología', 'telefonia', '{"dia-a-dia":0,"rapido-practico":0,"darse-un-gusto":0,"salir":0,"familia":0,"bienestar":0,"entretenimiento":0.5,"estilo-personal":0,"tecnologia":1,"hogar":0,"viajes":0}'::jsonb, 2, true, false, 'no')
+on conflict (id) do update set nombre = excluded.nombre, logo_url = excluded.logo_url, categoria_id = excluded.categoria_id, subcategoria_id = excluded.subcategoria_id, ocasiones = excluded.ocasiones, nivel_precio = excluded.nivel_precio, reconocible = excluded.reconocible, sensible = excluded.sensible, afinar_por = excluded.afinar_por;
+
+insert into public.categoria_comercios (categoria_id, comercio_id) values
+  ('Restaurantes', 'restaurante'),
+  ('Restaurantes', 'pollo-campero'),
+  ('Restaurantes', 'starbucks'),
+  ('Restaurantes', 'pizza-hut'),
+  ('Compras', 'tienda'),
+  ('Compras', 'payless'),
+  ('Entretenimiento', 'cine'),
+  ('Supermercados', 'walmart'),
+  ('Supermercados', 'pricesmart'),
+  ('Salud', 'gnc'),
+  ('Tecnología', 'la-curacao'),
+  ('Tecnología', 'claro')
+on conflict (categoria_id, comercio_id) do nothing;
+
+insert into public.sucursales (id, comercio_id, nombre, direccion, latitud, longitud, zona_id) values
+  ('restaurante-metrocentro', 'restaurante', 'McDonald''s Metrocentro', 'Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador', 13.7055, -89.2125, 'san-salvador-centro'),
+  ('restaurante-multiplaza', 'restaurante', 'McDonald''s Multiplaza', 'Centro Comercial Multiplaza, Carretera Panamericana, Antiguo Cuscatlán', 13.6779, -89.2506, 'antiguo-cuscatlan'),
+  ('restaurante-santa-ana', 'restaurante', 'McDonald''s Metrocentro Santa Ana', 'Centro Comercial Metrocentro, Avenida Independencia Sur, Santa Ana', 13.9853, -89.5585, 'santa-ana'),
+  ('pollo-campero-el-carmen', 'pollo-campero', 'Pollo Campero Paseo El Carmen', 'Paseo El Carmen, Santa Tecla', 13.6735, -89.287, 'santa-tecla'),
+  ('pollo-campero-centro', 'pollo-campero', 'Pollo Campero Centro Histórico', 'Plaza Libertad, Centro Histórico de San Salvador', 13.6978, -89.1906, 'san-salvador-centro'),
+  ('pollo-campero-san-miguel', 'pollo-campero', 'Pollo Campero Metrocentro San Miguel', 'Centro Comercial Metrocentro, Avenida Roosevelt Sur, San Miguel', 13.4795, -88.1716, 'san-miguel'),
+  ('starbucks-multiplaza', 'starbucks', 'Starbucks Multiplaza', 'Centro Comercial Multiplaza, Carretera Panamericana, Antiguo Cuscatlán', 13.6782, -89.2511, 'antiguo-cuscatlan'),
+  ('starbucks-escalon', 'starbucks', 'Starbucks Paseo General Escalón', 'Paseo General Escalón, San Salvador', 13.704, -89.241, 'escalon'),
+  ('pizza-hut-escalon', 'pizza-hut', 'Pizza Hut Escalón', 'Paseo General Escalón, San Salvador', 13.7042, -89.2425, 'escalon'),
+  ('pizza-hut-santa-tecla', 'pizza-hut', 'Pizza Hut Santa Tecla', 'Carretera Panamericana, Santa Tecla', 13.6745, -89.285, 'santa-tecla'),
+  ('pizza-hut-san-miguel', 'pizza-hut', 'Pizza Hut San Miguel', 'Avenida Roosevelt, San Miguel', 13.481, -88.175, 'san-miguel'),
+  ('tienda-metrocentro', 'tienda', 'Siman Metrocentro', 'Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador', 13.7058, -89.213, 'san-salvador-centro'),
+  ('tienda-galerias', 'tienda', 'Siman Galerías', 'Centro Comercial Galerías, Paseo General Escalón, San Salvador', 13.7034, -89.2437, 'escalon'),
+  ('tienda-san-miguel', 'tienda', 'Siman Metrocentro San Miguel', 'Centro Comercial Metrocentro, Avenida Roosevelt Sur, San Miguel', 13.4798, -88.172, 'san-miguel'),
+  ('payless-metrocentro', 'payless', 'Payless ShoeSource Metrocentro', 'Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador', 13.7057, -89.2128, 'san-salvador-centro'),
+  ('payless-plaza-mundo', 'payless', 'Payless ShoeSource Plaza Mundo', 'Centro Comercial Plaza Mundo, Bulevar del Ejército, Soyapango', 13.7011, -89.1512, 'soyapango'),
+  ('cine-metrocentro', 'cine', 'Cinemark Metrocentro', 'Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador', 13.706, -89.212, 'san-salvador-centro'),
+  ('cine-plaza-mundo', 'cine', 'Cinemark Plaza Mundo', 'Centro Comercial Plaza Mundo, Bulevar del Ejército, Soyapango', 13.7013, -89.1513, 'soyapango'),
+  ('walmart-santa-elena', 'walmart', 'Walmart Santa Elena', 'Bulevar Santa Elena, Antiguo Cuscatlán', 13.6698, -89.2453, 'antiguo-cuscatlan'),
+  ('walmart-constitucion', 'walmart', 'Walmart Constitución', 'Bulevar Constitución, San Salvador', 13.7225, -89.215, 'san-salvador-centro'),
+  ('pricesmart-santa-elena', 'pricesmart', 'PriceSmart Santa Elena', 'Bulevar Santa Elena, Antiguo Cuscatlán', 13.669, -89.247, 'antiguo-cuscatlan'),
+  ('pricesmart-los-heroes', 'pricesmart', 'PriceSmart Los Héroes', 'Boulevard de Los Héroes, San Salvador', 13.708, -89.21, 'san-salvador-centro'),
+  ('gnc-multiplaza', 'gnc', 'GNC Multiplaza', 'Centro Comercial Multiplaza, Carretera Panamericana, Antiguo Cuscatlán', 13.6781, -89.2509, 'antiguo-cuscatlan'),
+  ('gnc-metrocentro', 'gnc', 'GNC Metrocentro', 'Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador', 13.7059, -89.2126, 'san-salvador-centro'),
+  ('gnc-galerias', 'gnc', 'GNC Galerías', 'Centro Comercial Galerías, Paseo General Escalón, San Salvador', 13.7035, -89.2436, 'escalon'),
+  ('la-curacao-centro', 'la-curacao', 'La Curacao Centro Histórico', 'Calle Arce, Centro Histórico de San Salvador', 13.6995, -89.196, 'san-salvador-centro'),
+  ('la-curacao-santa-ana', 'la-curacao', 'La Curacao Santa Ana', 'Calle Libertad, Santa Ana', 13.9945, -89.561, 'santa-ana'),
+  ('la-curacao-san-miguel', 'la-curacao', 'La Curacao San Miguel', 'Avenida Roosevelt, San Miguel', 13.483, -88.179, 'san-miguel'),
+  ('claro-metrocentro', 'claro', 'Claro Metrocentro', 'Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador', 13.7061, -89.2124, 'san-salvador-centro'),
+  ('claro-plaza-mundo', 'claro', 'Claro Plaza Mundo', 'Centro Comercial Plaza Mundo, Bulevar del Ejército, Soyapango', 13.7014, -89.1509, 'soyapango'),
+  ('claro-santa-ana', 'claro', 'Claro Metrocentro Santa Ana', 'Centro Comercial Metrocentro, Avenida Independencia Sur, Santa Ana', 13.9855, -89.5588, 'santa-ana')
+on conflict (id) do update set comercio_id = excluded.comercio_id, nombre = excluded.nombre, direccion = excluded.direccion, latitud = excluded.latitud, longitud = excluded.longitud, zona_id = excluded.zona_id;
+
+delete from public.cobertura where comercio_id in ('restaurante', 'pollo-campero', 'starbucks', 'pizza-hut', 'tienda', 'payless', 'cine', 'walmart', 'pricesmart', 'gnc', 'la-curacao', 'claro') and (comercio_id, zona_id) not in (('restaurante', 'san-salvador-centro'), ('restaurante', 'escalon'), ('restaurante', 'antiguo-cuscatlan'), ('restaurante', 'santa-tecla'), ('restaurante', 'soyapango'), ('restaurante', 'santa-ana'), ('restaurante', 'san-miguel'), ('pollo-campero', 'san-salvador-centro'), ('pollo-campero', 'escalon'), ('pollo-campero', 'antiguo-cuscatlan'), ('pollo-campero', 'santa-tecla'), ('pollo-campero', 'soyapango'), ('pollo-campero', 'santa-ana'), ('pollo-campero', 'san-miguel'), ('pizza-hut', 'san-salvador-centro'), ('pizza-hut', 'escalon'), ('pizza-hut', 'antiguo-cuscatlan'), ('pizza-hut', 'santa-tecla'), ('pizza-hut', 'soyapango'), ('pizza-hut', 'santa-ana'), ('pizza-hut', 'san-miguel'), ('pricesmart', 'san-salvador-centro'), ('pricesmart', 'escalon'), ('pricesmart', 'antiguo-cuscatlan'), ('pricesmart', 'santa-tecla'), ('pricesmart', 'soyapango'), ('pricesmart', 'santa-ana'), ('pricesmart', 'san-miguel'), ('gnc', 'san-salvador-centro'), ('gnc', 'escalon'), ('gnc', 'antiguo-cuscatlan'), ('gnc', 'santa-tecla'), ('gnc', 'soyapango'), ('gnc', 'santa-ana'), ('gnc', 'san-miguel'));
+
+insert into public.cobertura (comercio_id, zona_id, estado) values
+  ('restaurante', 'san-salvador-centro', 'si'),
+  ('restaurante', 'escalon', 'si'),
+  ('restaurante', 'antiguo-cuscatlan', 'si'),
+  ('restaurante', 'santa-tecla', 'si'),
+  ('restaurante', 'soyapango', 'si'),
+  ('restaurante', 'santa-ana', 'desconocida'),
+  ('restaurante', 'san-miguel', 'no'),
+  ('pollo-campero', 'san-salvador-centro', 'si'),
+  ('pollo-campero', 'escalon', 'si'),
+  ('pollo-campero', 'antiguo-cuscatlan', 'si'),
+  ('pollo-campero', 'santa-tecla', 'si'),
+  ('pollo-campero', 'soyapango', 'si'),
+  ('pollo-campero', 'santa-ana', 'si'),
+  ('pollo-campero', 'san-miguel', 'desconocida'),
+  ('pizza-hut', 'san-salvador-centro', 'si'),
+  ('pizza-hut', 'escalon', 'si'),
+  ('pizza-hut', 'antiguo-cuscatlan', 'si'),
+  ('pizza-hut', 'santa-tecla', 'si'),
+  ('pizza-hut', 'soyapango', 'si'),
+  ('pizza-hut', 'santa-ana', 'desconocida'),
+  ('pizza-hut', 'san-miguel', 'si'),
+  ('pricesmart', 'san-salvador-centro', 'si'),
+  ('pricesmart', 'escalon', 'si'),
+  ('pricesmart', 'antiguo-cuscatlan', 'si'),
+  ('pricesmart', 'santa-tecla', 'si'),
+  ('pricesmart', 'soyapango', 'desconocida'),
+  ('pricesmart', 'santa-ana', 'no'),
+  ('pricesmart', 'san-miguel', 'no'),
+  ('gnc', 'san-salvador-centro', 'si'),
+  ('gnc', 'escalon', 'si'),
+  ('gnc', 'antiguo-cuscatlan', 'si'),
+  ('gnc', 'santa-tecla', 'si'),
+  ('gnc', 'soyapango', 'si'),
+  ('gnc', 'santa-ana', 'desconocida'),
+  ('gnc', 'san-miguel', 'no')
+on conflict (comercio_id, zona_id) do update set estado = excluded.estado;
+
+insert into public.promociones (id, merchant, category, benefit, description, payment, restrictions, orden, comercio_id, titulo, descripcion_detalle, condiciones, instrucciones, imagen_url, imagen_alt, vigencia_desde, vigencia_hasta, dias_uso, canales, tipo_beneficio, condicion_decisiva, etiquetas_intencion, fecha_alta, ocasiones, nivel_precio) values
+  ('restaurante', 'McDonald''s', 'Restaurantes', '10 % de descuento', 'Un descuento para tu próxima comida.', 'Tarjeta Básica', 'Una compra por transacción. No acumulable con otras ofertas.', 1, 'restaurante', 'Descuento en tu comida de McDonald''s', 'Disfruta una hamburguesa y tus acompañamientos favoritos pagando con tu tarjeta. Consulta el beneficio antes de ordenar.', 'Aplica en el menú a la carta y en combos, en restaurante y autoservicio.', 'Paga con tu tarjeta en caja o autoservicio; el descuento se aplica al momento del pago.', '/recursos/promociones/restaurante.webp', 'Bandeja de McDonald''s con hamburguesa, papas fritas y bebida', '2026-10-09', '2026-12-31', null, array['presencial']::text[], 'descuento', 'Pagar con tu tarjeta en el restaurante', '{}'::text[], '2026-10-09', null, null),
+  ('tienda', 'Siman', 'Compras', '15 % de descuento', 'Renueva tus favoritos con descuento.', 'Tarjeta Básica', 'Solo artículos seleccionados.', 2, 'tienda', 'Descuento en artículos seleccionados de Siman', 'Encuentra ropa y artículos seleccionados para renovar tus favoritos. El descuento se aplica al pagar con tu tarjeta y cumplir la compra mínima.', 'Aplica en ropa, accesorios y artículos para el hogar marcados en tienda.', 'Paga con tu tarjeta en caja; el descuento se aplica al cumplir la compra mínima.', '/recursos/promociones/tienda.webp', 'Fachada de una tienda Siman', '2026-10-09', '2026-12-31', null, array['presencial']::text[], 'descuento', 'Compra mínima de $30', '{}'::text[], '2026-10-09', null, null),
+  ('cine', 'Cinemark', 'Entretenimiento', '2×1 en entradas', 'Comparte una película con un 2×1.', 'Tarjeta Básica', 'No aplica a funciones especiales ni preventas.', 3, 'cine', '2×1 en entradas de Cinemark', 'Elige una película y comparte la función: paga una entrada y recibe otra de igual precio. El beneficio está disponible de lunes a jueves.', 'Entradas de igual precio para la misma función.', 'Compra en taquilla y paga ambas entradas con tu tarjeta.', '/recursos/promociones/cine.webp', 'Fachada de un cine Cinemark', '2026-10-09', '2026-12-31', array[1,2,3,4]::smallint[], array['presencial']::text[], '2x1-combo', 'Válido de lunes a jueves', '{}'::text[], '2026-10-09', null, null),
+  ('starbucks', 'Starbucks', 'Restaurantes', '10 % de descuento', 'Tu pausa de café, con descuento.', 'Tarjeta Básica', 'No aplica a granos, tazas ni tarjetas de regalo.', 4, 'starbucks', 'Descuento en bebidas de Starbucks', 'Haz una pausa y disfruta tu bebida favorita. Paga con tu tarjeta para recibir el descuento correspondiente a tu perfil.', 'Aplica en bebidas preparadas de cualquier tamaño.', 'Paga con tu tarjeta al ordenar en barra.', '/recursos/promociones/starbucks.webp', 'Vaso de Starbucks con su logo junto a un postre', '2026-10-09', '2026-12-31', null, array['presencial']::text[], 'descuento', 'Pagar con tu tarjeta al ordenar', '{}'::text[], '2026-10-09', null, null),
+  ('siman-black', 'Siman', 'Compras', '30 % de descuento', 'Un beneficio exclusivo para tu Black.', 'Tarjeta Black', 'No acumulable con otras ofertas.', 5, 'tienda', 'Exclusivo Black: 30 % en Siman', 'Aprovecha un descuento exclusivo Black en artículos seleccionados. Esta oferta tiene su propia compra mínima y no se combina con otras promociones.', 'Aplica en artículos seleccionados de ropa y accesorios.', 'Paga con tu tarjeta Black en caja; el descuento tiene un tope de $30.', '/recursos/promociones/siman-black.webp', 'Entrada de una tienda Siman', '2026-10-09', '2026-12-31', null, array['presencial']::text[], 'descuento', 'Compra mínima de $50 con tarjeta Black', '{}'::text[], '2026-10-09', null, null),
+  ('pollo-campero-martes', 'Pollo Campero', 'Restaurantes', '2×1 en combos personales', 'Los martes, tu segundo combo personal va por cuenta de la casa.', 'Tarjeta Básica', 'No aplica a combos familiares ni a otras promociones de la marca.', 6, 'pollo-campero', '2×1 en combos personales los martes', 'Cada martes, pide dos combos personales iguales en restaurante o a domicilio y paga solo uno con tu tarjeta. Ideal para compartir el almuerzo o la cena.', 'Combos personales del mismo precio, en restaurante o a domicilio.', 'En restaurante, menciona la promoción al ordenar; a domicilio, elige pago con tarjeta al finalizar el pedido.', '/recursos/promociones/pollo-campero-martes.webp', 'Restaurante Pollo Campero con su rótulo', '2026-10-14', '2026-12-31', array[2]::smallint[], array['presencial','delivery']::text[], '2x1-combo', 'Válido solo los martes', '{}'::text[], '2026-10-14', null, null),
+  ('restaurante-domicilio', 'McDonald''s', 'Restaurantes', '5 % de reintegro', 'Recibe parte de tu pedido a domicilio de vuelta en tu tarjeta.', 'Tarjeta Básica', 'El reintegro no incluye el cargo de envío.', 7, 'restaurante', 'Reintegro en pedidos a domicilio de McDonald''s', 'Haz tu pedido a domicilio de McDonald''s y págalo con tu tarjeta: un porcentaje del total regresa como reintegro en tu próximo estado de cuenta.', 'Pedidos a domicilio pagados en línea con tu tarjeta.', 'Elige pago con tarjeta al confirmar el pedido; el reintegro se refleja en tu siguiente estado de cuenta.', '/recursos/promociones/restaurante-domicilio.webp', 'Motocicleta de reparto de McDonald''s con su logo', '2026-10-15', '2026-12-31', null, array['delivery']::text[], 'cashback-puntos', 'Pedido mínimo de $15', '{}'::text[], '2026-10-15', null, null),
+  ('starbucks-regalo', 'Starbucks', 'Restaurantes', '15 % en tarjetas de regalo', 'Regala café con un 15 % de descuento al cargar una tarjeta de regalo.', 'Tarjeta Black', 'Máximo dos tarjetas de regalo por compra.', 8, 'starbucks', 'Exclusivo Black: 15 % en tarjetas de regalo Starbucks', 'Compra o recarga una tarjeta de regalo de Starbucks con tu tarjeta Black y recibe un 15 % de descuento sobre el monto cargado. Un detalle sencillo para cumpleaños y celebraciones.', 'Cargas desde $10 en tarjetas de regalo físicas.', 'Solicita la tarjeta de regalo en barra y paga con tu tarjeta Black.', '/recursos/promociones/starbucks-regalo.webp', 'Tienda Starbucks con su rótulo', '2026-10-16', '2026-12-31', null, array['presencial']::text[], 'descuento', 'Pagar con tarjeta Black', array['regalo']::text[], '2026-10-16', null, null),
+  ('claro-cuotas', 'Claro', 'Tecnología', '6 cuotas sin intereses', 'Estrena celular y págalo en cuotas fijas sin intereses.', 'Tarjeta Básica', 'No aplica a accesorios ni a recargas.', 9, 'claro', 'Celulares en cuotas sin intereses en Claro', 'Elige tu nuevo celular en una tienda Claro o en su tienda en línea y divide el pago en cuotas iguales sin intereses con tu tarjeta. Una buena opción para regalar.', 'Celulares liberados o con plan desde $150.', 'Pide las cuotas al pagar en tienda o elige el plan de cuotas en la tienda en línea.', '/recursos/promociones/claro-cuotas.webp', 'Tienda Claro en un centro comercial', '2026-10-13', '2026-12-31', null, array['presencial','en-linea']::text[], 'cuotas-sin-intereses', 'Compra mínima de $150', array['regalo']::text[], '2026-10-13', null, null),
+  ('payless-fin-de-semana', 'Payless ShoeSource', 'Compras', '15 % de descuento', 'Estrena zapatos con descuento cada fin de semana.', 'Tarjeta Básica', 'No aplica a accesorios ni a productos en liquidación.', 10, 'payless', 'Descuento en calzado Payless de viernes a domingo', 'De viernes a domingo, encuentra calzado casual, escolar y deportivo con descuento al pagar con tu tarjeta en tiendas Payless ShoeSource.', 'Calzado de temporada marcado en tienda.', 'Paga con tu tarjeta en caja de viernes a domingo.', '/recursos/promociones/payless-fin-de-semana.webp', 'Tienda Payless ShoeSource en un centro comercial', '2026-10-12', '2026-12-31', array[5,6,0]::smallint[], array['presencial']::text[], 'descuento', 'Válido de viernes a domingo', array['regalo']::text[], '2026-10-12', null, null),
+  ('cine-combo-miercoles', 'Cinemark', 'Entretenimiento', '2×1 en combo mediano', 'Los miércoles, lleva dos combos de palomitas por el precio de uno.', 'Tarjeta Básica', 'No aplica a combos promocionales de estreno.', 11, 'cine', '2×1 en combos de palomitas los miércoles', 'Cada miércoles, compra un combo de palomitas y bebida en la dulcería de Cinemark Metrocentro y recibe otro igual sin costo al pagar con tu tarjeta.', 'Combos medianos o grandes del mismo tamaño.', 'Pide la promoción en la dulcería y paga con tu tarjeta.', '/recursos/promociones/cine-combo-miercoles.webp', 'Vestíbulo de un cine Cinemark con su rótulo', '2026-10-17', '2026-12-31', array[3]::smallint[], array['presencial']::text[], '2x1-combo', 'Válido solo los miércoles', '{}'::text[], '2026-10-17', null, null),
+  ('pricesmart-reintegro', 'PriceSmart', 'Supermercados', '3 % de reintegro', 'Recupera parte de tu compra del club en tu siguiente estado de cuenta.', 'Tarjeta Básica', 'No incluye la membresía, recargas ni bebidas alcohólicas.', 12, 'pricesmart', 'Reintegro en tus compras de PriceSmart', 'Haz tus compras del mes en PriceSmart, en el club o a domicilio, y recibe un reintegro sobre el total pagado con tu tarjeta.', 'Compras en el club o con entrega a domicilio.', 'Paga con tu tarjeta en caja o al confirmar tu pedido a domicilio.', '/recursos/promociones/pricesmart-reintegro.webp', 'Club PriceSmart de Santa Elena, en Antiguo Cuscatlán', '2026-10-18', '2026-12-31', null, array['presencial','delivery']::text[], 'cashback-puntos', 'Compra mínima de $50', '{}'::text[], '2026-10-18', null, null),
+  ('pizza-hut-miercoles', 'Pizza Hut', 'Restaurantes', '2×1 en pizzas grandes', 'Los miércoles, pide una pizza grande y llévate otra igual.', 'Tarjeta Básica', 'No aplica a pizzas de orilla rellena ni a otras promociones.', 13, 'pizza-hut', '2×1 en pizzas grandes los miércoles en Pizza Hut', 'Cada miércoles, pide una pizza grande en restaurante o a domicilio y recibe otra de la misma especialidad al pagar con tu tarjeta. Perfecta para compartir en familia.', 'Pizzas grandes de la misma especialidad.', 'Menciona la promoción al ordenar o elige pago con tarjeta en tu pedido a domicilio.', '/recursos/promociones/pizza-hut-miercoles.webp', 'Caja de pizza de Pizza Hut con su logo', '2026-10-19', '2026-12-31', array[3]::smallint[], array['presencial','delivery']::text[], '2x1-combo', 'Válido solo los miércoles', '{}'::text[], '2026-10-19', null, null),
+  ('walmart-cuotas', 'Walmart', 'Supermercados', '3 cuotas sin intereses', 'Equipa tu casa y paga tus electrodomésticos en cuotas.', 'Tarjeta Básica', 'No aplica a celulares ni a productos de despensa.', 14, 'walmart', 'Cuotas sin intereses en electrodomésticos de Walmart', 'Compra refrigeradoras, lavadoras, pantallas y otros electrodomésticos en Walmart y págalos en cuotas sin intereses con tu tarjeta, en tienda o en línea.', 'Electrodomésticos y electrónica desde $150.', 'Solicita las cuotas en caja o elige el plan al pagar en línea.', '/recursos/promociones/walmart-cuotas.webp', 'Área de electrónica de una tienda Walmart', '2026-10-15', '2026-12-31', null, array['presencial','en-linea']::text[], 'cuotas-sin-intereses', 'Compra mínima de $150', '{}'::text[], '2026-10-15', '{"dia-a-dia":0,"rapido-practico":0,"darse-un-gusto":0,"salir":0,"familia":0.5,"bienestar":0,"entretenimiento":0,"estilo-personal":0,"tecnologia":1,"hogar":1,"viajes":0}'::jsonb, 2),
+  ('walmart-fin-de-semana', 'Walmart', 'Supermercados', '5 % de descuento', 'Sábados y domingos, ahorra en tu compra grande del mes.', 'Tarjeta Básica', 'No incluye electrónica, celulares ni licores.', 15, 'walmart', 'Descuento de fin de semana en Walmart', 'Los sábados y domingos, haz tu compra grande en Walmart y recibe un descuento sobre el total al pagar con tu tarjeta.', 'Compras de despensa y artículos del hogar.', 'Paga con tu tarjeta en caja el sábado o el domingo.', '/recursos/promociones/walmart-fin-de-semana.webp', 'Tienda Walmart con su logo', '2026-10-20', '2026-12-31', array[6,0]::smallint[], array['presencial']::text[], 'descuento', 'Válido sábados y domingos', '{}'::text[], '2026-10-20', null, null),
+  ('gnc-vitaminas', 'GNC', 'Salud', '10 % de descuento', 'Cuida tu salud con descuento en vitaminas y suplementos.', 'Tarjeta Básica', 'No aplica a productos en liquidación.', 16, 'gnc', 'Descuento en vitaminas en GNC', 'Compra vitaminas, minerales y suplementos en GNC, en tienda o a domicilio, y recibe un descuento al pagar con tu tarjeta.', 'Vitaminas y suplementos de venta libre.', 'Paga con tu tarjeta en tienda o al confirmar tu pedido a domicilio.', '/recursos/promociones/gnc-vitaminas.webp', 'Tienda GNC con su rótulo', '2026-10-14', '2026-12-31', null, array['presencial','delivery']::text[], 'descuento', 'Productos de venta libre', '{}'::text[], '2026-10-14', null, null),
+  ('gnc-puntos', 'GNC', 'Salud', 'Puntos BA dobles', 'Acumula el doble de Puntos BA en tus suplementos.', 'Tarjeta Black', 'No aplica a tarjetas de regalo.', 17, 'gnc', 'Exclusivo Black: Puntos BA dobles en GNC', 'Con tu tarjeta Black, tus compras de proteínas, vitaminas y suplementos en GNC acumulan el doble de Puntos BA.', 'Proteínas, vitaminas y suplementos.', 'Paga con tu tarjeta Black en caja; los puntos se acreditan en tu siguiente corte.', '/recursos/promociones/gnc-puntos.webp', 'Entrada de una tienda GNC', '2026-10-16', '2026-12-31', null, array['presencial']::text[], 'cashback-puntos', 'Pagar con tarjeta Black', '{}'::text[], '2026-10-16', null, null),
+  ('pizza-hut-domicilio', 'Pizza Hut', 'Restaurantes', '5 % de reintegro', 'Pide tu pizza a domicilio y recibe parte de vuelta.', 'Tarjeta Básica', 'El reintegro no incluye el cargo de envío.', 18, 'pizza-hut', 'Reintegro en pedidos a domicilio de Pizza Hut', 'Haz tu pedido a domicilio de Pizza Hut y págalo con tu tarjeta: un porcentaje del total regresa como reintegro en tu próximo estado de cuenta.', 'Pedidos a domicilio pagados con tu tarjeta.', 'Elige pago con tarjeta al confirmar el pedido; el reintegro se refleja en tu siguiente estado de cuenta.', '/recursos/promociones/pizza-hut-domicilio.webp', 'Restaurante Pizza Hut con su techo rojo', '2026-10-13', '2026-12-31', null, array['delivery']::text[], 'cashback-puntos', 'Pedido mínimo de $12', '{}'::text[], '2026-10-13', null, null),
+  ('la-curacao-pantallas', 'La Curacao', 'Tecnología', '6 cuotas sin intereses', 'Estrena pantalla y págala en cuotas fijas sin intereses.', 'Tarjeta Básica', 'No aplica a productos reacondicionados.', 19, 'la-curacao', 'Hasta 12 cuotas sin intereses en pantallas de La Curacao', 'Compra tu pantalla en La Curacao, en tienda o en línea, y págala en cuotas sin intereses con tu tarjeta. Un buen regalo para la familia esta temporada.', 'Pantallas desde $200.', 'Pide las cuotas en caja o elige el plan al pagar en línea.', '/recursos/promociones/la-curacao-pantallas.webp', 'Tienda La Curacao con su rótulo', '2026-10-17', '2026-12-31', null, array['presencial','en-linea']::text[], 'cuotas-sin-intereses', 'Compra mínima de $200', array['regalo']::text[], '2026-10-17', null, null),
+  ('claro-recargas', 'Claro', 'Tecnología', '5 % de reintegro', 'Recarga tu celular en línea y recibe parte de vuelta.', 'Tarjeta Básica', 'No aplica al pago de facturas pospago.', 20, 'claro', 'Reintegro en recargas en línea de Claro', 'Recarga saldo o paquetes de Claro desde su sitio o su app pagando con tu tarjeta y recibe un reintegro sobre el monto recargado.', 'Recargas y paquetes prepago pagados en línea.', 'Paga la recarga en línea con tu tarjeta; el reintegro se refleja en tu siguiente estado de cuenta.', '/recursos/promociones/claro-recargas.webp', 'Tienda Claro con su logo', '2026-10-18', '2026-12-31', null, array['en-linea']::text[], 'cashback-puntos', 'Recargas pagadas en línea', '{}'::text[], '2026-10-18', null, null)
+on conflict (id) do update set merchant = excluded.merchant, category = excluded.category, benefit = excluded.benefit, description = excluded.description, payment = excluded.payment, restrictions = excluded.restrictions, orden = excluded.orden, comercio_id = excluded.comercio_id, titulo = excluded.titulo, descripcion_detalle = excluded.descripcion_detalle, condiciones = excluded.condiciones, instrucciones = excluded.instrucciones, imagen_url = excluded.imagen_url, imagen_alt = excluded.imagen_alt, vigencia_desde = excluded.vigencia_desde, vigencia_hasta = excluded.vigencia_hasta, dias_uso = excluded.dias_uso, canales = excluded.canales, tipo_beneficio = excluded.tipo_beneficio, condicion_decisiva = excluded.condicion_decisiva, etiquetas_intencion = excluded.etiquetas_intencion, fecha_alta = excluded.fecha_alta, ocasiones = excluded.ocasiones, nivel_precio = excluded.nivel_precio;
+
+delete from public.beneficios_tarjeta where promocion_id in ('restaurante', 'tienda', 'cine', 'starbucks', 'siman-black', 'pollo-campero-martes', 'restaurante-domicilio', 'starbucks-regalo', 'claro-cuotas', 'payless-fin-de-semana', 'cine-combo-miercoles', 'pricesmart-reintegro', 'pizza-hut-miercoles', 'walmart-cuotas', 'walmart-fin-de-semana', 'gnc-vitaminas', 'gnc-puntos', 'pizza-hut-domicilio', 'la-curacao-pantallas', 'claro-recargas') and (promocion_id, tipo_tarjeta) not in (('restaurante', 'basica'), ('restaurante', 'black'), ('tienda', 'basica'), ('tienda', 'black'), ('cine', 'basica'), ('cine', 'black'), ('starbucks', 'basica'), ('starbucks', 'black'), ('siman-black', 'black'), ('pollo-campero-martes', 'basica'), ('pollo-campero-martes', 'black'), ('restaurante-domicilio', 'basica'), ('restaurante-domicilio', 'black'), ('starbucks-regalo', 'black'), ('claro-cuotas', 'basica'), ('claro-cuotas', 'black'), ('payless-fin-de-semana', 'basica'), ('payless-fin-de-semana', 'black'), ('cine-combo-miercoles', 'basica'), ('cine-combo-miercoles', 'black'), ('pricesmart-reintegro', 'basica'), ('pricesmart-reintegro', 'black'), ('pizza-hut-miercoles', 'basica'), ('pizza-hut-miercoles', 'black'), ('walmart-cuotas', 'basica'), ('walmart-cuotas', 'black'), ('walmart-fin-de-semana', 'basica'), ('walmart-fin-de-semana', 'black'), ('gnc-vitaminas', 'basica'), ('gnc-vitaminas', 'black'), ('gnc-puntos', 'black'), ('pizza-hut-domicilio', 'basica'), ('pizza-hut-domicilio', 'black'), ('la-curacao-pantallas', 'basica'), ('la-curacao-pantallas', 'black'), ('claro-recargas', 'basica'), ('claro-recargas', 'black'));
+
+insert into public.beneficios_tarjeta (promocion_id, tipo_tarjeta, beneficio, medio_pago, restricciones, compra_minima, tope_descuento) values
+  ('restaurante', 'basica', '10 % de descuento', 'Tarjeta Básica', '', null, null),
+  ('restaurante', 'black', '20 % de descuento', 'Tarjeta Black', '', null, null),
+  ('tienda', 'basica', '15 % de descuento', 'Tarjeta Básica', 'Solo artículos seleccionados.', 30, 15),
+  ('tienda', 'black', '25 % de descuento', 'Tarjeta Black', 'Solo artículos seleccionados.', 30, 25),
+  ('cine', 'basica', '2×1 en entradas', 'Tarjeta Básica', 'Entradas de igual precio. No aplica a funciones especiales.', null, null),
+  ('cine', 'black', '2×1 en entradas y 20 % en combo', 'Tarjeta Black', 'Entradas de igual precio. No aplica a funciones especiales.', null, null),
+  ('starbucks', 'basica', '10 % de descuento', 'Tarjeta Básica', '', null, null),
+  ('starbucks', 'black', '20 % de descuento', 'Tarjeta Black', '', null, null),
+  ('siman-black', 'black', '30 % de descuento', 'Tarjeta Black', 'Solo artículos seleccionados. No acumulable con otras ofertas.', 50, 30),
+  ('pollo-campero-martes', 'basica', '2×1 en combos personales', 'Tarjeta Básica', '', null, null),
+  ('pollo-campero-martes', 'black', '2×1 en combos personales y postre incluido', 'Tarjeta Black', '', null, null),
+  ('restaurante-domicilio', 'basica', '5 % de reintegro', 'Tarjeta Básica', '', 15, 5),
+  ('restaurante-domicilio', 'black', '8 % de reintegro', 'Tarjeta Black', '', 15, 8),
+  ('starbucks-regalo', 'black', '15 % en tarjetas de regalo', 'Tarjeta Black', '', 10, 15),
+  ('claro-cuotas', 'basica', '6 cuotas sin intereses', 'Tarjeta Básica', '', 150, null),
+  ('claro-cuotas', 'black', '12 cuotas sin intereses', 'Tarjeta Black', '', 150, null),
+  ('payless-fin-de-semana', 'basica', '15 % de descuento', 'Tarjeta Básica', '', null, null),
+  ('payless-fin-de-semana', 'black', '20 % de descuento', 'Tarjeta Black', '', null, null),
+  ('cine-combo-miercoles', 'basica', '2×1 en combo mediano', 'Tarjeta Básica', '', null, null),
+  ('cine-combo-miercoles', 'black', '2×1 en combo grande', 'Tarjeta Black', '', null, null),
+  ('pricesmart-reintegro', 'basica', '3 % de reintegro', 'Tarjeta Básica', '', 50, 10),
+  ('pricesmart-reintegro', 'black', '5 % de reintegro', 'Tarjeta Black', '', 50, 15),
+  ('pizza-hut-miercoles', 'basica', '2×1 en pizzas grandes', 'Tarjeta Básica', '', null, null),
+  ('pizza-hut-miercoles', 'black', '2×1 en pizzas grandes y bebida incluida', 'Tarjeta Black', '', null, null),
+  ('walmart-cuotas', 'basica', '3 cuotas sin intereses', 'Tarjeta Básica', '', 150, null),
+  ('walmart-cuotas', 'black', '6 cuotas sin intereses', 'Tarjeta Black', '', 150, null),
+  ('walmart-fin-de-semana', 'basica', '5 % de descuento', 'Tarjeta Básica', '', 50, 10),
+  ('walmart-fin-de-semana', 'black', '8 % de descuento', 'Tarjeta Black', '', 50, 20),
+  ('gnc-vitaminas', 'basica', '10 % de descuento', 'Tarjeta Básica', '', null, null),
+  ('gnc-vitaminas', 'black', '15 % de descuento', 'Tarjeta Black', '', null, null),
+  ('gnc-puntos', 'black', 'Puntos BA dobles', 'Tarjeta Black', '', null, null),
+  ('pizza-hut-domicilio', 'basica', '5 % de reintegro', 'Tarjeta Básica', '', 12, 5),
+  ('pizza-hut-domicilio', 'black', '10 % de reintegro', 'Tarjeta Black', '', 12, 8),
+  ('la-curacao-pantallas', 'basica', '6 cuotas sin intereses', 'Tarjeta Básica', '', 200, null),
+  ('la-curacao-pantallas', 'black', '12 cuotas sin intereses', 'Tarjeta Black', '', 200, null),
+  ('claro-recargas', 'basica', '5 % de reintegro', 'Tarjeta Básica', '', null, 3),
+  ('claro-recargas', 'black', '10 % de reintegro', 'Tarjeta Black', '', null, 5)
+on conflict (promocion_id, tipo_tarjeta) do update set beneficio = excluded.beneficio, medio_pago = excluded.medio_pago, restricciones = excluded.restricciones, compra_minima = excluded.compra_minima, tope_descuento = excluded.tope_descuento;
+
+delete from public.promocion_sucursales where promocion_id in ('restaurante', 'tienda', 'cine', 'starbucks', 'siman-black', 'pollo-campero-martes', 'restaurante-domicilio', 'starbucks-regalo', 'claro-cuotas', 'payless-fin-de-semana', 'cine-combo-miercoles', 'pricesmart-reintegro', 'pizza-hut-miercoles', 'walmart-cuotas', 'walmart-fin-de-semana', 'gnc-vitaminas', 'gnc-puntos', 'pizza-hut-domicilio', 'la-curacao-pantallas', 'claro-recargas');
+
+insert into public.promocion_sucursales (promocion_id, sucursal_id) values
+  ('restaurante', 'restaurante-metrocentro'),
+  ('restaurante', 'restaurante-multiplaza'),
+  ('restaurante', 'restaurante-santa-ana'),
+  ('tienda', 'tienda-galerias'),
+  ('tienda', 'tienda-metrocentro'),
+  ('tienda', 'tienda-san-miguel'),
+  ('cine', 'cine-metrocentro'),
+  ('cine', 'cine-plaza-mundo'),
+  ('starbucks', 'starbucks-escalon'),
+  ('starbucks', 'starbucks-multiplaza'),
+  ('siman-black', 'tienda-galerias'),
+  ('siman-black', 'tienda-metrocentro'),
+  ('siman-black', 'tienda-san-miguel'),
+  ('pollo-campero-martes', 'pollo-campero-centro'),
+  ('pollo-campero-martes', 'pollo-campero-el-carmen'),
+  ('pollo-campero-martes', 'pollo-campero-san-miguel'),
+  ('starbucks-regalo', 'starbucks-escalon'),
+  ('starbucks-regalo', 'starbucks-multiplaza'),
+  ('claro-cuotas', 'claro-metrocentro'),
+  ('claro-cuotas', 'claro-plaza-mundo'),
+  ('claro-cuotas', 'claro-santa-ana'),
+  ('payless-fin-de-semana', 'payless-metrocentro'),
+  ('payless-fin-de-semana', 'payless-plaza-mundo'),
+  ('cine-combo-miercoles', 'cine-metrocentro'),
+  ('pricesmart-reintegro', 'pricesmart-los-heroes'),
+  ('pricesmart-reintegro', 'pricesmart-santa-elena'),
+  ('pizza-hut-miercoles', 'pizza-hut-escalon'),
+  ('pizza-hut-miercoles', 'pizza-hut-san-miguel'),
+  ('pizza-hut-miercoles', 'pizza-hut-santa-tecla'),
+  ('walmart-cuotas', 'walmart-constitucion'),
+  ('walmart-cuotas', 'walmart-santa-elena'),
+  ('walmart-fin-de-semana', 'walmart-constitucion'),
+  ('walmart-fin-de-semana', 'walmart-santa-elena'),
+  ('gnc-vitaminas', 'gnc-galerias'),
+  ('gnc-vitaminas', 'gnc-metrocentro'),
+  ('gnc-vitaminas', 'gnc-multiplaza'),
+  ('gnc-puntos', 'gnc-galerias'),
+  ('gnc-puntos', 'gnc-metrocentro'),
+  ('gnc-puntos', 'gnc-multiplaza'),
+  ('la-curacao-pantallas', 'la-curacao-centro'),
+  ('la-curacao-pantallas', 'la-curacao-san-miguel'),
+  ('la-curacao-pantallas', 'la-curacao-santa-ana')
+on conflict (promocion_id, sucursal_id) do nothing;
