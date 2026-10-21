@@ -1,10 +1,11 @@
 // Repositorio en memoria para desarrollo local sin base de datos
 import fixtures from '../datos-menu.json' with { type: 'json' };
+import { categoriasCatalogo } from '../catalogo.js';
 const guardadas = new Map(fixtures.preferencias.filter(p => p.completada).map(p => [p.usuarioId, p.categorias]));
 
 export function crearRepositorioPreferenciasMock() {
   return {
-    async obtenerCategorias() { return ['Restaurantes','Compras','Entretenimiento'].map((id, orden) => ({ id, nombre: id, imagen_url: null, orden })); },
+    async obtenerCategorias() { return structuredClone(categoriasCatalogo); },
     async guardarPreferencias(usuarioId, categorias) {
       guardadas.set(usuarioId, categorias);
     },

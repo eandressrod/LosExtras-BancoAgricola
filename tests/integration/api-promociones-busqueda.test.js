@@ -5,6 +5,7 @@ import guardadas from '../../backend/handlers/guardadas.js';
 import preferencias from '../../api/preferencias.js';
 import { repositorioMock } from '../../backend/repositorios/mock.js';
 import { crearToken } from '../../backend/servicios/sesion.js';
+import { soloH4 } from '../promociones-h4.js';
 
 process.env.DATA_SOURCE = 'mock';
 process.env.SESSION_SECRET = 'h10-pruebas-de-integracion'.repeat(2);
@@ -21,7 +22,7 @@ const pedir = (ruta, perfilId, opciones = {}) => new Request('http://localhost' 
 async function listar(perfilId, consulta = '', ahora = JUEVES) {
   const respuesta = await handler(ahora).fetch(pedir('/api/promociones' + consulta, perfilId));
   assert.equal(respuesta.status, 200, consulta);
-  return (await respuesta.json()).map(promo => promo.id);
+  return soloH4(await respuesta.json()).map(promo => promo.id);
 }
 
 test('H10 GET /api/promociones?comercio busca parcial, sin distinguir mayúsculas y recortando espacios', async () => {

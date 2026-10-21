@@ -9,9 +9,12 @@
 export function crearRepositorioPreferenciasUsuario(cliente) {
   return {
     async obtenerCategorias() {
-      const { data, error } = await cliente.from('categorias').select('id,nombre,imagen_url,orden').order('orden').order('id');
+      const { data, error } = await cliente.from('categorias').select('id, nombre, icono_url, imagen_url, orden, subcategorias(id, nombre)')
+        .order('orden').order('id');
       if (error) throw new Error('No se pudo consultar el catálogo.');
-      return data;
+      // H24: subcategorías en el mismo orden que el mock, para buscarlas por nombre en la encuesta.
+      return data.map(categoria => ({ ...categoria,
+        subcategorias: [...(categoria.subcategorias ?? [])].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')) }));
     },
     /**
      * Persiste las categorías seleccionadas y marca la encuesta como completada.
