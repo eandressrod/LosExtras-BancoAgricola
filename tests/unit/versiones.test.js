@@ -58,5 +58,6 @@ test('el manifiesto del repositorio es válido y asocia la última migración pu
   const archivos = (await readdir(carpeta)).filter(nombre => nombre.endsWith('.sql')).sort();
   const real = JSON.parse(await readFile(new URL('../../supabase/versiones.json', import.meta.url), 'utf8'));
   assert.deepEqual(validarManifiesto(real, archivos), []);
-  assert.ok(destinoRegreso(real), 'debe existir una versión destino de regreso');
+  // Sin destino solo durante una transición explícita: el PR que la abre se registra después como nuevo destino.
+  assert.ok(destinoRegreso(real) || real.transicion?.motivo?.trim(), 'debe existir una versión destino de regreso o una transición documentada');
 });
