@@ -6,6 +6,7 @@ import { PGlite } from '@electric-sql/pglite';
 let db;
 const ajenas=['perfiles','preferencias_usuario','promociones','beneficios_tarjeta','mensajes_usuario','metas_usuario','puntos_usuario','sesiones_revocadas','sesiones_actividad','categorias','comercios','categoria_comercios','productos_tarjeta','promociones_guardadas','sucursales'];
 let antes;
+let despues;
 async function estado() {
   const filas={};
   for(const tabla of ajenas) filas[tabla]=(await db.query(`select coalesce(jsonb_agg(to_jsonb(t) order by to_jsonb(t)::text),'[]') as datos from ${tabla} t`)).rows[0].datos;
@@ -21,6 +22,7 @@ before(async()=>{
       antes=await estado();
     }
     await db.exec(await readFile(new URL(f,dir),'utf8'));
+    if(f.endsWith('_regenerar_cuentas_tarjetas.sql')) despues=await estado(); // Migraciones posteriores (H24) cambian el catálogo.
   }
 });
 after(async()=>{await db?.close();});
@@ -40,7 +42,7 @@ test('cada tarjeta está asociada a una cuenta del mismo usuario y solo expone c
   await assert.rejects(db.query("update tarjetas_usuario set cuenta_id=null where id='cta-a-3'"),e=>e.code==='23502');
 });
 test('regenerar productos conserva intactas las otras entidades',async()=>{
-  assert.ok(antes,'falta la migración de regeneración');assert.deepEqual(await estado(),antes);
+  assert.ok(antes,'falta la migración de regeneración');assert.deepEqual(despues,antes);
 });
 
 test('SCRUM-72: rechaza altas de tarjetas sin cuenta propia y permite cuentas sin tarjeta',async()=>{

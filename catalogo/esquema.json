@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/eandressrod/LosExtras-BancoAgricola/catalogo/esquema.json",
+  "title": "Catálogo de promociones · Los Extras",
+  "description": "Contrato de la fuente única del catálogo (H24, SCRUM-115). Las reglas entre entidades están en scripts/catalogo/validar.js.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "ocasiones", "rubrica", "etiquetasIntencion", "zonas", "categorias", "subcategorias", "comercios",
+    "sucursales", "cobertura", "relaciones", "promociones"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "ocasiones": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Ocasion" } },
+    "rubrica": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/ValorRubrica" } },
+    "etiquetasIntencion": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/EtiquetaIntencion" } },
+    "zonas": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Zona" } },
+    "categorias": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Categoria" } },
+    "subcategorias": { "type": "array", "items": { "$ref": "#/$defs/Subcategoria" } },
+    "comercios": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Comercio" } },
+    "sucursales": { "type": "array", "items": { "$ref": "#/$defs/Sucursal" } },
+    "cobertura": { "type": "array", "items": { "$ref": "#/$defs/Cobertura" } },
+    "relaciones": { "type": "array", "items": { "$ref": "#/$defs/Relacion" } },
+    "promociones": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Promocion" } }
+  },
+  "$defs": {
+    "Slug": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "Texto": { "type": "string", "pattern": "\\S" },
+    "TextoOpcional": { "type": "string" },
+    "Fecha": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "IdCategoria": { "type": "string", "pattern": "^\\S(.*\\S)?$" },
+    "Coordenadas": {
+      "description": "Grados decimales WGS84.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latitud", "longitud"],
+      "properties": {
+        "latitud": { "type": "number", "minimum": -90, "maximum": 90 },
+        "longitud": { "type": "number", "minimum": -180, "maximum": 180 }
+      }
+    },
+    "IdOcasion": {
+      "enum": ["dia-a-dia", "rapido-practico", "darse-un-gusto", "salir", "familia", "bienestar", "entretenimiento",
+        "estilo-personal", "tecnologia", "hogar", "viajes"]
+    },
+    "VectorOcasiones": {
+      "description": "Valor de la rúbrica por ocasión: 1 gira en torno a ella, 0.5 la incluye en parte, 0 no aplica. Vacío en comercios sensibles.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/IdOcasion" },
+      "additionalProperties": { "enum": [0, 0.5, 1] }
+    },
+    "NivelPrecio": { "description": "1 a 3, relativo a la categoría del comercio.", "type": "integer", "minimum": 1, "maximum": 3 },
+    "Ocasion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "nombre", "ejemplos", "orden"],
+      "properties": {
+        "id": { "$ref": "#/$defs/IdOcasion" },
+        "nombre": { "$ref": "#/$defs/Texto" },
+        "ejemplos": { "$ref": "#/$defs/Texto" },
+        "orden": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "ValorRubrica": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valor", "definicion", "ejemplo"],
+      "properties": {
+        "valor": { "enum": [0, 0.5, 1] },
+        "definicion": { "$ref": "#/$defs/Texto" },
+        "ejemplo": { "$ref": "#/$defs/Texto" }
+      }
+    },
+    "EtiquetaIntencion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "nombre"],
+      "properties": { "id": { "$ref": "#/$defs/Slug" }, "nombre": { "$ref": "#/$defs/Texto" } }
+    },
+    "Categoria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "nombre", "icono", "imagen", "orden"],
+      "properties": {
+        "id": { "$ref": "#/$defs/IdCategoria" },
+        "nombre": { "$ref": "#/$defs/Texto" },
+        "icono": { "description": "Icono del mosaico de la encuesta.", "type": "string", "pattern": "^/recursos/categorias/[A-Za-z0-9._-]+\\.svg$" },
+        "imagen": { "oneOf": [{ "type": "null" }, { "type": "string", "pattern": "^/recursos/categorias/[A-Za-z0-9._-]+\\.(webp|jpg|jpeg|png)$" }] },
+        "orden": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "Subcategoria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "nombre", "categoria"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "nombre": { "$ref": "#/$defs/Texto" },
+        "categoria": { "$ref": "#/$defs/IdCategoria" }
+      }
+    },
+    "Comercio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "nombre", "logo", "categoria", "subcategoria", "ocasiones", "nivelPrecio", "reconocible", "sensible", "afinarPor"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "nombre": { "$ref": "#/$defs/Texto" },
+        "logo": { "type": "string", "pattern": "^/recursos/comercios/[A-Za-z0-9._-]+\\.(svg|png)$" },
+        "categoria": { "$ref": "#/$defs/IdCategoria" },
+        "subcategoria": { "$ref": "#/$defs/Slug" },
+        "ocasiones": { "$ref": "#/$defs/VectorOcasiones" },
+        "nivelPrecio": { "$ref": "#/$defs/NivelPrecio" },
+        "reconocible": { "type": "boolean" },
+        "sensible": { "description": "Salud y similares: ocasiones vacías, nunca sugieren otras categorías.", "type": "boolean" },
+        "afinarPor": { "enum": ["comercio", "subcategoria", "no"] }
+      }
+    },
+    "Beneficio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tarjeta", "beneficio", "medioPago", "restricciones", "compraMinima", "tope"],
+      "properties": {
+        "tarjeta": { "enum": ["basica", "black"] },
+        "beneficio": { "$ref": "#/$defs/Texto" },
+        "medioPago": { "$ref": "#/$defs/Texto" },
+        "restricciones": { "$ref": "#/$defs/TextoOpcional" },
+        "compraMinima": { "oneOf": [{ "type": "null" }, { "type": "number", "minimum": 0 }] },
+        "tope": { "oneOf": [{ "type": "null" }, { "type": "number", "minimum": 0 }] }
+      }
+    },
+    "Promocion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "comercio", "titulo", "descripcion", "descripcionDetalle", "condiciones", "restricciones", "instrucciones",
+        "imagen", "textoAlternativo", "beneficios", "vigencia", "dias", "canales", "condicionDecisiva", "tipoBeneficio",
+        "etiquetasIntencion", "alta"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "comercio": { "$ref": "#/$defs/Slug" },
+        "titulo": { "$ref": "#/$defs/Texto" },
+        "descripcion": { "$ref": "#/$defs/Texto" },
+        "descripcionDetalle": { "$ref": "#/$defs/Texto" },
+        "condiciones": { "$ref": "#/$defs/Texto" },
+        "restricciones": { "$ref": "#/$defs/TextoOpcional" },
+        "instrucciones": { "$ref": "#/$defs/Texto" },
+        "imagen": { "type": "string", "pattern": "^/recursos/promociones/[A-Za-z0-9._-]+\\.(webp|jpg|jpeg|png)$" },
+        "textoAlternativo": { "$ref": "#/$defs/Texto" },
+        "beneficios": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Beneficio" } },
+        "vigencia": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["desde", "hasta"],
+          "properties": { "desde": { "$ref": "#/$defs/Fecha" }, "hasta": { "$ref": "#/$defs/Fecha" } }
+        },
+        "dias": {
+          "description": "null = todos los días; si hay lista, domingo = 0 y sábado = 6.",
+          "oneOf": [{ "type": "null" }, { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "integer", "minimum": 0, "maximum": 6 } }]
+        },
+        "canales": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["presencial", "delivery", "en-linea"] } },
+        "sucursales": {
+          "description": "Sucursales participantes. Si se omite, en una promoción presencial participan todas las del comercio (regla de H8).",
+          "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/Slug" }
+        },
+        "condicionDecisiva": { "description": "La condición que decide si la promoción se puede usar.", "$ref": "#/$defs/Texto" },
+        "tipoBeneficio": { "enum": ["descuento", "2x1-combo", "cuotas-sin-intereses", "cashback-puntos"] },
+        "etiquetasIntencion": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/Slug" } },
+        "alta": { "description": "Fecha de alta en el catálogo.", "$ref": "#/$defs/Fecha" },
+        "ocasiones": { "description": "Sobrescribe las ocasiones del comercio.", "$ref": "#/$defs/VectorOcasiones" },
+        "nivelPrecio": { "description": "Sobrescribe el nivel de precio del comercio.", "$ref": "#/$defs/NivelPrecio" }
+      }
+    },
+    "Sucursal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "comercio", "nombre", "direccion", "coordenadas", "zona"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "comercio": { "$ref": "#/$defs/Slug" },
+        "nombre": { "$ref": "#/$defs/Texto" },
+        "direccion": { "description": "Dirección de referencia.", "$ref": "#/$defs/Texto" },
+        "coordenadas": { "$ref": "#/$defs/Coordenadas" },
+        "zona": { "$ref": "#/$defs/Slug" }
+      }
+    },
+    "Zona": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "nombre", "centro"],
+      "properties": {
+        "id": { "$ref": "#/$defs/Slug" },
+        "nombre": { "$ref": "#/$defs/Texto" },
+        "centro": { "$ref": "#/$defs/Coordenadas" }
+      }
+    },
+    "Cobertura": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["comercio", "zona", "estado"],
+      "properties": {
+        "comercio": { "$ref": "#/$defs/Slug" },
+        "zona": { "$ref": "#/$defs/Slug" },
+        "estado": { "enum": ["si", "no", "desconocida"] }
+      }
+    },
+    "Relacion": {
+      "description": "Puentes de H27: dos intereses de categorías distintas y la ocasión que debe tener el candidato.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["interesA", "interesB", "ocasionRequerida", "nota"],
+      "properties": {
+        "interesA": { "$ref": "#/$defs/Texto" },
+        "interesB": { "$ref": "#/$defs/Texto" },
+        "ocasionRequerida": { "$ref": "#/$defs/Slug" },
+        "nota": { "$ref": "#/$defs/TextoOpcional" }
+      }
+    }
+  }
+}
