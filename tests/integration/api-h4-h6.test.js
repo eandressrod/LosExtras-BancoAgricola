@@ -5,6 +5,7 @@ import detalle from '../../api/promocion.js';
 import preferencias from '../../api/preferencias.js';
 import { crearToken } from '../../backend/servicios/sesion.js';
 import { crearRepositorioSupabase } from '../../backend/repositorios/supabase.js';
+import { soloH4 } from '../promociones-h4.js';
 
 process.env.DATA_SOURCE = 'mock';
 process.env.SESSION_SECRET = 'h4-pruebas-de-integracion'.repeat(2);
@@ -15,7 +16,7 @@ test('H4 encuesta omitida muestra cuatro ofertas Básica y cinco Black; el clien
   const a = await promociones.fetch(request('/api/promociones?usuario_id=B&tipoTarjeta=black', 'A'));
   const b = await promociones.fetch(request('/api/promociones?usuario_id=A&tipoTarjeta=basica', 'B'));
   assert.equal(a.status, 200); assert.equal(b.status, 200);
-  const basica = await a.json(); const black = await b.json();
+  const basica = soloH4(await a.json()); const black = soloH4(await b.json());
   assert.equal(basica.length, 4); assert.equal(black.length, 5);
   assert.ok(basica.every(p => p.applicableCard === 'basica' && !p.exclusive));
   assert.equal(black.find(p => p.id === 'siman-black').exclusive, true);
@@ -44,7 +45,7 @@ test('H6 edita las categorías del dueño y el próximo listado refleja cambios 
   assert.deepEqual(preferenciasA.categories, ['Compras']);
   assert.equal(preferenciasB.completed, false);
   const lista = await (await promociones.fetch(request('/api/promociones', 'A'))).json();
-  assert.deepEqual(lista.map(p => p.id), ['tienda']);
+  assert.deepEqual(soloH4(lista).map(p => p.id), ['tienda']);
   assert.equal((await guardar('A', [])).status, 400);
   assert.deepEqual((await (await preferencias.fetch(request('/api/preferencias', 'A'))).json()).categories, ['Compras']);
 });
@@ -58,7 +59,7 @@ test('repositorio Supabase pide relaciones/recursos en una consulta y no oculta 
   } };
   const repo = crearRepositorioSupabase(client);
   assert.deepEqual(await repo.listarPromocionesConBeneficios(), fixture);
-  assert.match(consulta, /comercios\(nombre, logoUrl:logo_url\)/);
+  assert.match(consulta, /comercios\(id, nombre, logoUrl:logo_url,/);
   assert.match(consulta, /compra_minima, tope_descuento/);
   error = { message: 'Error interno' };
   await assert.rejects(repo.listarPromocionesConBeneficios(), /consultar los beneficios/);

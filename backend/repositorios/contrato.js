@@ -28,6 +28,26 @@
  * @property {boolean} expired
  * @property {boolean} upcoming
  * @property {boolean} canUse Solo vigencia; días/restricciones se muestran aparte.
+ * Campos del contrato del catálogo (H24); el detalle de cada uno está en catalogo/esquema.json.
+ * @property {string} title
+ * @property {string} conditions
+ * @property {string} instructions
+ * @property {string} generalRestrictions Restricciones de la promoción; `restrictions` son las de la tarjeta.
+ * @property {Array<'presencial'|'delivery'|'en-linea'>} channels
+ * @property {'descuento'|'2x1-combo'|'cuotas-sin-intereses'|'cashback-puntos'} benefitType
+ * @property {string} decisiveCondition
+ * @property {string[]} intentTags
+ * @property {string} addedOn Fecha de alta YYYY-MM-DD
+ * @property {Record<string, 0|0.5|1>} occasions De la promoción o, si no tiene, de su comercio; vacío en comercios sensibles.
+ * @property {1|2|3} priceLevel De la promoción o, si no tiene, de su comercio.
+ * @property {string} merchantId
+ * @property {string} subcategoryId
+ * @property {string} subcategoryName
+ * @property {boolean} recognizable
+ * @property {boolean} sensitive
+ * @property {'comercio'|'subcategoria'|'no'} refineBy
+ * @property {Array<{id: string, name: string, address: string, latitude: number, longitude: number, zoneId: string}>} branches Sucursales participantes.
+ * @property {Array<{zoneId: string, status: 'si'|'no'|'desconocida'}>} coverage Cobertura a domicilio del comercio.
  *
  * @typedef {Object} RepositorioCatalogo
  * @property {() => Promise<Perfil[]>} listarPerfiles

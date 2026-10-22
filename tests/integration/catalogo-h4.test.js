@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import { catalogoPromociones } from '../../backend/catalogo.js';
+import { IDS_H4 } from '../promociones-h4.js';
 
 let db;
 before(async () => {
@@ -16,7 +17,7 @@ before(async () => {
 after(async () => { await db?.close(); });
 
 test('H4 catálogo de cuatro comercios y cinco promociones con recursos, fechas y descripciones propias', async () => {
-  const { rows } = await db.query('select p.*, c.nombre, c.logo_url from promociones p join comercios c on c.id=p.comercio_id order by p.orden');
+  const { rows } = await db.query('select p.*, c.nombre, c.logo_url from promociones p join comercios c on c.id=p.comercio_id where p.id = any($1) order by p.orden', [IDS_H4]);
   assert.equal(rows.length, 5);
   assert.equal(new Set(rows.map(p => p.nombre)).size, 4);
   assert.deepEqual(rows.map(p => p.id), ['restaurante', 'tienda', 'cine', 'starbucks', 'siman-black']);
@@ -24,12 +25,12 @@ test('H4 catálogo de cuatro comercios y cinco promociones con recursos, fechas 
     assert.ok(p.imagen_url.startsWith('/recursos/'));
     assert.ok(p.logo_url.startsWith('/recursos/'));
     assert.ok(p.descripcion_detalle.length > p.description.length);
-    assert.equal(p.vigencia_hasta.toISOString().slice(0, 10), '2026-11-06');
+    assert.equal(p.vigencia_hasta.toISOString().slice(0, 10), '2026-12-31'); // H24 extendió el fin de vigencia.
   }
 });
 
 test('H4 usa beneficios por tarjeta y una exclusiva sin duplicar comercio ni alterar preferencias', async () => {
-  const { rows } = await db.query('select promocion_id, tipo_tarjeta, beneficio, compra_minima, tope_descuento from beneficios_tarjeta order by promocion_id, tipo_tarjeta');
+  const { rows } = await db.query('select promocion_id, tipo_tarjeta, beneficio, compra_minima, tope_descuento from beneficios_tarjeta where promocion_id = any($1) order by promocion_id, tipo_tarjeta', [IDS_H4]);
   assert.equal(rows.length, 9);
   assert.deepEqual(rows.filter(p => p.promocion_id === 'siman-black').map(p => p.tipo_tarjeta), ['black']);
   assert.notEqual(rows.find(p => p.promocion_id === 'tienda' && p.tipo_tarjeta === 'basica').beneficio, rows.find(p => p.promocion_id === 'tienda' && p.tipo_tarjeta === 'black').beneficio);

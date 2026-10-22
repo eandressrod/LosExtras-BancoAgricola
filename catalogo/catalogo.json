@@ -1,0 +1,1930 @@
+{
+  "version": 1,
+  "ocasiones": [
+    {
+      "id": "dia-a-dia",
+      "nombre": "Compras del día a día",
+      "ejemplos": "Supermercados, farmacias, gasolineras, panaderías",
+      "orden": 1
+    },
+    {
+      "id": "rapido-practico",
+      "nombre": "Rápido y práctico",
+      "ejemplos": "Comida rápida, tiendas de conveniencia, servicios exprés",
+      "orden": 2
+    },
+    {
+      "id": "darse-un-gusto",
+      "nombre": "Darse un gusto",
+      "ejemplos": "Postres, restaurantes de mesa, spa, perfumería",
+      "orden": 3
+    },
+    {
+      "id": "salir",
+      "nombre": "Salir con amigos o pareja",
+      "ejemplos": "Restaurantes, bares, cine, eventos",
+      "orden": 4
+    },
+    {
+      "id": "familia",
+      "nombre": "Planes en familia",
+      "ejemplos": "Restaurantes familiares, cine, juguetes, parques",
+      "orden": 5
+    },
+    {
+      "id": "bienestar",
+      "nombre": "Bienestar y vida activa",
+      "ejemplos": "Gimnasios, artículos deportivos, comida saludable, yoga",
+      "orden": 6
+    },
+    {
+      "id": "entretenimiento",
+      "nombre": "Entretenimiento",
+      "ejemplos": "Cine, videojuegos, conciertos, streaming",
+      "orden": 7
+    },
+    {
+      "id": "estilo-personal",
+      "nombre": "Estilo personal",
+      "ejemplos": "Ropa, calzado, belleza, accesorios",
+      "orden": 8
+    },
+    {
+      "id": "tecnologia",
+      "nombre": "Tecnología",
+      "ejemplos": "Electrónica, celulares, videojuegos, telefonía",
+      "orden": 9
+    },
+    {
+      "id": "hogar",
+      "nombre": "Hogar",
+      "ejemplos": "Muebles, electrodomésticos, ferretería, decoración",
+      "orden": 10
+    },
+    {
+      "id": "viajes",
+      "nombre": "Viajes y escapadas",
+      "ejemplos": "Aerolíneas, hoteles, turismo local, renta de autos",
+      "orden": 11
+    }
+  ],
+  "rubrica": [
+    {
+      "valor": 1,
+      "definicion": "La oferta gira en torno a esa ocasión.",
+      "ejemplo": "Un 2×1 en entradas de cine vale 1 en Entretenimiento."
+    },
+    {
+      "valor": 0.5,
+      "definicion": "La oferta incluye esa ocasión en parte.",
+      "ejemplo": "Un combo de comida rápida vale 0.5 en Planes en familia."
+    },
+    {
+      "valor": 0,
+      "definicion": "La ocasión no aplica a la oferta.",
+      "ejemplo": "Una recarga de celular vale 0 en Viajes y escapadas."
+    }
+  ],
+  "etiquetasIntencion": [
+    {
+      "id": "regalo",
+      "nombre": "Regalo"
+    }
+  ],
+  "zonas": [
+    {
+      "id": "san-salvador-centro",
+      "nombre": "San Salvador Centro",
+      "centro": {
+        "latitud": 13.6989,
+        "longitud": -89.1914
+      }
+    },
+    {
+      "id": "escalon",
+      "nombre": "Escalón",
+      "centro": {
+        "latitud": 13.7036,
+        "longitud": -89.2418
+      }
+    },
+    {
+      "id": "antiguo-cuscatlan",
+      "nombre": "Antiguo Cuscatlán",
+      "centro": {
+        "latitud": 13.6736,
+        "longitud": -89.2486
+      }
+    },
+    {
+      "id": "santa-tecla",
+      "nombre": "Santa Tecla",
+      "centro": {
+        "latitud": 13.6769,
+        "longitud": -89.2797
+      }
+    },
+    {
+      "id": "soyapango",
+      "nombre": "Soyapango",
+      "centro": {
+        "latitud": 13.71,
+        "longitud": -89.14
+      }
+    },
+    {
+      "id": "santa-ana",
+      "nombre": "Santa Ana",
+      "centro": {
+        "latitud": 13.9942,
+        "longitud": -89.5597
+      }
+    },
+    {
+      "id": "san-miguel",
+      "nombre": "San Miguel",
+      "centro": {
+        "latitud": 13.4833,
+        "longitud": -88.1833
+      }
+    }
+  ],
+  "categorias": [
+    {
+      "id": "Restaurantes",
+      "nombre": "Restaurantes",
+      "icono": "/recursos/categorias/restaurantes.svg",
+      "imagen": null,
+      "orden": 1
+    },
+    {
+      "id": "Compras",
+      "nombre": "Compras",
+      "icono": "/recursos/categorias/compras.svg",
+      "imagen": null,
+      "orden": 2
+    },
+    {
+      "id": "Entretenimiento",
+      "nombre": "Entretenimiento",
+      "icono": "/recursos/categorias/entretenimiento.svg",
+      "imagen": null,
+      "orden": 3
+    },
+    {
+      "id": "Supermercados",
+      "nombre": "Supermercados",
+      "icono": "/recursos/categorias/supermercados.svg",
+      "imagen": null,
+      "orden": 4
+    },
+    {
+      "id": "Salud",
+      "nombre": "Salud",
+      "icono": "/recursos/categorias/salud.svg",
+      "imagen": null,
+      "orden": 5
+    },
+    {
+      "id": "Tecnología",
+      "nombre": "Tecnología",
+      "icono": "/recursos/categorias/tecnologia.svg",
+      "imagen": null,
+      "orden": 6
+    }
+  ],
+  "subcategorias": [
+    {
+      "id": "comida-rapida",
+      "nombre": "Comida rápida",
+      "categoria": "Restaurantes"
+    },
+    {
+      "id": "cafeterias",
+      "nombre": "Cafeterías",
+      "categoria": "Restaurantes"
+    },
+    {
+      "id": "pizzerias",
+      "nombre": "Pizzerías",
+      "categoria": "Restaurantes"
+    },
+    {
+      "id": "tiendas-departamento",
+      "nombre": "Tiendas por departamento",
+      "categoria": "Compras"
+    },
+    {
+      "id": "calzado",
+      "nombre": "Calzado",
+      "categoria": "Compras"
+    },
+    {
+      "id": "cines",
+      "nombre": "Cines",
+      "categoria": "Entretenimiento"
+    },
+    {
+      "id": "hipermercados",
+      "nombre": "Hipermercados",
+      "categoria": "Supermercados"
+    },
+    {
+      "id": "clubes-de-precios",
+      "nombre": "Clubes de precios",
+      "categoria": "Supermercados"
+    },
+    {
+      "id": "farmacias",
+      "nombre": "Farmacias",
+      "categoria": "Salud"
+    },
+    {
+      "id": "opticas",
+      "nombre": "Ópticas",
+      "categoria": "Salud"
+    },
+    {
+      "id": "vitaminas-suplementos",
+      "nombre": "Vitaminas y suplementos",
+      "categoria": "Salud"
+    },
+    {
+      "id": "electrodomesticos",
+      "nombre": "Electrónica y electrodomésticos",
+      "categoria": "Tecnología"
+    },
+    {
+      "id": "telefonia",
+      "nombre": "Telefonía e internet",
+      "categoria": "Tecnología"
+    }
+  ],
+  "comercios": [
+    {
+      "id": "restaurante",
+      "nombre": "McDonald's",
+      "logo": "/recursos/comercios/restaurante.png",
+      "categoria": "Restaurantes",
+      "subcategoria": "comida-rapida",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 1,
+        "darse-un-gusto": 0,
+        "salir": 0.5,
+        "familia": 0.5,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 1,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "pollo-campero",
+      "nombre": "Pollo Campero",
+      "logo": "/recursos/comercios/pollo-campero.png",
+      "categoria": "Restaurantes",
+      "subcategoria": "comida-rapida",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 1,
+        "darse-un-gusto": 0,
+        "salir": 0.5,
+        "familia": 1,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 1,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "starbucks",
+      "nombre": "Starbucks",
+      "logo": "/recursos/comercios/starbucks.png",
+      "categoria": "Restaurantes",
+      "subcategoria": "cafeterias",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0.5,
+        "darse-un-gusto": 1,
+        "salir": 0.5,
+        "familia": 0,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 3,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "pizza-hut",
+      "nombre": "Pizza Hut",
+      "logo": "/recursos/comercios/pizza-hut.png",
+      "categoria": "Restaurantes",
+      "subcategoria": "pizzerias",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0.5,
+        "darse-un-gusto": 0,
+        "salir": 0.5,
+        "familia": 1,
+        "bienestar": 0,
+        "entretenimiento": 0.5,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 2,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "tienda",
+      "nombre": "Siman",
+      "logo": "/recursos/comercios/tienda.png",
+      "categoria": "Compras",
+      "subcategoria": "tiendas-departamento",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0,
+        "darse-un-gusto": 0,
+        "salir": 0,
+        "familia": 0,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 1,
+        "tecnologia": 0.5,
+        "hogar": 0.5,
+        "viajes": 0
+      },
+      "nivelPrecio": 3,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "payless",
+      "nombre": "Payless ShoeSource",
+      "logo": "/recursos/comercios/payless.png",
+      "categoria": "Compras",
+      "subcategoria": "calzado",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0,
+        "darse-un-gusto": 0,
+        "salir": 0,
+        "familia": 0.5,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 1,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 1,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "subcategoria"
+    },
+    {
+      "id": "cine",
+      "nombre": "Cinemark",
+      "logo": "/recursos/comercios/cine.png",
+      "categoria": "Entretenimiento",
+      "subcategoria": "cines",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0,
+        "darse-un-gusto": 0,
+        "salir": 1,
+        "familia": 0.5,
+        "bienestar": 0,
+        "entretenimiento": 1,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 2,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "no"
+    },
+    {
+      "id": "walmart",
+      "nombre": "Walmart",
+      "logo": "/recursos/comercios/walmart.png",
+      "categoria": "Supermercados",
+      "subcategoria": "hipermercados",
+      "ocasiones": {
+        "dia-a-dia": 1,
+        "rapido-practico": 0,
+        "darse-un-gusto": 0,
+        "salir": 0,
+        "familia": 0,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 0.5,
+        "hogar": 0.5,
+        "viajes": 0
+      },
+      "nivelPrecio": 1,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "pricesmart",
+      "nombre": "PriceSmart",
+      "logo": "/recursos/comercios/pricesmart.png",
+      "categoria": "Supermercados",
+      "subcategoria": "clubes-de-precios",
+      "ocasiones": {
+        "dia-a-dia": 1,
+        "rapido-practico": 0,
+        "darse-un-gusto": 0,
+        "salir": 0,
+        "familia": 0.5,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0.5,
+        "viajes": 0
+      },
+      "nivelPrecio": 2,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "gnc",
+      "nombre": "GNC",
+      "logo": "/recursos/comercios/gnc.png",
+      "categoria": "Salud",
+      "subcategoria": "vitaminas-suplementos",
+      "ocasiones": {},
+      "nivelPrecio": 3,
+      "reconocible": true,
+      "sensible": true,
+      "afinarPor": "subcategoria"
+    },
+    {
+      "id": "la-curacao",
+      "nombre": "La Curacao",
+      "logo": "/recursos/comercios/la-curacao.png",
+      "categoria": "Tecnología",
+      "subcategoria": "electrodomesticos",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0,
+        "darse-un-gusto": 0,
+        "salir": 0,
+        "familia": 0,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 1,
+        "hogar": 1,
+        "viajes": 0
+      },
+      "nivelPrecio": 2,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "claro",
+      "nombre": "Claro",
+      "logo": "/recursos/comercios/claro.png",
+      "categoria": "Tecnología",
+      "subcategoria": "telefonia",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0,
+        "darse-un-gusto": 0,
+        "salir": 0,
+        "familia": 0,
+        "bienestar": 0,
+        "entretenimiento": 0.5,
+        "estilo-personal": 0,
+        "tecnologia": 1,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 2,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "no"
+    }
+  ],
+  "sucursales": [
+    {
+      "id": "restaurante-metrocentro",
+      "comercio": "restaurante",
+      "nombre": "McDonald's Metrocentro",
+      "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7055,
+        "longitud": -89.2125
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "restaurante-multiplaza",
+      "comercio": "restaurante",
+      "nombre": "McDonald's Multiplaza",
+      "direccion": "Centro Comercial Multiplaza, Carretera Panamericana, Antiguo Cuscatlán",
+      "coordenadas": {
+        "latitud": 13.6779,
+        "longitud": -89.2506
+      },
+      "zona": "antiguo-cuscatlan"
+    },
+    {
+      "id": "restaurante-santa-ana",
+      "comercio": "restaurante",
+      "nombre": "McDonald's Metrocentro Santa Ana",
+      "direccion": "Centro Comercial Metrocentro, Avenida Independencia Sur, Santa Ana",
+      "coordenadas": {
+        "latitud": 13.9853,
+        "longitud": -89.5585
+      },
+      "zona": "santa-ana"
+    },
+    {
+      "id": "pollo-campero-el-carmen",
+      "comercio": "pollo-campero",
+      "nombre": "Pollo Campero Paseo El Carmen",
+      "direccion": "Paseo El Carmen, Santa Tecla",
+      "coordenadas": {
+        "latitud": 13.6735,
+        "longitud": -89.287
+      },
+      "zona": "santa-tecla"
+    },
+    {
+      "id": "pollo-campero-centro",
+      "comercio": "pollo-campero",
+      "nombre": "Pollo Campero Centro Histórico",
+      "direccion": "Plaza Libertad, Centro Histórico de San Salvador",
+      "coordenadas": {
+        "latitud": 13.6978,
+        "longitud": -89.1906
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "pollo-campero-san-miguel",
+      "comercio": "pollo-campero",
+      "nombre": "Pollo Campero Metrocentro San Miguel",
+      "direccion": "Centro Comercial Metrocentro, Avenida Roosevelt Sur, San Miguel",
+      "coordenadas": {
+        "latitud": 13.4795,
+        "longitud": -88.1716
+      },
+      "zona": "san-miguel"
+    },
+    {
+      "id": "starbucks-multiplaza",
+      "comercio": "starbucks",
+      "nombre": "Starbucks Multiplaza",
+      "direccion": "Centro Comercial Multiplaza, Carretera Panamericana, Antiguo Cuscatlán",
+      "coordenadas": {
+        "latitud": 13.6782,
+        "longitud": -89.2511
+      },
+      "zona": "antiguo-cuscatlan"
+    },
+    {
+      "id": "starbucks-escalon",
+      "comercio": "starbucks",
+      "nombre": "Starbucks Paseo General Escalón",
+      "direccion": "Paseo General Escalón, San Salvador",
+      "coordenadas": {
+        "latitud": 13.704,
+        "longitud": -89.241
+      },
+      "zona": "escalon"
+    },
+    {
+      "id": "pizza-hut-escalon",
+      "comercio": "pizza-hut",
+      "nombre": "Pizza Hut Escalón",
+      "direccion": "Paseo General Escalón, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7042,
+        "longitud": -89.2425
+      },
+      "zona": "escalon"
+    },
+    {
+      "id": "pizza-hut-santa-tecla",
+      "comercio": "pizza-hut",
+      "nombre": "Pizza Hut Santa Tecla",
+      "direccion": "Carretera Panamericana, Santa Tecla",
+      "coordenadas": {
+        "latitud": 13.6745,
+        "longitud": -89.285
+      },
+      "zona": "santa-tecla"
+    },
+    {
+      "id": "pizza-hut-san-miguel",
+      "comercio": "pizza-hut",
+      "nombre": "Pizza Hut San Miguel",
+      "direccion": "Avenida Roosevelt, San Miguel",
+      "coordenadas": {
+        "latitud": 13.481,
+        "longitud": -88.175
+      },
+      "zona": "san-miguel"
+    },
+    {
+      "id": "tienda-metrocentro",
+      "comercio": "tienda",
+      "nombre": "Siman Metrocentro",
+      "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7058,
+        "longitud": -89.213
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "tienda-galerias",
+      "comercio": "tienda",
+      "nombre": "Siman Galerías",
+      "direccion": "Centro Comercial Galerías, Paseo General Escalón, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7034,
+        "longitud": -89.2437
+      },
+      "zona": "escalon"
+    },
+    {
+      "id": "tienda-san-miguel",
+      "comercio": "tienda",
+      "nombre": "Siman Metrocentro San Miguel",
+      "direccion": "Centro Comercial Metrocentro, Avenida Roosevelt Sur, San Miguel",
+      "coordenadas": {
+        "latitud": 13.4798,
+        "longitud": -88.172
+      },
+      "zona": "san-miguel"
+    },
+    {
+      "id": "payless-metrocentro",
+      "comercio": "payless",
+      "nombre": "Payless ShoeSource Metrocentro",
+      "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7057,
+        "longitud": -89.2128
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "payless-plaza-mundo",
+      "comercio": "payless",
+      "nombre": "Payless ShoeSource Plaza Mundo",
+      "direccion": "Centro Comercial Plaza Mundo, Bulevar del Ejército, Soyapango",
+      "coordenadas": {
+        "latitud": 13.7011,
+        "longitud": -89.1512
+      },
+      "zona": "soyapango"
+    },
+    {
+      "id": "cine-metrocentro",
+      "comercio": "cine",
+      "nombre": "Cinemark Metrocentro",
+      "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
+      "coordenadas": {
+        "latitud": 13.706,
+        "longitud": -89.212
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "cine-plaza-mundo",
+      "comercio": "cine",
+      "nombre": "Cinemark Plaza Mundo",
+      "direccion": "Centro Comercial Plaza Mundo, Bulevar del Ejército, Soyapango",
+      "coordenadas": {
+        "latitud": 13.7013,
+        "longitud": -89.1513
+      },
+      "zona": "soyapango"
+    },
+    {
+      "id": "walmart-santa-elena",
+      "comercio": "walmart",
+      "nombre": "Walmart Santa Elena",
+      "direccion": "Bulevar Santa Elena, Antiguo Cuscatlán",
+      "coordenadas": {
+        "latitud": 13.6698,
+        "longitud": -89.2453
+      },
+      "zona": "antiguo-cuscatlan"
+    },
+    {
+      "id": "walmart-constitucion",
+      "comercio": "walmart",
+      "nombre": "Walmart Constitución",
+      "direccion": "Bulevar Constitución, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7225,
+        "longitud": -89.215
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "pricesmart-santa-elena",
+      "comercio": "pricesmart",
+      "nombre": "PriceSmart Santa Elena",
+      "direccion": "Bulevar Santa Elena, Antiguo Cuscatlán",
+      "coordenadas": {
+        "latitud": 13.669,
+        "longitud": -89.247
+      },
+      "zona": "antiguo-cuscatlan"
+    },
+    {
+      "id": "pricesmart-los-heroes",
+      "comercio": "pricesmart",
+      "nombre": "PriceSmart Los Héroes",
+      "direccion": "Boulevard de Los Héroes, San Salvador",
+      "coordenadas": {
+        "latitud": 13.708,
+        "longitud": -89.21
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "gnc-multiplaza",
+      "comercio": "gnc",
+      "nombre": "GNC Multiplaza",
+      "direccion": "Centro Comercial Multiplaza, Carretera Panamericana, Antiguo Cuscatlán",
+      "coordenadas": {
+        "latitud": 13.6781,
+        "longitud": -89.2509
+      },
+      "zona": "antiguo-cuscatlan"
+    },
+    {
+      "id": "gnc-metrocentro",
+      "comercio": "gnc",
+      "nombre": "GNC Metrocentro",
+      "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7059,
+        "longitud": -89.2126
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "gnc-galerias",
+      "comercio": "gnc",
+      "nombre": "GNC Galerías",
+      "direccion": "Centro Comercial Galerías, Paseo General Escalón, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7035,
+        "longitud": -89.2436
+      },
+      "zona": "escalon"
+    },
+    {
+      "id": "la-curacao-centro",
+      "comercio": "la-curacao",
+      "nombre": "La Curacao Centro Histórico",
+      "direccion": "Calle Arce, Centro Histórico de San Salvador",
+      "coordenadas": {
+        "latitud": 13.6995,
+        "longitud": -89.196
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "la-curacao-santa-ana",
+      "comercio": "la-curacao",
+      "nombre": "La Curacao Santa Ana",
+      "direccion": "Calle Libertad, Santa Ana",
+      "coordenadas": {
+        "latitud": 13.9945,
+        "longitud": -89.561
+      },
+      "zona": "santa-ana"
+    },
+    {
+      "id": "la-curacao-san-miguel",
+      "comercio": "la-curacao",
+      "nombre": "La Curacao San Miguel",
+      "direccion": "Avenida Roosevelt, San Miguel",
+      "coordenadas": {
+        "latitud": 13.483,
+        "longitud": -88.179
+      },
+      "zona": "san-miguel"
+    },
+    {
+      "id": "claro-metrocentro",
+      "comercio": "claro",
+      "nombre": "Claro Metrocentro",
+      "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7061,
+        "longitud": -89.2124
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "claro-plaza-mundo",
+      "comercio": "claro",
+      "nombre": "Claro Plaza Mundo",
+      "direccion": "Centro Comercial Plaza Mundo, Bulevar del Ejército, Soyapango",
+      "coordenadas": {
+        "latitud": 13.7014,
+        "longitud": -89.1509
+      },
+      "zona": "soyapango"
+    },
+    {
+      "id": "claro-santa-ana",
+      "comercio": "claro",
+      "nombre": "Claro Metrocentro Santa Ana",
+      "direccion": "Centro Comercial Metrocentro, Avenida Independencia Sur, Santa Ana",
+      "coordenadas": {
+        "latitud": 13.9855,
+        "longitud": -89.5588
+      },
+      "zona": "santa-ana"
+    }
+  ],
+  "cobertura": [
+    {
+      "comercio": "restaurante",
+      "zona": "san-salvador-centro",
+      "estado": "si"
+    },
+    {
+      "comercio": "restaurante",
+      "zona": "escalon",
+      "estado": "si"
+    },
+    {
+      "comercio": "restaurante",
+      "zona": "antiguo-cuscatlan",
+      "estado": "si"
+    },
+    {
+      "comercio": "restaurante",
+      "zona": "santa-tecla",
+      "estado": "si"
+    },
+    {
+      "comercio": "restaurante",
+      "zona": "soyapango",
+      "estado": "si"
+    },
+    {
+      "comercio": "restaurante",
+      "zona": "santa-ana",
+      "estado": "desconocida"
+    },
+    {
+      "comercio": "restaurante",
+      "zona": "san-miguel",
+      "estado": "no"
+    },
+    {
+      "comercio": "pollo-campero",
+      "zona": "san-salvador-centro",
+      "estado": "si"
+    },
+    {
+      "comercio": "pollo-campero",
+      "zona": "escalon",
+      "estado": "si"
+    },
+    {
+      "comercio": "pollo-campero",
+      "zona": "antiguo-cuscatlan",
+      "estado": "si"
+    },
+    {
+      "comercio": "pollo-campero",
+      "zona": "santa-tecla",
+      "estado": "si"
+    },
+    {
+      "comercio": "pollo-campero",
+      "zona": "soyapango",
+      "estado": "si"
+    },
+    {
+      "comercio": "pollo-campero",
+      "zona": "santa-ana",
+      "estado": "si"
+    },
+    {
+      "comercio": "pollo-campero",
+      "zona": "san-miguel",
+      "estado": "desconocida"
+    },
+    {
+      "comercio": "pizza-hut",
+      "zona": "san-salvador-centro",
+      "estado": "si"
+    },
+    {
+      "comercio": "pizza-hut",
+      "zona": "escalon",
+      "estado": "si"
+    },
+    {
+      "comercio": "pizza-hut",
+      "zona": "antiguo-cuscatlan",
+      "estado": "si"
+    },
+    {
+      "comercio": "pizza-hut",
+      "zona": "santa-tecla",
+      "estado": "si"
+    },
+    {
+      "comercio": "pizza-hut",
+      "zona": "soyapango",
+      "estado": "si"
+    },
+    {
+      "comercio": "pizza-hut",
+      "zona": "santa-ana",
+      "estado": "desconocida"
+    },
+    {
+      "comercio": "pizza-hut",
+      "zona": "san-miguel",
+      "estado": "si"
+    },
+    {
+      "comercio": "pricesmart",
+      "zona": "san-salvador-centro",
+      "estado": "si"
+    },
+    {
+      "comercio": "pricesmart",
+      "zona": "escalon",
+      "estado": "si"
+    },
+    {
+      "comercio": "pricesmart",
+      "zona": "antiguo-cuscatlan",
+      "estado": "si"
+    },
+    {
+      "comercio": "pricesmart",
+      "zona": "santa-tecla",
+      "estado": "si"
+    },
+    {
+      "comercio": "pricesmart",
+      "zona": "soyapango",
+      "estado": "desconocida"
+    },
+    {
+      "comercio": "pricesmart",
+      "zona": "santa-ana",
+      "estado": "no"
+    },
+    {
+      "comercio": "pricesmart",
+      "zona": "san-miguel",
+      "estado": "no"
+    },
+    {
+      "comercio": "gnc",
+      "zona": "san-salvador-centro",
+      "estado": "si"
+    },
+    {
+      "comercio": "gnc",
+      "zona": "escalon",
+      "estado": "si"
+    },
+    {
+      "comercio": "gnc",
+      "zona": "antiguo-cuscatlan",
+      "estado": "si"
+    },
+    {
+      "comercio": "gnc",
+      "zona": "santa-tecla",
+      "estado": "si"
+    },
+    {
+      "comercio": "gnc",
+      "zona": "soyapango",
+      "estado": "si"
+    },
+    {
+      "comercio": "gnc",
+      "zona": "santa-ana",
+      "estado": "desconocida"
+    },
+    {
+      "comercio": "gnc",
+      "zona": "san-miguel",
+      "estado": "no"
+    }
+  ],
+  "relaciones": [],
+  "promociones": [
+    {
+      "id": "restaurante",
+      "comercio": "restaurante",
+      "titulo": "Descuento en tu comida de McDonald's",
+      "descripcion": "Un descuento para tu próxima comida.",
+      "descripcionDetalle": "Disfruta una hamburguesa y tus acompañamientos favoritos pagando con tu tarjeta. Consulta el beneficio antes de ordenar.",
+      "condiciones": "Aplica en el menú a la carta y en combos, en restaurante y autoservicio.",
+      "restricciones": "Una compra por transacción. No acumulable con otras ofertas.",
+      "instrucciones": "Paga con tu tarjeta en caja o autoservicio; el descuento se aplica al momento del pago.",
+      "imagen": "/recursos/promociones/restaurante.webp",
+      "textoAlternativo": "Bandeja de McDonald's con hamburguesa, papas fritas y bebida",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "10 % de descuento",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "20 % de descuento",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-09",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Pagar con tu tarjeta en el restaurante",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-09"
+    },
+    {
+      "id": "tienda",
+      "comercio": "tienda",
+      "titulo": "Descuento en artículos seleccionados de Siman",
+      "descripcion": "Renueva tus favoritos con descuento.",
+      "descripcionDetalle": "Encuentra ropa y artículos seleccionados para renovar tus favoritos. El descuento se aplica al pagar con tu tarjeta y cumplir la compra mínima.",
+      "condiciones": "Aplica en ropa, accesorios y artículos para el hogar marcados en tienda.",
+      "restricciones": "Solo artículos seleccionados.",
+      "instrucciones": "Paga con tu tarjeta en caja; el descuento se aplica al cumplir la compra mínima.",
+      "imagen": "/recursos/promociones/tienda.webp",
+      "textoAlternativo": "Fachada de una tienda Siman",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "15 % de descuento",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "Solo artículos seleccionados.",
+          "compraMinima": 30,
+          "tope": 15
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "25 % de descuento",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "Solo artículos seleccionados.",
+          "compraMinima": 30,
+          "tope": 25
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-09",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Compra mínima de $30",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-09"
+    },
+    {
+      "id": "cine",
+      "comercio": "cine",
+      "titulo": "2×1 en entradas de Cinemark",
+      "descripcion": "Comparte una película con un 2×1.",
+      "descripcionDetalle": "Elige una película y comparte la función: paga una entrada y recibe otra de igual precio. El beneficio está disponible de lunes a jueves.",
+      "condiciones": "Entradas de igual precio para la misma función.",
+      "restricciones": "No aplica a funciones especiales ni preventas.",
+      "instrucciones": "Compra en taquilla y paga ambas entradas con tu tarjeta.",
+      "imagen": "/recursos/promociones/cine.webp",
+      "textoAlternativo": "Fachada de un cine Cinemark",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "2×1 en entradas",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "Entradas de igual precio. No aplica a funciones especiales.",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "2×1 en entradas y 20 % en combo",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "Entradas de igual precio. No aplica a funciones especiales.",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-09",
+        "hasta": "2026-12-31"
+      },
+      "dias": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Válido de lunes a jueves",
+      "tipoBeneficio": "2x1-combo",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-09"
+    },
+    {
+      "id": "starbucks",
+      "comercio": "starbucks",
+      "titulo": "Descuento en bebidas de Starbucks",
+      "descripcion": "Tu pausa de café, con descuento.",
+      "descripcionDetalle": "Haz una pausa y disfruta tu bebida favorita. Paga con tu tarjeta para recibir el descuento correspondiente a tu perfil.",
+      "condiciones": "Aplica en bebidas preparadas de cualquier tamaño.",
+      "restricciones": "No aplica a granos, tazas ni tarjetas de regalo.",
+      "instrucciones": "Paga con tu tarjeta al ordenar en barra.",
+      "imagen": "/recursos/promociones/starbucks.webp",
+      "textoAlternativo": "Vaso de Starbucks con su logo junto a un postre",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "10 % de descuento",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "20 % de descuento",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-09",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Pagar con tu tarjeta al ordenar",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-09"
+    },
+    {
+      "id": "siman-black",
+      "comercio": "tienda",
+      "titulo": "Exclusivo Black: 30 % en Siman",
+      "descripcion": "Un beneficio exclusivo para tu Black.",
+      "descripcionDetalle": "Aprovecha un descuento exclusivo Black en artículos seleccionados. Esta oferta tiene su propia compra mínima y no se combina con otras promociones.",
+      "condiciones": "Aplica en artículos seleccionados de ropa y accesorios.",
+      "restricciones": "No acumulable con otras ofertas.",
+      "instrucciones": "Paga con tu tarjeta Black en caja; el descuento tiene un tope de $30.",
+      "imagen": "/recursos/promociones/siman-black.webp",
+      "textoAlternativo": "Entrada de una tienda Siman",
+      "beneficios": [
+        {
+          "tarjeta": "black",
+          "beneficio": "30 % de descuento",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "Solo artículos seleccionados. No acumulable con otras ofertas.",
+          "compraMinima": 50,
+          "tope": 30
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-09",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Compra mínima de $50 con tarjeta Black",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-09"
+    },
+    {
+      "id": "pollo-campero-martes",
+      "comercio": "pollo-campero",
+      "titulo": "2×1 en combos personales los martes",
+      "descripcion": "Los martes, tu segundo combo personal va por cuenta de la casa.",
+      "descripcionDetalle": "Cada martes, pide dos combos personales iguales en restaurante o a domicilio y paga solo uno con tu tarjeta. Ideal para compartir el almuerzo o la cena.",
+      "condiciones": "Combos personales del mismo precio, en restaurante o a domicilio.",
+      "restricciones": "No aplica a combos familiares ni a otras promociones de la marca.",
+      "instrucciones": "En restaurante, menciona la promoción al ordenar; a domicilio, elige pago con tarjeta al finalizar el pedido.",
+      "imagen": "/recursos/promociones/pollo-campero-martes.webp",
+      "textoAlternativo": "Restaurante Pollo Campero con su rótulo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "2×1 en combos personales",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "2×1 en combos personales y postre incluido",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-14",
+        "hasta": "2026-12-31"
+      },
+      "dias": [
+        2
+      ],
+      "canales": [
+        "presencial",
+        "delivery"
+      ],
+      "condicionDecisiva": "Válido solo los martes",
+      "tipoBeneficio": "2x1-combo",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-14"
+    },
+    {
+      "id": "restaurante-domicilio",
+      "comercio": "restaurante",
+      "titulo": "Reintegro en pedidos a domicilio de McDonald's",
+      "descripcion": "Recibe parte de tu pedido a domicilio de vuelta en tu tarjeta.",
+      "descripcionDetalle": "Haz tu pedido a domicilio de McDonald's y págalo con tu tarjeta: un porcentaje del total regresa como reintegro en tu próximo estado de cuenta.",
+      "condiciones": "Pedidos a domicilio pagados en línea con tu tarjeta.",
+      "restricciones": "El reintegro no incluye el cargo de envío.",
+      "instrucciones": "Elige pago con tarjeta al confirmar el pedido; el reintegro se refleja en tu siguiente estado de cuenta.",
+      "imagen": "/recursos/promociones/restaurante-domicilio.webp",
+      "textoAlternativo": "Motocicleta de reparto de McDonald's con su logo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "5 % de reintegro",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": 15,
+          "tope": 5
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "8 % de reintegro",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 15,
+          "tope": 8
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-15",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "delivery"
+      ],
+      "condicionDecisiva": "Pedido mínimo de $15",
+      "tipoBeneficio": "cashback-puntos",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-15"
+    },
+    {
+      "id": "starbucks-regalo",
+      "comercio": "starbucks",
+      "titulo": "Exclusivo Black: 15 % en tarjetas de regalo Starbucks",
+      "descripcion": "Regala café con un 15 % de descuento al cargar una tarjeta de regalo.",
+      "descripcionDetalle": "Compra o recarga una tarjeta de regalo de Starbucks con tu tarjeta Black y recibe un 15 % de descuento sobre el monto cargado. Un detalle sencillo para cumpleaños y celebraciones.",
+      "condiciones": "Cargas desde $10 en tarjetas de regalo físicas.",
+      "restricciones": "Máximo dos tarjetas de regalo por compra.",
+      "instrucciones": "Solicita la tarjeta de regalo en barra y paga con tu tarjeta Black.",
+      "imagen": "/recursos/promociones/starbucks-regalo.webp",
+      "textoAlternativo": "Tienda Starbucks con su rótulo",
+      "beneficios": [
+        {
+          "tarjeta": "black",
+          "beneficio": "15 % en tarjetas de regalo",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 10,
+          "tope": 15
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-16",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Pagar con tarjeta Black",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [
+        "regalo"
+      ],
+      "alta": "2026-10-16"
+    },
+    {
+      "id": "claro-cuotas",
+      "comercio": "claro",
+      "titulo": "Celulares en cuotas sin intereses en Claro",
+      "descripcion": "Estrena celular y págalo en cuotas fijas sin intereses.",
+      "descripcionDetalle": "Elige tu nuevo celular en una tienda Claro o en su tienda en línea y divide el pago en cuotas iguales sin intereses con tu tarjeta. Una buena opción para regalar.",
+      "condiciones": "Celulares liberados o con plan desde $150.",
+      "restricciones": "No aplica a accesorios ni a recargas.",
+      "instrucciones": "Pide las cuotas al pagar en tienda o elige el plan de cuotas en la tienda en línea.",
+      "imagen": "/recursos/promociones/claro-cuotas.webp",
+      "textoAlternativo": "Tienda Claro en un centro comercial",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "6 cuotas sin intereses",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": 150,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "12 cuotas sin intereses",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 150,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-13",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial",
+        "en-linea"
+      ],
+      "condicionDecisiva": "Compra mínima de $150",
+      "tipoBeneficio": "cuotas-sin-intereses",
+      "etiquetasIntencion": [
+        "regalo"
+      ],
+      "alta": "2026-10-13"
+    },
+    {
+      "id": "payless-fin-de-semana",
+      "comercio": "payless",
+      "titulo": "Descuento en calzado Payless de viernes a domingo",
+      "descripcion": "Estrena zapatos con descuento cada fin de semana.",
+      "descripcionDetalle": "De viernes a domingo, encuentra calzado casual, escolar y deportivo con descuento al pagar con tu tarjeta en tiendas Payless ShoeSource.",
+      "condiciones": "Calzado de temporada marcado en tienda.",
+      "restricciones": "No aplica a accesorios ni a productos en liquidación.",
+      "instrucciones": "Paga con tu tarjeta en caja de viernes a domingo.",
+      "imagen": "/recursos/promociones/payless-fin-de-semana.webp",
+      "textoAlternativo": "Tienda Payless ShoeSource en un centro comercial",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "15 % de descuento",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "20 % de descuento",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-12",
+        "hasta": "2026-12-31"
+      },
+      "dias": [
+        5,
+        6,
+        0
+      ],
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Válido de viernes a domingo",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [
+        "regalo"
+      ],
+      "alta": "2026-10-12"
+    },
+    {
+      "id": "cine-combo-miercoles",
+      "comercio": "cine",
+      "titulo": "2×1 en combos de palomitas los miércoles",
+      "descripcion": "Los miércoles, lleva dos combos de palomitas por el precio de uno.",
+      "descripcionDetalle": "Cada miércoles, compra un combo de palomitas y bebida en la dulcería de Cinemark Metrocentro y recibe otro igual sin costo al pagar con tu tarjeta.",
+      "condiciones": "Combos medianos o grandes del mismo tamaño.",
+      "restricciones": "No aplica a combos promocionales de estreno.",
+      "instrucciones": "Pide la promoción en la dulcería y paga con tu tarjeta.",
+      "imagen": "/recursos/promociones/cine-combo-miercoles.webp",
+      "textoAlternativo": "Vestíbulo de un cine Cinemark con su rótulo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "2×1 en combo mediano",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "2×1 en combo grande",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-17",
+        "hasta": "2026-12-31"
+      },
+      "dias": [
+        3
+      ],
+      "canales": [
+        "presencial"
+      ],
+      "sucursales": [
+        "cine-metrocentro"
+      ],
+      "condicionDecisiva": "Válido solo los miércoles",
+      "tipoBeneficio": "2x1-combo",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-17"
+    },
+    {
+      "id": "pricesmart-reintegro",
+      "comercio": "pricesmart",
+      "titulo": "Reintegro en tus compras de PriceSmart",
+      "descripcion": "Recupera parte de tu compra del club en tu siguiente estado de cuenta.",
+      "descripcionDetalle": "Haz tus compras del mes en PriceSmart, en el club o a domicilio, y recibe un reintegro sobre el total pagado con tu tarjeta.",
+      "condiciones": "Compras en el club o con entrega a domicilio.",
+      "restricciones": "No incluye la membresía, recargas ni bebidas alcohólicas.",
+      "instrucciones": "Paga con tu tarjeta en caja o al confirmar tu pedido a domicilio.",
+      "imagen": "/recursos/promociones/pricesmart-reintegro.webp",
+      "textoAlternativo": "Club PriceSmart de Santa Elena, en Antiguo Cuscatlán",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "3 % de reintegro",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": 50,
+          "tope": 10
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "5 % de reintegro",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 50,
+          "tope": 15
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-18",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial",
+        "delivery"
+      ],
+      "condicionDecisiva": "Compra mínima de $50",
+      "tipoBeneficio": "cashback-puntos",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-18"
+    },
+    {
+      "id": "pizza-hut-miercoles",
+      "comercio": "pizza-hut",
+      "titulo": "2×1 en pizzas grandes los miércoles en Pizza Hut",
+      "descripcion": "Los miércoles, pide una pizza grande y llévate otra igual.",
+      "descripcionDetalle": "Cada miércoles, pide una pizza grande en restaurante o a domicilio y recibe otra de la misma especialidad al pagar con tu tarjeta. Perfecta para compartir en familia.",
+      "condiciones": "Pizzas grandes de la misma especialidad.",
+      "restricciones": "No aplica a pizzas de orilla rellena ni a otras promociones.",
+      "instrucciones": "Menciona la promoción al ordenar o elige pago con tarjeta en tu pedido a domicilio.",
+      "imagen": "/recursos/promociones/pizza-hut-miercoles.webp",
+      "textoAlternativo": "Caja de pizza de Pizza Hut con su logo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "2×1 en pizzas grandes",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "2×1 en pizzas grandes y bebida incluida",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-19",
+        "hasta": "2026-12-31"
+      },
+      "dias": [
+        3
+      ],
+      "canales": [
+        "presencial",
+        "delivery"
+      ],
+      "condicionDecisiva": "Válido solo los miércoles",
+      "tipoBeneficio": "2x1-combo",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-19"
+    },
+    {
+      "id": "walmart-cuotas",
+      "comercio": "walmart",
+      "titulo": "Cuotas sin intereses en electrodomésticos de Walmart",
+      "descripcion": "Equipa tu casa y paga tus electrodomésticos en cuotas.",
+      "descripcionDetalle": "Compra refrigeradoras, lavadoras, pantallas y otros electrodomésticos en Walmart y págalos en cuotas sin intereses con tu tarjeta, en tienda o en línea.",
+      "condiciones": "Electrodomésticos y electrónica desde $150.",
+      "restricciones": "No aplica a celulares ni a productos de despensa.",
+      "instrucciones": "Solicita las cuotas en caja o elige el plan al pagar en línea.",
+      "imagen": "/recursos/promociones/walmart-cuotas.webp",
+      "textoAlternativo": "Área de electrónica de una tienda Walmart",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "3 cuotas sin intereses",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": 150,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "6 cuotas sin intereses",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 150,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-15",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial",
+        "en-linea"
+      ],
+      "condicionDecisiva": "Compra mínima de $150",
+      "tipoBeneficio": "cuotas-sin-intereses",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-15",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0,
+        "darse-un-gusto": 0,
+        "salir": 0,
+        "familia": 0.5,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 1,
+        "hogar": 1,
+        "viajes": 0
+      },
+      "nivelPrecio": 2
+    },
+    {
+      "id": "walmart-fin-de-semana",
+      "comercio": "walmart",
+      "titulo": "Descuento de fin de semana en Walmart",
+      "descripcion": "Sábados y domingos, ahorra en tu compra grande del mes.",
+      "descripcionDetalle": "Los sábados y domingos, haz tu compra grande en Walmart y recibe un descuento sobre el total al pagar con tu tarjeta.",
+      "condiciones": "Compras de despensa y artículos del hogar.",
+      "restricciones": "No incluye electrónica, celulares ni licores.",
+      "instrucciones": "Paga con tu tarjeta en caja el sábado o el domingo.",
+      "imagen": "/recursos/promociones/walmart-fin-de-semana.webp",
+      "textoAlternativo": "Tienda Walmart con su logo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "5 % de descuento",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": 50,
+          "tope": 10
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "8 % de descuento",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 50,
+          "tope": 20
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-20",
+        "hasta": "2026-12-31"
+      },
+      "dias": [
+        6,
+        0
+      ],
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Válido sábados y domingos",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-20"
+    },
+    {
+      "id": "gnc-vitaminas",
+      "comercio": "gnc",
+      "titulo": "Descuento en vitaminas en GNC",
+      "descripcion": "Cuida tu salud con descuento en vitaminas y suplementos.",
+      "descripcionDetalle": "Compra vitaminas, minerales y suplementos en GNC, en tienda o a domicilio, y recibe un descuento al pagar con tu tarjeta.",
+      "condiciones": "Vitaminas y suplementos de venta libre.",
+      "restricciones": "No aplica a productos en liquidación.",
+      "instrucciones": "Paga con tu tarjeta en tienda o al confirmar tu pedido a domicilio.",
+      "imagen": "/recursos/promociones/gnc-vitaminas.webp",
+      "textoAlternativo": "Tienda GNC con su rótulo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "10 % de descuento",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "15 % de descuento",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-14",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial",
+        "delivery"
+      ],
+      "condicionDecisiva": "Productos de venta libre",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-14"
+    },
+    {
+      "id": "gnc-puntos",
+      "comercio": "gnc",
+      "titulo": "Exclusivo Black: Puntos BA dobles en GNC",
+      "descripcion": "Acumula el doble de Puntos BA en tus suplementos.",
+      "descripcionDetalle": "Con tu tarjeta Black, tus compras de proteínas, vitaminas y suplementos en GNC acumulan el doble de Puntos BA.",
+      "condiciones": "Proteínas, vitaminas y suplementos.",
+      "restricciones": "No aplica a tarjetas de regalo.",
+      "instrucciones": "Paga con tu tarjeta Black en caja; los puntos se acreditan en tu siguiente corte.",
+      "imagen": "/recursos/promociones/gnc-puntos.webp",
+      "textoAlternativo": "Entrada de una tienda GNC",
+      "beneficios": [
+        {
+          "tarjeta": "black",
+          "beneficio": "Puntos BA dobles",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-16",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Pagar con tarjeta Black",
+      "tipoBeneficio": "cashback-puntos",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-16"
+    },
+    {
+      "id": "pizza-hut-domicilio",
+      "comercio": "pizza-hut",
+      "titulo": "Reintegro en pedidos a domicilio de Pizza Hut",
+      "descripcion": "Pide tu pizza a domicilio y recibe parte de vuelta.",
+      "descripcionDetalle": "Haz tu pedido a domicilio de Pizza Hut y págalo con tu tarjeta: un porcentaje del total regresa como reintegro en tu próximo estado de cuenta.",
+      "condiciones": "Pedidos a domicilio pagados con tu tarjeta.",
+      "restricciones": "El reintegro no incluye el cargo de envío.",
+      "instrucciones": "Elige pago con tarjeta al confirmar el pedido; el reintegro se refleja en tu siguiente estado de cuenta.",
+      "imagen": "/recursos/promociones/pizza-hut-domicilio.webp",
+      "textoAlternativo": "Restaurante Pizza Hut con su techo rojo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "5 % de reintegro",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": 12,
+          "tope": 5
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "10 % de reintegro",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 12,
+          "tope": 8
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-13",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "delivery"
+      ],
+      "condicionDecisiva": "Pedido mínimo de $12",
+      "tipoBeneficio": "cashback-puntos",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-13"
+    },
+    {
+      "id": "la-curacao-pantallas",
+      "comercio": "la-curacao",
+      "titulo": "Hasta 12 cuotas sin intereses en pantallas de La Curacao",
+      "descripcion": "Estrena pantalla y págala en cuotas fijas sin intereses.",
+      "descripcionDetalle": "Compra tu pantalla en La Curacao, en tienda o en línea, y págala en cuotas sin intereses con tu tarjeta. Un buen regalo para la familia esta temporada.",
+      "condiciones": "Pantallas desde $200.",
+      "restricciones": "No aplica a productos reacondicionados.",
+      "instrucciones": "Pide las cuotas en caja o elige el plan al pagar en línea.",
+      "imagen": "/recursos/promociones/la-curacao-pantallas.webp",
+      "textoAlternativo": "Tienda La Curacao con su rótulo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "6 cuotas sin intereses",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": 200,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "12 cuotas sin intereses",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 200,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-17",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial",
+        "en-linea"
+      ],
+      "condicionDecisiva": "Compra mínima de $200",
+      "tipoBeneficio": "cuotas-sin-intereses",
+      "etiquetasIntencion": [
+        "regalo"
+      ],
+      "alta": "2026-10-17"
+    },
+    {
+      "id": "claro-recargas",
+      "comercio": "claro",
+      "titulo": "Reintegro en recargas en línea de Claro",
+      "descripcion": "Recarga tu celular en línea y recibe parte de vuelta.",
+      "descripcionDetalle": "Recarga saldo o paquetes de Claro desde su sitio o su app pagando con tu tarjeta y recibe un reintegro sobre el monto recargado.",
+      "condiciones": "Recargas y paquetes prepago pagados en línea.",
+      "restricciones": "No aplica al pago de facturas pospago.",
+      "instrucciones": "Paga la recarga en línea con tu tarjeta; el reintegro se refleja en tu siguiente estado de cuenta.",
+      "imagen": "/recursos/promociones/claro-recargas.webp",
+      "textoAlternativo": "Tienda Claro con su logo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "5 % de reintegro",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": 3
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "10 % de reintegro",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": 5
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-18",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "en-linea"
+      ],
+      "condicionDecisiva": "Recargas pagadas en línea",
+      "tipoBeneficio": "cashback-puntos",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-18"
+    }
+  ]
+}
