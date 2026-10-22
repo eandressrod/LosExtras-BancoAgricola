@@ -101,10 +101,13 @@ test('anon y authenticated no pueden leer ni ejecutar las funciones administrati
 
 test('permite vaciar los datos de prueba en base aislada sin dejar referencias huérfanas', async () => {
   const b = crearBorrador(await leer());
-  for (const tabla of ['perfiles','promociones','comercios']) for (const f of [...b.filas[tabla]]) b.eliminar(tabla,f);
+  // Midi no elimina comercios con sucursales (H24 las carga) porque no administra esa tabla.
+  const conSucursales = new Set((await db.query('select distinct comercio_id from sucursales')).rows.map(f => f.comercio_id));
+  for (const tabla of ['perfiles','promociones','comercios']) for (const f of [...b.filas[tabla]]) if (tabla !== 'comercios' || !conSucursales.has(f.id)) b.eliminar(tabla,f);
   await db.exec('set role service_role');
   let datos;
   try { datos = await guardar(b.cambios()); } finally { await db.exec('reset role'); }
-  for (const tabla of ['perfiles','cuentas','preferencias_usuario','comercios','promociones','beneficios_tarjeta']) assert.deepEqual(datos[tabla],[]);
+  for (const tabla of ['perfiles','cuentas','preferencias_usuario','promociones','beneficios_tarjeta']) assert.deepEqual(datos[tabla],[]);
+  assert.deepEqual(datos.comercios.map(c => c.id).sort(), [...conSucursales].sort());
   assert.equal((await db.query('select count(*)::int as n from promociones_guardadas')).rows[0].n,0);
 });

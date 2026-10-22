@@ -1,0 +1,385 @@
+{
+  "nota": "Origen de cada imagen del catálogo (H24). Uso académico autorizado por el PO el 20 de octubre de 2026; licencia de uso comercial no verificada. Las imágenes viven en public/ y la base guarda solo su ruta.",
+  "imagenes": [
+    {
+      "ruta": "/recursos/categorias/compras.svg",
+      "tipo": "icono",
+      "descripcion": "Icono «shopping-bag» para el mosaico de la encuesta",
+      "origen": "https://lucide.dev/icons/shopping-bag",
+      "archivoOrigen": "https://www.npmjs.com/package/lucide-static/v/1.50.0",
+      "autor": "Lucide Contributors",
+      "licencia": "ISC",
+      "procesamiento": "Trazo cambiado de currentColor a #2C2A29."
+    },
+    {
+      "ruta": "/recursos/categorias/entretenimiento.svg",
+      "tipo": "icono",
+      "descripcion": "Icono «clapperboard» para el mosaico de la encuesta",
+      "origen": "https://lucide.dev/icons/clapperboard",
+      "archivoOrigen": "https://www.npmjs.com/package/lucide-static/v/1.50.0",
+      "autor": "Lucide Contributors",
+      "licencia": "ISC",
+      "procesamiento": "Trazo cambiado de currentColor a #2C2A29."
+    },
+    {
+      "ruta": "/recursos/categorias/restaurantes.svg",
+      "tipo": "icono",
+      "descripcion": "Icono «utensils» para el mosaico de la encuesta",
+      "origen": "https://lucide.dev/icons/utensils",
+      "archivoOrigen": "https://www.npmjs.com/package/lucide-static/v/1.50.0",
+      "autor": "Lucide Contributors",
+      "licencia": "ISC",
+      "procesamiento": "Trazo cambiado de currentColor a #2C2A29."
+    },
+    {
+      "ruta": "/recursos/categorias/salud.svg",
+      "tipo": "icono",
+      "descripcion": "Icono «heart-pulse» para el mosaico de la encuesta",
+      "origen": "https://lucide.dev/icons/heart-pulse",
+      "archivoOrigen": "https://www.npmjs.com/package/lucide-static/v/1.50.0",
+      "autor": "Lucide Contributors",
+      "licencia": "ISC",
+      "procesamiento": "Trazo cambiado de currentColor a #2C2A29."
+    },
+    {
+      "ruta": "/recursos/categorias/supermercados.svg",
+      "tipo": "icono",
+      "descripcion": "Icono «shopping-cart» para el mosaico de la encuesta",
+      "origen": "https://lucide.dev/icons/shopping-cart",
+      "archivoOrigen": "https://www.npmjs.com/package/lucide-static/v/1.50.0",
+      "autor": "Lucide Contributors",
+      "licencia": "ISC",
+      "procesamiento": "Trazo cambiado de currentColor a #2C2A29."
+    },
+    {
+      "ruta": "/recursos/categorias/tecnologia.svg",
+      "tipo": "icono",
+      "descripcion": "Icono «smartphone» para el mosaico de la encuesta",
+      "origen": "https://lucide.dev/icons/smartphone",
+      "archivoOrigen": "https://www.npmjs.com/package/lucide-static/v/1.50.0",
+      "autor": "Lucide Contributors",
+      "licencia": "ISC",
+      "procesamiento": "Trazo cambiado de currentColor a #2C2A29."
+    },
+    {
+      "ruta": "/recursos/comercios/cine.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Cinemark",
+      "origen": "https://commons.wikimedia.org/wiki/File:Cinemark_logo.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/6/6c/Cinemark_logo.svg",
+      "autor": "Cinemark USA, Inc.",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/claro.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Claro",
+      "origen": "https://commons.wikimedia.org/wiki/File:Claro_logo_%282017%29.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Claro_logo_%282017%29.svg",
+      "autor": "Claro",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/gnc.png",
+      "tipo": "logo",
+      "descripcion": "Logo de GNC",
+      "origen": "https://commons.wikimedia.org/wiki/File:GNC_Logo.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/e/ee/GNC_Logo.svg",
+      "autor": "Unknown author Unknown author",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/la-curacao.png",
+      "tipo": "logo",
+      "descripcion": "Logo de La Curacao",
+      "origen": "https://www.lacuracaonline.com/elsalvador/",
+      "archivoOrigen": "https://www.lacuracaonline.com/media/logo/stores/2/La_CuracaoLogo.png",
+      "autor": "La Curacao (sitio oficial)",
+      "licencia": "Uso académico autorizado por el PO el 20 de octubre de 2026; licencia de uso comercial no verificada.",
+      "procesamiento": "Recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/payless.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Payless ShoeSource",
+      "origen": "https://commons.wikimedia.org/wiki/File:Payless_ShoeSource.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/4/43/Payless_ShoeSource.svg",
+      "autor": "No indicado en Wikimedia Commons",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/pizza-hut.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Pizza Hut",
+      "origen": "https://commons.wikimedia.org/wiki/File:Pizza_Hut_2025.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Pizza_Hut_2025.svg",
+      "autor": "Yum! Brands",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/pollo-campero.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Pollo Campero",
+      "origen": "https://commons.wikimedia.org/wiki/File:PolloCampero_Logo.png",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/5/56/PolloCampero_Logo.png",
+      "autor": "Pcmktng",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/pricesmart.png",
+      "tipo": "logo",
+      "descripcion": "Logo de PriceSmart",
+      "origen": "https://www.pricesmart.com/es-sv",
+      "archivoOrigen": "https://pricesmart.bloomreach.io/delivery/resources/content/gallery/pricesmart/header/new-headerlogo.svg",
+      "autor": "PriceSmart (sitio oficial)",
+      "licencia": "Uso académico autorizado por el PO el 20 de octubre de 2026; licencia de uso comercial no verificada.",
+      "procesamiento": "SVG revisado sin contenido activo, rasterizado con resvg; lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/restaurante.png",
+      "tipo": "logo",
+      "descripcion": "Logo de McDonald's",
+      "origen": "https://commons.wikimedia.org/wiki/File:McDonald%27s_Golden_Arches.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/3/36/McDonald%27s_Golden_Arches.svg",
+      "autor": "McDonald's",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/starbucks.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Starbucks",
+      "origen": "https://en.wikipedia.org/wiki/File:Starbucks_Corporation_Logo_2011.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/en/d/d3/Starbucks_Corporation_Logo_2011.svg",
+      "autor": "Starbucks Corporation",
+      "licencia": "Logo no libre alojado en Wikipedia en inglés. Uso académico autorizado por el PO el 20 de octubre de 2026; licencia de uso comercial no verificada.",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/tienda.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Siman",
+      "origen": "https://commons.wikimedia.org/wiki/File:Logo-siman-nuevo.png",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/e/ef/Logo-siman-nuevo.png",
+      "autor": "Siman",
+      "licencia": "Public domain",
+      "procesamiento": "Fondo blanco convertido en transparencia, recorte de márgenes y lado mayor de 512 px."
+    },
+    {
+      "ruta": "/recursos/comercios/walmart.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Walmart",
+      "origen": "https://commons.wikimedia.org/wiki/File:Walmart_logo_%282008%29.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Walmart_logo_%282008%29.svg",
+      "autor": "Walmart",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/promociones/cine-combo-miercoles.webp",
+      "tipo": "foto",
+      "descripcion": "Vestíbulo de un cine Cinemark con su rótulo",
+      "origen": "https://commons.wikimedia.org/wiki/File:Cinemark_no_RioMar_Shopping_-_Recife.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Cinemark_no_RioMar_Shopping_-_Recife.jpg",
+      "autor": "Abdias Jr",
+      "licencia": "CC BY 2.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/cine.webp",
+      "tipo": "foto",
+      "descripcion": "Fachada de un cine Cinemark",
+      "origen": "https://commons.wikimedia.org/wiki/File:Cinemark_at_Seven_Bridges_and_IMAX_in_Illinois.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Cinemark_at_Seven_Bridges_and_IMAX_in_Illinois.jpg",
+      "autor": "SimLibrarian",
+      "licencia": "CC0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/claro-cuotas.webp",
+      "tipo": "foto",
+      "descripcion": "Tienda Claro en un centro comercial",
+      "origen": "https://commons.wikimedia.org/wiki/File:Tienda_Claro_cc_Plaza_imp_Bog.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/6/67/Tienda_Claro_cc_Plaza_imp_Bog.jpg",
+      "autor": "EEIM",
+      "licencia": "CC BY-SA 3.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/claro-recargas.webp",
+      "tipo": "foto",
+      "descripcion": "Tienda Claro con su logo",
+      "origen": "https://commons.wikimedia.org/wiki/File:Tienda_Claro_cc_Plaza_imp_Bt%C3%A1.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Tienda_Claro_cc_Plaza_imp_Bt%C3%A1.jpg",
+      "autor": "EEIM",
+      "licencia": "CC BY-SA 3.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/gnc-puntos.webp",
+      "tipo": "foto",
+      "descripcion": "Entrada de una tienda GNC",
+      "origen": "https://commons.wikimedia.org/wiki/File:GNC_at_Greenwood_Park_Mall_-_October_2023_-_Sarah_Stierch_02.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/4/47/GNC_at_Greenwood_Park_Mall_-_October_2023_-_Sarah_Stierch_02.jpg",
+      "autor": "Missvain",
+      "licencia": "CC BY 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/gnc-vitaminas.webp",
+      "tipo": "foto",
+      "descripcion": "Tienda GNC con su rótulo",
+      "origen": "https://commons.wikimedia.org/wiki/File:GNC_store.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/8/8d/GNC_store.jpg",
+      "autor": "Miosotis jade",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/la-curacao-pantallas.webp",
+      "tipo": "foto",
+      "descripcion": "Tienda La Curacao con su rótulo",
+      "origen": "https://commons.wikimedia.org/wiki/File:La_Curacao%2C_Circunvalacion.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/1/17/La_Curacao%2C_Circunvalacion.jpg",
+      "autor": "Mariaclara85",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/payless-fin-de-semana.webp",
+      "tipo": "foto",
+      "descripcion": "Tienda Payless ShoeSource en un centro comercial",
+      "origen": "https://commons.wikimedia.org/wiki/File:Payles_ShoeSource_Store.JPG",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/a/a1/Payles_ShoeSource_Store.JPG",
+      "autor": "Dwight Burdette",
+      "licencia": "CC BY 3.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/pizza-hut-domicilio.webp",
+      "tipo": "foto",
+      "descripcion": "Restaurante Pizza Hut con su techo rojo",
+      "origen": "https://commons.wikimedia.org/wiki/File:Pizza_Hut_Athens_OH_USA.JPG",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Pizza_Hut_Athens_OH_USA.JPG",
+      "autor": "Ed! (talk) (Hall of Fame)",
+      "licencia": "CC BY-SA 3.0, GFDL",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/pizza-hut-miercoles.webp",
+      "tipo": "foto",
+      "descripcion": "Caja de pizza de Pizza Hut con su logo",
+      "origen": "https://commons.wikimedia.org/wiki/File:2019-02-26_22_49_25_A_box_containing_a_Pizza_Hut_stuffed_crust_pizza_with_mushrooms_and_pineapple_in_Herndon%2C_Fairfax_County%2C_Virginia.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/d/d2/2019-02-26_22_49_25_A_box_containing_a_Pizza_Hut_stuffed_crust_pizza_with_mushrooms_and_pineapple_in_Herndon%2C_Fairfax_County%2C_Virginia.jpg",
+      "autor": "Famartin",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/pollo-campero-martes.webp",
+      "tipo": "foto",
+      "descripcion": "Restaurante Pollo Campero con su rótulo",
+      "origen": "https://commons.wikimedia.org/wiki/File:Pollo_Campero_at_Vista_Palms_Orlando_FL_2025-02-12_15-45-32.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/9/94/Pollo_Campero_at_Vista_Palms_Orlando_FL_2025-02-12_15-45-32.jpg",
+      "autor": "G. Edward Johnson",
+      "licencia": "CC BY 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/pricesmart-reintegro.webp",
+      "tipo": "foto",
+      "descripcion": "Club PriceSmart de Santa Elena, en Antiguo Cuscatlán",
+      "origen": "https://commons.wikimedia.org/wiki/File:Pricesmart_AntiguoSant_Elena.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/7/75/Pricesmart_AntiguoSant_Elena.jpg",
+      "autor": "Sammiethedeadrat",
+      "licencia": "CC BY-SA 3.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/restaurante-domicilio.webp",
+      "tipo": "foto",
+      "descripcion": "Motocicleta de reparto de McDonald's con su logo",
+      "origen": "https://commons.wikimedia.org/wiki/File:Mac%27s_Motorcycle.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Mac%27s_Motorcycle.jpg",
+      "autor": "Chacmool",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/restaurante.webp",
+      "tipo": "foto",
+      "descripcion": "Bandeja de McDonald's con hamburguesa, papas fritas y bebida",
+      "origen": "https://commons.wikimedia.org/wiki/File:McDonald%27s_Golden_Tsukimi_Burger_set_%28Fried_potato_%26_McFizz_Kyoho%29.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/7/7d/McDonald%27s_Golden_Tsukimi_Burger_set_%28Fried_potato_%26_McFizz_Kyoho%29.jpg",
+      "autor": "Tokumeigakarinoaoshima",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/siman-black.webp",
+      "tipo": "foto",
+      "descripcion": "Entrada de una tienda Siman",
+      "origen": "https://sv.siman.com/sucursales",
+      "archivoOrigen": "https://siman.vtexassets.com/assets/vtex.file-manager-graphql/images/a530f4b9-83b8-4930-88ba-f5ae835aa3e0___3e42ca9b0ebd18b4de0865916cf4735d.png",
+      "autor": "Siman (sitio oficial)",
+      "licencia": "Uso académico autorizado por el PO el 20 de octubre de 2026; licencia de uso comercial no verificada.",
+      "procesamiento": "Recorte 16:9 de la fachada (centro) sin la franja inferior ni la etiqueta superior con texto; ampliado a 1280×720 px desde 1251×626; WebP."
+    },
+    {
+      "ruta": "/recursos/promociones/starbucks-regalo.webp",
+      "tipo": "foto",
+      "descripcion": "Tienda Starbucks con su rótulo",
+      "origen": "https://commons.wikimedia.org/wiki/File:Starbucks_Coffee_Taipei_International_Airport_Store_20151107.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Starbucks_Coffee_Taipei_International_Airport_Store_20151107.jpg",
+      "autor": "玄史生",
+      "licencia": "CC BY-SA 3.0, GFDL",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/starbucks.webp",
+      "tipo": "foto",
+      "descripcion": "Vaso de Starbucks con su logo junto a un postre",
+      "origen": "https://commons.wikimedia.org/wiki/File:SB64.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/1/14/SB64.jpg",
+      "autor": "Carlo Carrasco",
+      "licencia": "CC BY-SA 3.0, GFDL",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/tienda.webp",
+      "tipo": "foto",
+      "descripcion": "Fachada de una tienda Siman",
+      "origen": "https://sv.siman.com/sucursales",
+      "archivoOrigen": "https://siman.vtexassets.com/assets/vtex.file-manager-graphql/images/a530f4b9-83b8-4930-88ba-f5ae835aa3e0___3e42ca9b0ebd18b4de0865916cf4735d.png",
+      "autor": "Siman (sitio oficial)",
+      "licencia": "Uso académico autorizado por el PO el 20 de octubre de 2026; licencia de uso comercial no verificada.",
+      "procesamiento": "Recorte 16:9 de la fachada (izquierda) sin la franja inferior ni la etiqueta superior con texto; ampliado a 1280×720 px desde 1251×626; WebP."
+    },
+    {
+      "ruta": "/recursos/promociones/walmart-cuotas.webp",
+      "tipo": "foto",
+      "descripcion": "Área de electrónica de una tienda Walmart",
+      "origen": "https://commons.wikimedia.org/wiki/File:Electronics_Section_Walmart_Edmonton_2021.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/2/24/Electronics_Section_Walmart_Edmonton_2021.jpg",
+      "autor": "Rowanswiki",
+      "licencia": "CC0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/walmart-fin-de-semana.webp",
+      "tipo": "foto",
+      "descripcion": "Tienda Walmart con su logo",
+      "origen": "https://commons.wikimedia.org/wiki/File:Walmart_Erie%2C_PA.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Walmart_Erie%2C_PA.jpg",
+      "autor": "Glenn Samonte - Own Work",
+      "licencia": "CC BY 2.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    }
+  ]
+}
