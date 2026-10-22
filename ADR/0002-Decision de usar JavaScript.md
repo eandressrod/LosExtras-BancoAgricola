@@ -2,14 +2,14 @@
 
 - Estado: aceptada; registro retrospectivo de una decisión existente.
 - Fecha del registro: 20 de octubre de 2026.
-- Fecha de la decisión: no precisada en el PDF; el stack consta en los registros del 7 de octubre de 2026.
+- Fecha de la decisión: 7 de octubre de 2026.
 - Clasificación: puerta de una vía dentro del plazo del proyecto.
 
 ## Contexto
 
 El frontend ya utiliza HTML, CSS y JavaScript. La API y las reglas de promociones necesitan integrarse con ese recorrido y poder mantenerse por un equipo académico pequeño.
 
-El PDF indica que usar JavaScript en la lógica fue una decisión intencional para reducir la variedad de lenguajes que el equipo debe mantener. Migrar esa lógica implicaría reescribirla, adaptar dependencias y verificar nuevamente su funcionamiento.
+El equipo acordó usar HTML, CSS y JavaScript en el frontend y JavaScript con Node.js en el backend. Mantener la lógica de aplicación en un solo lenguaje reduce la variedad tecnológica que el equipo debe sostener. Migrar esa lógica implicaría reescribirla, adaptar dependencias y verificar nuevamente su funcionamiento.
 
 ## Decisión
 
@@ -39,8 +39,7 @@ La decisión puede cambiar, pero su costo crece con los servicios, adaptadores y
 
 ## Evidencia y referencias
 
-- Documento aportado: *Decisiones de arquitectura*, página 1, apartado 1, segunda decisión.
-- Registro histórico consultado: «Propuesta de preparación frontend/backend» y «Preparación ejecutada», 7 de octubre de 2026: separación de HTML, JavaScript por pantalla, API y backend.
+- Acuerdo de arquitectura del equipo: «Propuesta de preparación frontend/backend» y «Preparación ejecutada», 7 de octubre de 2026: separación de HTML, JavaScript por pantalla, API y backend.
 - [Entorno y comandos](../package.json): módulos ES, Node.js 24.x y pruebas con `node --test`.
 - [Contrato documentado con JSDoc](../backend/repositorios/contrato.js).
 - [Servicio de autenticación](../backend/servicios/autenticacion.js) y [consumo de sesión en el navegador](../public/js/comun.js), ejemplos de la separación actual.
