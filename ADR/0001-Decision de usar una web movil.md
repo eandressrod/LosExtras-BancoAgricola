@@ -2,14 +2,14 @@
 
 - Estado: aceptada; registro retrospectivo de una decisión existente.
 - Fecha del registro: 20 de octubre de 2026.
-- Fecha de la decisión: no precisada en el PDF; la arquitectura web consta en los registros del 7 de octubre de 2026.
+- Fecha de la decisión: 7 de octubre de 2026.
 - Clasificación: puerta de una vía dentro del plazo del proyecto.
 
 ## Contexto
 
 El proyecto académico se concentra en consultar promociones aplicables a las tarjetas del usuario y entender sus condiciones. Login, menú y tarjetas acompañan ese recorrido. El equipo necesita desarrollar, integrar y probar ese flujo durante los sprints disponibles, con una carga académica adicional.
 
-El diagnóstico de arquitectura describe la elección intencional de una web que se comporte como una aplicación de teléfono. Pasar a una aplicación nativa requeriría rehacer una parte importante de la interfaz, la navegación y el despliegue.
+El equipo acordó una aplicación web orientada al uso en teléfono, con frontend, API y backend en un mismo proyecto Vercel. Pasar a una aplicación nativa exigiría rehacer una parte importante de la interfaz, la navegación y el despliegue.
 
 ## Decisión
 
@@ -39,8 +39,8 @@ No es irreversible en términos absolutos. Se clasifica como puerta de una vía 
 
 ## Evidencia y referencias
 
-- Documento aportado: *Decisiones de arquitectura*, página 1, apartado 1, primera decisión.
-- Registro histórico consultado: «Propuesta de preparación frontend/backend del 7 de octubre», aceptada por el usuario; «H13 PWA e inactividad», 14 de octubre de 2026. Son antecedentes, no una verificación actual de producción.
+- Acuerdo de arquitectura del equipo: «Propuesta de preparación frontend/backend», 7 de octubre de 2026: un proyecto Vercel con frontend en `public/`, rutas en `api/` y lógica en `backend/`.
+- Decisión de producto posterior: «H13 PWA e inactividad», 14 de octubre de 2026, que establece instalación Android/iOS y recuperación mínima sin conexión. Son antecedentes, no una verificación actual de producción.
 - [Configuración de publicación](../vercel.json).
 - [Manifest de la PWA](../public/pwa/manifest.webmanifest) y [service worker](../public/pwa/sw.js).
 - [Guía de desarrollo](../docs/GUIA_DESARROLLO.md), apartados de ejecución local y H13.
