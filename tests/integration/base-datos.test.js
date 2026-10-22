@@ -7,6 +7,7 @@ import * as autenticacion from '../../backend/servicios/autenticacion.js';
 import { crearRepositorioAccesosSupabase } from '../../backend/repositorios/accesos.supabase.js';
 import { crearRepositorioEstadoEncuestaSupabase } from '../../backend/repositorios/estado-encuesta.supabase.js';
 import { verificarContrasena } from '../../backend/servicios/contrasenas.js';
+import fuente from '../../catalogo/catalogo.json' with { type: 'json' };
 
 let db;
 before(async () => {
@@ -22,14 +23,15 @@ after(async () => { await db?.close(); });
 test('existen las tablas persistentes de catálogo y revocación de sesiones', async () => {
   const { rows } = await db.query("select tablename from pg_tables where schemaname = 'public' order by tablename");
   assert.deepEqual(rows.map(fila => fila.tablename), [
-    'beneficios_tarjeta', 'categoria_comercios', 'categorias', 'comercios', 'cuentas', 'mensajes_usuario', 'metas_usuario', 'perfiles', 'preferencias_usuario', 'productos_tarjeta',
-    'promociones', 'promociones_guardadas', 'puntos_usuario', 'sesiones_actividad', 'sesiones_revocadas', 'sucursales', 'tarjetas_usuario'
+    'beneficios_tarjeta', 'categoria_comercios', 'categorias', 'cobertura', 'comercios', 'cuentas', 'mensajes_usuario', 'metas_usuario', 'ocasiones', 'perfiles',
+    'preferencias_usuario', 'productos_tarjeta', 'promocion_sucursales', 'promociones', 'promociones_guardadas', 'puntos_usuario', 'relaciones_intereses',
+    'sesiones_actividad', 'sesiones_revocadas', 'subcategorias', 'sucursales', 'tarjetas_usuario', 'zonas'
   ]);
 });
 
 test('catálogo ampliado conserva identificadores y campos para la API existente', async () => {
   const { rows } = await db.query('select id, merchant, category, benefit, description, payment, restrictions from promociones order by orden');
-  assert.equal(rows.length, 5);
+  assert.equal(rows.length, fuente.promociones.length);
   assert.equal(rows[0].id, 'restaurante');
   assert.equal(rows[0].benefit, '10 % de descuento');
   assert.ok(rows.every(fila => Object.values(fila).every(valor => typeof valor === 'string')));
@@ -101,7 +103,7 @@ test('sucursales necesitan un comercio existente y coordenadas válidas', async 
 
 test('tablas protegidas: RLS activo y sin privilegios directos de navegador', async () => {
   const { rows } = await db.query("select relname, relrowsecurity from pg_class join pg_namespace on pg_namespace.oid = relnamespace where nspname = 'public' and relkind = 'r'");
-  assert.equal(rows.length, 17);
+  assert.equal(rows.length, 23);
   assert.ok(rows.every(fila => fila.relrowsecurity));
   for (const rol of ['anon', 'authenticated']) {
     await db.exec(`set role ${rol}`);

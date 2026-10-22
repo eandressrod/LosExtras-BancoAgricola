@@ -35,16 +35,37 @@ export function disponibleHoy(promo, ahora = new Date()) {
   return usageDays == null || usageDays.includes(new Date(hoy + 'T00:00:00Z').getUTCDay());
 }
 
+/** H24: campos del contrato del catálogo. Ocasiones y nivel de precio de la promoción sobrescriben los del comercio. */
+function camposCatalogo({ sucursales, occasions, priceLevel, restrictions }, comercio) {
+  return {
+    generalRestrictions: restrictions ?? null,
+    occasions: occasions ?? comercio?.occasions ?? null,
+    priceLevel: priceLevel ?? comercio?.priceLevel ?? null,
+    merchantId: comercio?.id ?? null,
+    subcategoryId: comercio?.subcategoria?.id ?? null,
+    subcategoryName: comercio?.subcategoria?.nombre ?? null,
+    recognizable: comercio?.recognizable ?? null,
+    sensitive: comercio?.sensitive ?? null,
+    refineBy: comercio?.refineBy ?? null,
+    branches: (sucursales ?? []).map(({ sucursal }) => ({
+      id: sucursal.id, name: sucursal.nombre, address: sucursal.direccion, latitude: sucursal.latitud, longitude: sucursal.longitud,
+      zoneId: sucursal.zonaId
+    })),
+    coverage: (comercio?.cobertura ?? []).map(({ zonaId, estado }) => ({ zoneId: zonaId, status: estado }))
+  };
+}
+
 export function filtrarPromociones(promociones, tipoTarjeta, categoriasPreferidas, ahora = new Date()) {
   const hoy = fechaLocal.format(ahora);
-  return (promociones ?? []).flatMap(({ beneficios, comercio, categoria, ...promo }) => {
+  return (promociones ?? []).flatMap(({ beneficios, comercio, categoria, sucursales, ...promo }) => {
     if (categoriasPreferidas.length && !categoriasPreferidas.includes(promo.category)) return [];
     const beneficio = beneficios?.find(item => item.tipo_tarjeta === tipoTarjeta);
     if (!beneficio) return [];
     const expired = Boolean(promo.validUntil && hoy > promo.validUntil);
     const upcoming = Boolean(promo.validFrom && hoy < promo.validFrom);
     return [{
-      ...promo, categoryName: categoria?.nombre ?? promo.category, merchant: comercio?.nombre ?? promo.merchant,
+      ...promo, ...camposCatalogo({ ...promo, sucursales }, comercio),
+      categoryName: categoria?.nombre ?? promo.category, merchant: comercio?.nombre ?? promo.merchant,
       logoUrl: comercio?.logoUrl ?? promo.logoUrl ?? null,
       benefit: beneficio.beneficio, payment: beneficio.medio_pago, restrictions: beneficio.restricciones,
       applicableCard: tipoTarjeta, exclusive: new Set(beneficios.map(item => item.tipo_tarjeta)).size === 1,

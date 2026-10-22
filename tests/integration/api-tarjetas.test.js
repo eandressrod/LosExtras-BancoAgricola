@@ -8,6 +8,7 @@ import menu from '../../api/menu.js';
 import * as accesos from '../../backend/repositorios/accesos.mock.js';
 import { obtenerRepositorio, obtenerRepositorioPreferencias } from '../../backend/repositorios/index.js';
 import { crearToken } from '../../backend/servicios/sesion.js';
+import { soloH4 } from '../promociones-h4.js';
 
 process.env.DATA_SOURCE = 'mock';
 process.env.SESSION_SECRET = 'h16-pruebas-de-integracion'.repeat(2);
@@ -21,7 +22,7 @@ async function json(handler, ruta, perfilId) {
   assert.equal(respuesta.status, 200, ruta);
   return respuesta.json();
 }
-const beneficios = lista => lista.map(promo => `${promo.id}: ${promo.benefit}`);
+const beneficios = lista => soloH4(lista).map(promo => `${promo.id}: ${promo.benefit}`);
 
 test('menú y promociones muestran las mismas tarjetas y cada una enlaza una cuenta propia',async()=>{
   const datos=await json(menu,'/api/menu','A');
@@ -67,7 +68,7 @@ test('H16 elegir la Black de A cambia ofertas y beneficio y mantiene sus interes
 });
 
 test('H16 la tarjeta elegida se combina con el filtro de categoría', async () => {
-  assert.deepEqual((await json(promociones, '/api/promociones?categoria=Compras&tarjeta=cta-a-4', 'A')).map(promo => promo.id), ['tienda', 'siman-black']);
+  assert.deepEqual(soloH4(await json(promociones, '/api/promociones?categoria=Compras&tarjeta=cta-a-4', 'A')).map(promo => promo.id), ['tienda', 'siman-black']);
 });
 
 test('H16 el detalle mantiene la tarjeta elegida', async () => {
@@ -89,7 +90,7 @@ test('H16 no se puede usar la tarjeta de otro usuario manipulando el ID', async 
 
 test('H16 un usuario con una sola tarjeta la usa directamente', async () => {
   const sinElegir = await json(promociones, '/api/promociones', 'B');
-  assert.equal(sinElegir.length, 5);
+  assert.equal(soloH4(sinElegir).length, 5);
   assert.ok(sinElegir.every(promo => promo.applicableCard === 'black'));
   assert.deepEqual(await json(promociones, '/api/promociones?tarjeta=cta-b-2', 'B'), sinElegir);
 });

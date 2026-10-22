@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { filtrarPromociones, filtrarPorCategoria, leerCategoriaTemporal } from '../../backend/promociones.js';
 import { catalogoPromociones } from '../../backend/catalogo.js';
+import { soloH4 } from '../promociones-h4.js';
 
 // H5: el filtro temporal se aplica sobre lo que ya corresponde a la tarjeta y a los intereses.
 const ids = lista => lista.map(promo => promo.id);
-const aplicables = (tarjeta, intereses = []) => filtrarPromociones(structuredClone(catalogoPromociones), tarjeta, intereses);
+const aplicables = (tarjeta, intereses = []) => filtrarPromociones(structuredClone(soloH4(catalogoPromociones)), tarjeta, intereses);
 
 test('H5 la categoría restringe el conjunto aplicable y conserva su orden', () => {
   const todas = aplicables('basica');

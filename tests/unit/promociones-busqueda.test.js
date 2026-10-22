@@ -17,12 +17,13 @@ import {
   urlListado,
   urlDetalle
 } from '../../public/js/filtro-categoria.js';
+import { soloH4 } from '../promociones-h4.js';
 
 const JUEVES = new Date('2026-10-15T18:00:00Z');
 const VIERNES = new Date('2026-10-16T18:00:00Z');
 const ids = lista => lista.map(promo => promo.id);
 const aplicables = (tarjeta, intereses = [], fecha = JUEVES) =>
-  filtrarPromociones(structuredClone(catalogoPromociones), tarjeta, intereses, fecha);
+  filtrarPromociones(structuredClone(soloH4(catalogoPromociones)), tarjeta, intereses, fecha);
 
 test('H10 busca por coincidencia parcial del comercio sin distinguir mayúsculas y quitando espacios laterales', () => {
   const base = aplicables('basica');
