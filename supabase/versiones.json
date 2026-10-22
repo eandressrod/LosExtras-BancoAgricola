@@ -1,8 +1,4 @@
 {
-  "transicion": {
-    "motivo": "H24 (SCRUM-123) agrega tablas, promociones y vigencia que rompen los conteos fijos de las pruebas de PR 18; el PR de H24 se registra como nuevo destino de regreso al fusionarse.",
-    "desde": "2026-10-20"
-  },
   "versiones": [
     { "pr": 1, "commit": "41bafac6695db3d39743fed0139da105b48592c7", "migracion": "20261008231036", "regreso": false },
     { "pr": 2, "commit": "02a3d77b5181d092ec22ba217468e7e4d45cee00", "migracion": "20261009042850", "regreso": false },
@@ -18,6 +14,7 @@
     { "pr": 12, "commit": "dfb3f152b3c9784e33292658db30a4e4181b4a58", "migracion": "20261015014018", "regreso": false },
     { "pr": 13, "commit": "451dbea1becb019e379b1adbcb4c275699fb8333", "migracion": "20261016015547", "regreso": false },
     { "pr": 15, "commit": "313b9f8bd9ed7a5edab34046030751ac7f1e3f3d", "migracion": "20261016015547", "regreso": false },
-    { "pr": 18, "commit": "035bf0c80d8eedd4bf72c4aa1338e0a8fcc2cc8f", "migracion": "20261016015547", "regreso": false }
+    { "pr": 18, "commit": "035bf0c80d8eedd4bf72c4aa1338e0a8fcc2cc8f", "migracion": "20261016015547", "regreso": false },
+    { "pr": 21, "commit": "b3dfe8114f0b5de3aab3827fd3f985c65b2a4124", "migracion": "20261020203100", "regreso": true }
   ]
 }
