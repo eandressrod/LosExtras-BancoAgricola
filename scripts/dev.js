@@ -34,6 +34,8 @@ const routes = {
   '/api/metas': recursos,
   '/api/promociones-apertura': recursos,
   '/api/guardadas': recursos,
+  '/api/para-ti': recursos,
+  '/api/senales': recursos,
   '/api/tarjetas': tarjetas
 };
 const types = {
