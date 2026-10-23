@@ -1,7 +1,9 @@
 import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
 import { textoVigencia, textoDisponibleHoy, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
-import { destinoEntradaPromociones } from './menu-modelo.js';
+import { encuestaAlEntrar } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
+import { encuestaOmitida } from './encuesta-modelo.js';
+import { abrirEncuestaHoja } from './encuesta-hoja.js';
 import { conIndicador } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
 import { guardarInstantanea, leerInstantanea, marcarVencidas } from './instantanea.js';
@@ -91,6 +93,7 @@ if (profile) {
   const cardOptions = document.querySelector('#card-options');
   const cardSingle = document.querySelector('#card-single');
   const sessionBadge = document.querySelector('#session-profile');
+  const surveyNotice = document.querySelector('#survey-notice');
   const sesion = almacenSesion();
   const pedida = leerCategoria(location.search, history.state, profile.id);
   const opcionesTarjeta = [];
@@ -103,6 +106,7 @@ if (profile) {
   let consultaActual = 0;
   let timerBusqueda = null;
   let aperturaRegistrada = false;
+  let abrirEncuesta = false;
   let volverDelDetalle = location.hash.startsWith('#promo-');
   const indicador = document.querySelector('#promotions-loading');
 
@@ -187,10 +191,10 @@ if (profile) {
     let tarjetas;
     try {
       if (!aperturaRegistrada) { await registrarAperturaPromociones(); aperturaRegistrada = true; }
+      // H21: con la encuesta pendiente, la hoja se abre sobre la lista ya cargada (ADR-010).
       if (new URLSearchParams(location.search).get('entrada') === 'menu') {
         const preferencias = await getJSON('/api/preferencias');
-        const destino = destinoEntradaPromociones(location.search, preferencias);
-        if (destino) { location.replace(destino); return false; }
+        abrirEncuesta = encuestaAlEntrar(location.search, preferencias, encuestaOmitida(sesion, profile.id));
       }
       revelarPagina();
       [categorias, tarjetas] = await Promise.all([getJSON('/api/categorias'), getJSON('/api/tarjetas')]);
@@ -302,9 +306,27 @@ if (profile) {
     return loadPromotions();
   }
 
+  // H21: la vista previa de la hoja pinta el orden calculado en el navegador sobre la lista real.
+  function mostrarVistaPrevia({ promociones, contador }) {
+    cards.replaceChildren();
+    for (const promotion of promociones) cards.append(crearOferta(promotion, categoria, hoy, busqueda));
+    status.textContent = contador;
+    status.className = 'note';
+  }
+
+  // Al cerrar la hoja, el orden vuelve a pedirse a /api/para-ti con lo que quedó guardado.
+  async function alCerrarEncuesta({ terminada = false } = {}) {
+    await loadPromotions();
+    surveyNotice.hidden = !terminada;
+  }
+
   async function cargar() {
     if (!preparada && !await conIndicador(indicador, prepararPagina)) return;
-    if (tarjeta) await loadPromotions();
+    if (!tarjeta) return;
+    await loadPromotions();
+    if (!abrirEncuesta) return;
+    abrirEncuesta = false;
+    abrirEncuestaHoja({ perfil: profile, tarjeta, categorias, mostrarVistaPrevia, alCerrar: alCerrarEncuesta });
   }
 
   const [todas] = chips;
