@@ -53,8 +53,9 @@ function consulta(categoria, hoy, comercio = null) {
   return lista.length ? '?' + lista.join('&') : '';
 }
 
+/** H22: Para ti consulta el orden del motor con los mismos filtros temporales. */
 export function urlConsulta(categoria, hoy = false, comercio = null) {
-  return '/api/promociones' + consulta(categoria, hoy, comercio);
+  return '/api/para-ti' + consulta(categoria, hoy, comercio);
 }
 
 export function urlListado(categoria, promocionId, hoy = false, comercio = null) {
