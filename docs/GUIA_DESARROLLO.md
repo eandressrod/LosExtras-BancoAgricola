@@ -320,3 +320,35 @@ npm test
 El comando valida la fuente (esquema, referencias, sensibles sin ocasiones, presencial con sucursales, delivery con cobertura, coordenadas en El Salvador, descripciones únicas, vigencia e imágenes existentes) y, si no hay errores, escribe una migración nueva con la carga. La carga es idempotente: inserta o actualiza por clave y sincroniza beneficios, sucursales participantes y cobertura de lo que define la fuente, sin borrar promociones ni comercios creados fuera de ella. La prueba `catalogo-h24-db` falla si la última carga generada no coincide con la fuente. El mock lee la fuente directamente. Las reglas de cantidades, variedad, vocabulario y el reporte de cobertura se completan en SCRUM-126.
 
 **Migraciones de esta entrega:** `20261020203000_h24_catalogo_contrato.sql` (tablas y columnas nuevas, todas opcionales) y `20261020203100_h24_catalogo_esqueleto.sql` (carga generada: 20 promociones en 6 categorías, 12 comercios, 7 zonas y cobertura). Antes de aplicarlas a la base compartida, sacar la foto de datos; después, `npm run test:remote` incluye `tests/remote/catalogo-h24.test.js`, que compara Supabase con la fuente. Las 5 promociones anteriores conservan su identificador y su vigencia pasa al 31 de diciembre de 2026.
+
+## 11. H22: motor de Para ti y registro de señales — 22 de octubre de 2026
+
+Subtareas 2 y 3 de H22 ([SCRUM-128](https://somos-agilistas.atlassian.net/browse/SCRUM-128) y [SCRUM-133](https://somos-agilistas.atlassian.net/browse/SCRUM-133)). Las decisiones técnicas están en [ADR-009](<../ADR/0009-Decision de implementar el motor beta de Para ti.md>). Un cambio de este contrato se avisa en H20, H21, H23 y H25.
+
+**Motor.** Es un paquete ESM puro en `public/js/motor/`, sin dependencias: el backend lo importa y el navegador puede cargarlo tal cual (vista previa de H21). Entrada de `ordenarParaTi`:
+
+- `ofertas`: las de la tarjeta elegida, aplanadas por `filtrarPromociones` sin filtrar por intereses.
+- `senales`: las activas del usuario.
+- `filtros`: `{categoria, hoy, comercio}`.
+- `reglas` (opcional): `excluir` y `multiplicador` para H23, `intencion` para H25.
+
+Los parámetros y su versión están en `config.js`; cambiar un valor exige cambiar la versión. Formas y tipos: `public/js/motor/contrato.js`. Ejemplos: `docs/contrato-motor/`. Datos de prueba: `tests/fixtures/motor/perfiles.js`, con perfiles vacío, solo categorías, con comercios elegidos y con rechazos.
+
+| Endpoint | Método | Contrato |
+| --- | --- | --- |
+| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`). Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
+| `/api/senales` | GET | `{senales}`: las activas del dueño de la sesión. |
+| `/api/senales` | POST | `{clase, ambito, valor, origen}` crea la señal o reactiva la existente; responde `{senal}`. Valida el vocabulario y que el valor exista en el catálogo. |
+| `/api/senales` | PATCH | `{id, activa}` desactiva (quitar) o reactiva (deshacer); 404 si la señal no es del usuario. |
+
+Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (`backend/http.js`). `/api/promociones` conserva su contrato. Para ti ya no lo usa: consume `/api/para-ti` y conserva el orden de la visita en `sessionStorage` (`public/js/instantanea.js`).
+
+**Datos.**
+
+- La migración `20261023013727_h22_senales_usuario.sql` crea `senales_usuario` (RLS, solo backend) y copia las categorías de `preferencias_usuario` como interés·categoría con origen encuesta.
+- `/api/preferencias` conserva su contrato. Escribe en `preferencias_usuario` y sincroniza esas señales; `encuesta_completada` no cambia de tabla.
+- El mock deriva sus señales iniciales de las preferencias de `backend/datos-menu.json`.
+- La tabla está en el respaldo de datos.
+- Abre una transición de regreso en `supabase/versiones.json`, porque las pruebas de PR 21 cuentan las tablas de forma fija. El PR del motor se registra como destino al fusionarse.
+
+**Aplicar en la base compartida** (solo con autorización): sacar la foto de datos (`npm run respaldo -- crear`), aplicar la migración y comprobar con `npm run test:remote`.
