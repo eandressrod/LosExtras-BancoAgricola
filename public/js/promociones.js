@@ -1,5 +1,6 @@
 import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
-import { textoVigencia, textoDisponibleHoy, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
+import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
+import { crearAviso } from './aviso-deshacer.js';
 import { destinoEntradaPromociones } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
 import { conIndicador } from './transiciones.js';
@@ -9,6 +10,37 @@ import { leerCategoria, leerHoy, leerBusqueda, normalizarBusqueda, categoriaVige
 import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
 
 let idsGuardados = [];
+let avisoGuardar = null;
+
+function marcarGuardada(boton, guardada) {
+  boton.dataset.guardada = guardada ? 'si' : 'no';
+  boton.textContent = guardada ? 'Quitar' : 'Guardar';
+}
+
+// Guardar o quitar. Con aviso, el cambio se puede deshacer una vez; deshacer no abre otro aviso.
+async function alternarGuardada(boton, error, id, conAviso) {
+  error.textContent = '';
+  const quitar = boton.dataset.guardada === 'si';
+  try {
+    const response = await fetch('/api/guardadas', {
+      method: quitar ? 'DELETE' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ promocionId: id })
+    });
+    if (response.status === 401) { location.replace('/index.html'); return; }
+    if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
+    marcarGuardada(boton, !quitar);
+    if (conAviso) avisoGuardar.mostrar({
+      texto: quitar ? 'Promoción quitada de Guardadas.' : 'Promoción guardada.',
+      alDeshacer: async () => {
+        await alternarGuardada(boton, error, id, false);
+        boton.focus?.();
+      }
+    });
+  } catch (fallo) {
+    error.textContent = fallo.message;
+  }
+}
 
 function crearOferta(promotion, categoria, hoy, busqueda) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
@@ -21,10 +53,15 @@ function crearOferta(promotion, categoria, hoy, busqueda) {
   card.querySelector('.promo-description').textContent = promotion.description;
   card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
   card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
+  const vence = card.querySelector('.promo-ending');
+  vence.textContent = textoVencePronto(promotion, hoyEnElSalvador());
+  vence.hidden = !vence.textContent;
   const disponible = card.querySelector('.promo-today');
   disponible.textContent = textoDisponibleHoy(promotion);
   disponible.hidden = !disponible.textContent;
-  card.querySelector('.promo-applicability').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+  const aplica = card.querySelector('.promo-applicability');
+  aplica.textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+  aplica.dataset.tarjeta = promotion.applicableCard === 'black' ? 'black' : 'basica';
   const badge = card.querySelector('.promo-exclusive');
   badge.hidden = !promotion.exclusive;
   badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
@@ -33,31 +70,13 @@ function crearOferta(promotion, categoria, hoy, busqueda) {
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion);
   const boton = card.querySelector('.guardar-promo');
-  const aviso = card.querySelector('.guardar-error');
-  if (boton) {
-    const guardada = idsGuardados.includes(promotion.id);
-    boton.dataset.guardada = guardada ? 'si' : 'no';
-    boton.textContent = guardada ? 'Quitar' : 'Guardar';
-    boton.onclick = async event => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (aviso) aviso.textContent = '';
-      const quitar = boton.dataset.guardada === 'si';
-      try {
-        const response = await fetch('/api/guardadas', {
-          method: quitar ? 'DELETE' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ promocionId: promotion.id })
-        });
-        if (response.status === 401) { location.replace('/index.html'); return; }
-        if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
-        boton.dataset.guardada = quitar ? 'no' : 'si';
-        boton.textContent = quitar ? 'Guardar' : 'Quitar';
-      } catch (error) {
-        if (aviso) aviso.textContent = error.message;
-      }
-    };
-  }
+  const error = card.querySelector('.guardar-error');
+  marcarGuardada(boton, idsGuardados.includes(promotion.id));
+  boton.onclick = event => {
+    event.preventDefault();
+    event.stopPropagation();
+    return alternarGuardada(boton, error, promotion.id, true);
+  };
   return card;
 }
 
@@ -80,6 +99,7 @@ if (profile) {
   const cardOptions = document.querySelector('#card-options');
   const cardSingle = document.querySelector('#card-single');
   const sessionBadge = document.querySelector('#session-profile');
+  avisoGuardar = crearAviso(document.querySelector('#pr-aviso'));
   const sesion = almacenSesion();
   const pedida = leerCategoria(location.search, history.state, profile.id);
   const opcionesTarjeta = [];

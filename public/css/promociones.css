@@ -20,38 +20,17 @@
 .search-input { flex: 1; min-width: 0; min-height: 44px; padding: 10px 14px; border: 1px solid #c9c9c9; border-radius: 12px; background: white; color: var(--text); font-family: inherit; font-size: 1rem; }
 .search-input:focus { outline: 2px solid var(--text); outline-offset: 1px; border-color: var(--text); }
 .search-clear { width: auto; min-height: 44px; padding: 8px 14px; white-space: nowrap; }
-.category-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 20px; }
-.filter-chip, .today-filter { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-color: #c9c9c9; background: white; font-size: .9rem; }
-.filter-chip:hover, .today-filter:hover { background: #f0f0f0; }
-.filter-chip[aria-pressed="true"], .filter-chip[aria-pressed="true"]:hover,
-.today-filter[aria-pressed="true"], .today-filter[aria-pressed="true"]:hover { border-color: var(--text); background: var(--primary); }
-.filter-chip[aria-pressed="true"]::before, .today-filter[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; font-weight: 800; }
-.today-filter { margin: -6px 0 14px; font-weight: 700; }
-.empty-actions { display: grid; gap: 12px; }
-.promo-list { display: grid; gap: 22px; }
-.promo-card { display: block; overflow: hidden; border: 1px solid #e0e0e0; border-radius: 20px; color: var(--text); background: white; text-decoration: none; box-shadow: 0 3px 12px rgb(0 0 0 / .04); }
-.promo-card:hover { border-color: #b4b4b4; }
 .promo-media { position: relative; min-height: 160px; aspect-ratio: 16 / 9; background: #e9e7e0; }
 .promo-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
 .merchant-mark { position: absolute; left: 16px; bottom: 14px; display: grid; place-items: center; width: 96px; height: 52px; padding: 10px; border-radius: 10px; background: white; box-shadow: 0 2px 6px rgb(0 0 0 / .1); }
 .merchant-mark:has(img[hidden]) { display: none; }
 .merchant-logo { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; }
-.promo-exclusive, .exclusive-label { border-radius: 7px; background: #202020; color: var(--primary); padding: 5px 9px; font-size: .75rem; font-weight: 700; }
-.promo-exclusive { position: absolute; right: 12px; top: 12px; }
-.exclusive-label { display: inline-block; margin-bottom: 10px; }
-.promo-content { padding: 19px 20px 18px; }
-.promo-category { margin: 0 0 5px; color: #656565; font-size: .75rem; font-weight: 600; }
-.promo-content h2 { font-size: 1.1rem; margin: 0 0 5px; }
-.promo-benefit { margin: 0 0 8px; font-size: 1.5rem; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; }
-.promo-description { margin: 0 0 13px; font-size: .9rem; color: #575757; }
+.exclusive-label { display: inline-block; margin-bottom: 10px; border-radius: 7px; background: #202020; color: var(--primary); padding: 5px 9px; font-size: .75rem; font-weight: 700; }
 .promo-applicability { margin: 8px 0; font-size: .8rem; font-weight: 600; }
 .promo-validity { margin: 8px 0; font-size: .85rem; }
-.promo-card--inactive .promo-validity { color: var(--error); font-weight: 600; }
 .promo-today { margin: 8px 0; padding: 6px 10px; border-left: 3px solid var(--primary); background: #fffbea; font-size: .85rem; font-weight: 600; }
 .promo-conditions { margin: 10px 0; padding-left: 17px; font-size: .8rem; color: #575757; }
 .promo-conditions li + li { margin-top: 4px; }
-.promo-open { display: flex; justify-content: space-between; align-items: center; min-height: 44px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #eee; font-size: .9rem; font-weight: 700; }
-.promo-open span { display: grid; place-items: center; width: 30px; height: 30px; background: var(--primary); border-radius: 50%; font-size: 1.1rem; }
 .detail-page #detail { overflow: hidden; border-radius: 20px; background: white; }
 .detail-media { aspect-ratio: 4 / 3; }
 .detail-content { padding: 24px; }
@@ -66,7 +45,6 @@
 .preferences-page #preferences-error:empty { display: none; }
 .preferences-page a[aria-disabled] { opacity: .5; cursor: progress; }
 @media (max-width: 359px) {
-  .promo-content { padding: 16px; }
   .detail-content { padding: 20px; }
   .detail-benefit { font-size: 1.8rem; }
 }
