@@ -1,0 +1,231 @@
+{
+  "version": "2026-10-22.1",
+  "estrategia": "personalizada",
+  "vacio": null,
+  "promociones": [
+    {
+      "id": "pizza-hut-miercoles",
+      "merchant": "Pizza Hut",
+      "category": "Restaurantes",
+      "benefit": "2×1 en pizzas grandes",
+      "description": "Los miércoles, pide una pizza grande y llévate otra igual.",
+      "payment": "Tarjeta Básica",
+      "restrictions": "",
+      "imageUrl": "/recursos/promociones/pizza-hut-miercoles.webp",
+      "imageAlt": "Caja de pizza de Pizza Hut con su logo",
+      "detailDescription": "Cada miércoles, pide una pizza grande en restaurante o a domicilio y recibe otra de la misma especialidad al pagar con tu tarjeta. Perfecta para compartir en familia.",
+      "validFrom": "2026-10-19",
+      "validUntil": "2026-12-31",
+      "usageDays": [
+        3
+      ],
+      "title": "2×1 en pizzas grandes los miércoles en Pizza Hut",
+      "conditions": "Pizzas grandes de la misma especialidad.",
+      "instructions": "Menciona la promoción al ordenar o elige pago con tarjeta en tu pedido a domicilio.",
+      "channels": [
+        "presencial",
+        "delivery"
+      ],
+      "benefitType": "2x1-combo",
+      "decisiveCondition": "Válido solo los miércoles",
+      "intentTags": [],
+      "addedOn": "2026-10-19",
+      "occasions": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0.5,
+        "darse-un-gusto": 0,
+        "salir": 0.5,
+        "familia": 1,
+        "bienestar": 0,
+        "entretenimiento": 0.5,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "priceLevel": 2,
+      "generalRestrictions": "No aplica a pizzas de orilla rellena ni a otras promociones.",
+      "merchantId": "pizza-hut",
+      "subcategoryId": "pizzerias",
+      "subcategoryName": "Pizzerías",
+      "recognizable": true,
+      "sensitive": false,
+      "refineBy": "comercio",
+      "branches": [
+        {
+          "id": "pizza-hut-escalon",
+          "name": "Pizza Hut Escalón",
+          "address": "Paseo General Escalón, San Salvador",
+          "latitude": 13.7042,
+          "longitude": -89.2425,
+          "zoneId": "escalon"
+        },
+        {
+          "id": "pizza-hut-san-miguel",
+          "name": "Pizza Hut San Miguel",
+          "address": "Avenida Roosevelt, San Miguel",
+          "latitude": 13.481,
+          "longitude": -88.175,
+          "zoneId": "san-miguel"
+        },
+        {
+          "id": "pizza-hut-santa-tecla",
+          "name": "Pizza Hut Santa Tecla",
+          "address": "Carretera Panamericana, Santa Tecla",
+          "latitude": 13.6745,
+          "longitude": -89.285,
+          "zoneId": "santa-tecla"
+        }
+      ],
+      "coverage": [
+        {
+          "zoneId": "antiguo-cuscatlan",
+          "status": "si"
+        },
+        {
+          "zoneId": "escalon",
+          "status": "si"
+        },
+        {
+          "zoneId": "san-miguel",
+          "status": "si"
+        },
+        {
+          "zoneId": "san-salvador-centro",
+          "status": "si"
+        },
+        {
+          "zoneId": "santa-ana",
+          "status": "desconocida"
+        },
+        {
+          "zoneId": "santa-tecla",
+          "status": "si"
+        },
+        {
+          "zoneId": "soyapango",
+          "status": "si"
+        }
+      ],
+      "categoryName": "Restaurantes",
+      "logoUrl": "/recursos/comercios/pizza-hut.png",
+      "applicableCard": "basica",
+      "exclusive": false,
+      "minimumPurchase": null,
+      "discountCap": null,
+      "expired": false,
+      "upcoming": false,
+      "canUse": true,
+      "availableToday": true,
+      "componentes": {
+        "C": 1,
+        "M": 1,
+        "T": 0,
+        "R": 65
+      },
+      "razon": {
+        "tipo": "comercio",
+        "texto": "Porque elegiste Pizza Hut"
+      },
+      "insignias": [
+        {
+          "tipo": "canal",
+          "valor": "delivery",
+          "texto": "A domicilio"
+        },
+        {
+          "tipo": "beneficio",
+          "valor": "2x1-combo",
+          "texto": "2x1 o combos"
+        }
+      ]
+    },
+    {
+      "id": "cine-combo-miercoles",
+      "merchant": "Cinemark",
+      "category": "Entretenimiento",
+      "benefit": "2×1 en combo mediano",
+      "description": "Los miércoles, lleva dos combos de palomitas por el precio de uno.",
+      "payment": "Tarjeta Básica",
+      "restrictions": "",
+      "imageUrl": "/recursos/promociones/cine-combo-miercoles.webp",
+      "imageAlt": "Vestíbulo de un cine Cinemark con su rótulo",
+      "detailDescription": "Cada miércoles, compra un combo de palomitas y bebida en la dulcería de Cinemark Metrocentro y recibe otro igual sin costo al pagar con tu tarjeta.",
+      "validFrom": "2026-10-17",
+      "validUntil": "2026-12-31",
+      "usageDays": [
+        3
+      ],
+      "title": "2×1 en combos de palomitas los miércoles",
+      "conditions": "Combos medianos o grandes del mismo tamaño.",
+      "instructions": "Pide la promoción en la dulcería y paga con tu tarjeta.",
+      "channels": [
+        "presencial"
+      ],
+      "benefitType": "2x1-combo",
+      "decisiveCondition": "Válido solo los miércoles",
+      "intentTags": [],
+      "addedOn": "2026-10-17",
+      "occasions": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0,
+        "darse-un-gusto": 0,
+        "salir": 1,
+        "familia": 0.5,
+        "bienestar": 0,
+        "entretenimiento": 1,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "priceLevel": 2,
+      "generalRestrictions": "No aplica a combos promocionales de estreno.",
+      "merchantId": "cine",
+      "subcategoryId": "cines",
+      "subcategoryName": "Cines",
+      "recognizable": true,
+      "sensitive": false,
+      "refineBy": "no",
+      "branches": [
+        {
+          "id": "cine-metrocentro",
+          "name": "Cinemark Metrocentro",
+          "address": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
+          "latitude": 13.706,
+          "longitude": -89.212,
+          "zoneId": "san-salvador-centro"
+        }
+      ],
+      "coverage": [],
+      "categoryName": "Entretenimiento",
+      "logoUrl": "/recursos/comercios/cine.png",
+      "applicableCard": "basica",
+      "exclusive": false,
+      "minimumPurchase": null,
+      "discountCap": null,
+      "expired": false,
+      "upcoming": false,
+      "canUse": true,
+      "availableToday": true,
+      "componentes": {
+        "C": 1,
+        "M": 1,
+        "T": 0,
+        "R": 65
+      },
+      "razon": {
+        "tipo": "comercio",
+        "texto": "Porque elegiste Cinemark"
+      },
+      "insignias": [
+        {
+          "tipo": "beneficio",
+          "valor": "2x1-combo",
+          "texto": "2x1 o combos"
+        }
+      ]
+    }
+  ],
+  "descartadas": []
+}
