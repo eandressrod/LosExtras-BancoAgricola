@@ -11,7 +11,7 @@ test('H16 con dos tarjetas muestra el selector por tipo y referencia y empieza c
   assert.deepEqual(p.opciones().map(opcion => opcion.textContent), ['Básica •••• 4821', 'Black •••• 7754']);
   assert.ok(p.opciones().every(opcion => opcion.type === 'button'));
   assert.deepEqual(p.tarjetaActiva(), ['Básica •••• 4821']);
-  assert.deepEqual(p.consultas, ['/api/promociones?tarjeta=cta-a-3']);
+  assert.deepEqual(p.consultas, ['/api/para-ti?tarjeta=cta-a-3']);
   assert.equal(p.obtener('#session-profile').textContent, 'Usuario A · Tarjeta Básica');
   assert.equal(p.sesion.getItem('los-extras-tarjeta:A'), 'cta-a-3');
 });
@@ -19,7 +19,7 @@ test('H16 con dos tarjetas muestra el selector por tipo y referencia y empieza c
 test('H16 elegir otra tarjeta actualiza ofertas y beneficio, conserva la categoría y recuerda la elección', async () => {
   const p = await abrirListado({ search: '?categoria=Compras' });
   await p.opcion('Black •••• 7754').click();
-  assert.equal(p.consultas.at(-1), '/api/promociones?categoria=Compras&tarjeta=cta-a-4');
+  assert.equal(p.consultas.at(-1), '/api/para-ti?categoria=Compras&tarjeta=cta-a-4');
   assert.deepEqual(p.tarjetaActiva(), ['Black •••• 7754']);
   assert.deepEqual(p.activo(), ['Compras']);
   assert.equal(p.sesion.getItem('los-extras-tarjeta:A'), 'cta-a-4');
@@ -29,7 +29,7 @@ test('H16 elegir otra tarjeta actualiza ofertas y beneficio, conserva la categor
 
 test('H16 al volver al listado se conserva la tarjeta elegida en la sesión', async () => {
   const p = await abrirListado({ sesion: almacen({ 'los-extras-tarjeta:A': 'cta-a-4' }) });
-  assert.deepEqual(p.consultas, ['/api/promociones?tarjeta=cta-a-4']);
+  assert.deepEqual(p.consultas, ['/api/para-ti?tarjeta=cta-a-4']);
   assert.deepEqual(p.tarjetaActiva(), ['Black •••• 7754']);
 });
 
@@ -38,14 +38,14 @@ test('H16 con una sola tarjeta no se muestra selector y se usa esa tarjeta', asy
   assert.equal(p.obtener('#card-choice').hidden, true);
   assert.equal(p.obtener('#card-single').hidden, false);
   assert.equal(p.obtener('#card-single').textContent, 'Tus beneficios con Tarjeta Black •••• 0341');
-  assert.deepEqual(p.consultas, ['/api/promociones?tarjeta=cta-b-2']);
+  assert.deepEqual(p.consultas, ['/api/para-ti?tarjeta=cta-b-2']);
 });
 
 test('H16 un perfil sin cuentas de tarjeta usa la tarjeta de su perfil sin selector', async () => {
   const p = await abrirListado({ tarjetas: () => [{ id: null, tipoTarjeta: 'basica', nombre: 'Tarjeta Básica', numeroEnmascarado: null, predeterminada: true }] });
   assert.equal(p.obtener('#card-choice').hidden, true);
   assert.equal(p.obtener('#card-single').textContent, 'Tus beneficios con Tarjeta Básica');
-  assert.deepEqual(p.consultas, ['/api/promociones']);
+  assert.deepEqual(p.consultas, ['/api/para-ti']);
   assert.equal(p.sesion.getItem('los-extras-tarjeta:A'), null);
 });
 
@@ -71,12 +71,12 @@ test('H16 si fallan las tarjetas se puede reintentar', async () => {
   await p.obtener('#retry').click();
   assert.equal(p.pedidas.tarjetas, 2);
   assert.deepEqual(p.opciones().map(opcion => opcion.textContent), ['Básica •••• 4821', 'Black •••• 7754']);
-  assert.deepEqual(p.consultas, ['/api/promociones?tarjeta=cta-a-3']);
+  assert.deepEqual(p.consultas, ['/api/para-ti?tarjeta=cta-a-3']);
 });
 
 test('H16 una elección guardada que ya no es propia se descarta', async () => {
   const p = await abrirListado({ sesion: almacen({ 'los-extras-tarjeta:A': 'cta-b-2' }) });
-  assert.deepEqual(p.consultas, ['/api/promociones?tarjeta=cta-a-3']);
+  assert.deepEqual(p.consultas, ['/api/para-ti?tarjeta=cta-a-3']);
   assert.equal(p.sesion.getItem('los-extras-tarjeta:A'), 'cta-a-3');
 });
 

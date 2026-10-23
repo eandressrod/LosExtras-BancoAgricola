@@ -13,6 +13,8 @@ import { crearRepositorioProductosMock } from './productos-menu.mock.js';
 import { crearRepositorioProductosSupabase } from './productos-menu.supabase.js';
 import { crearRepositorioUsuariosPruebaMock } from './usuarios-prueba.mock.js';
 import { crearRepositorioUsuariosPruebaSupabase } from './usuarios-prueba.supabase.js';
+import { crearRepositorioSenalesMock } from './senales.mock.js';
+import { crearRepositorioSenalesSupabase } from './senales.supabase.js';
 
 
 let repositorioSupabase;
@@ -25,6 +27,8 @@ let productosMock;
 let productosSupabase;
 let usuariosPruebaMock;
 let usuariosPruebaSupabase;
+let senalesMock;
+let senalesSupabase;
 
 export function obtenerRepositorioUsuariosPrueba() {
   if (fuenteDeDatos() === 'mock') return usuariosPruebaMock ??= crearRepositorioUsuariosPruebaMock();
@@ -76,4 +80,10 @@ export function obtenerRepositorioPreferencias() {
   }
   preferenciasSupabase ??= crearRepositorioPreferenciasUsuario(obtenerClienteSupabase());
   return preferenciasSupabase;
+}
+
+/** H22: registro de señales declaradas que lee el motor de Para ti. @returns {import('./contrato.js').RepositorioSenales} */
+export function obtenerRepositorioSenales() {
+  if (fuenteDeDatos() === 'mock') return senalesMock ??= crearRepositorioSenalesMock();
+  return senalesSupabase ??= crearRepositorioSenalesSupabase(obtenerClienteSupabase());
 }
