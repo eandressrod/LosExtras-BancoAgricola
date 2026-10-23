@@ -59,6 +59,7 @@
       <div id="category-filter" class="category-filter" role="group" aria-label="Filtrar por categoría">
         <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
       </div>
+      <p id="survey-notice" class="note survey-notice" role="status" hidden>Puedes cambiar tus intereses en Mis preferencias.</p>
       <p id="list-status" class="note" role="status"></p>
       <p id="saved-status" class="error" role="alert"></p>
       <div id="promotions-loading" class="module-loading" role="status" aria-label="Cargando promociones" hidden><svg class="loading-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="147 22.65" transform="rotate(230 32 32)"/></svg><span>CARGANDO...</span></div>
@@ -97,6 +98,22 @@
       </template>
       <div class="actions"><a class="button secondary" href="/menu.html">Volver al menú</a></div>
     </main>
+    <!-- H21: encuesta en tres pasos sobre la lista real (ADR-010). Solo se cierra con Omitir o Listo. -->
+    <section id="survey-sheet" class="survey-sheet" role="dialog" aria-modal="true" aria-labelledby="survey-title" hidden>
+      <div class="survey-head">
+        <p id="survey-step" class="survey-step"></p>
+        <h2 id="survey-title" tabindex="-1"></h2>
+        <p id="survey-subtitle" class="survey-subtitle" hidden></p>
+      </div>
+      <div id="survey-body" class="survey-body"></div>
+      <p id="survey-live" class="visually-hidden" aria-live="polite"></p>
+      <p id="survey-error" class="error" role="alert"></p>
+      <div class="survey-actions">
+        <button id="survey-back" type="button" class="survey-link">Atrás</button>
+        <button id="survey-skip" type="button" class="survey-link">Omitir</button>
+        <button id="survey-next" type="button" class="survey-primary">Saltar este paso</button>
+      </div>
+    </section>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>
   </body>
 </html>
