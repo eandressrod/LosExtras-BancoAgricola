@@ -21,6 +21,6 @@ export async function validarYGuardarPreferencias(usuarioId, categorias, repo) {
     throw new Error('Categoría inválida');
   }
 
-  await repo.guardarPreferencias(usuarioId, categorias);
+  await repo.guardarPreferencias(usuarioId, [...new Set(categorias)]);
 }
 
