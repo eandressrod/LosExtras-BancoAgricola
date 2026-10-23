@@ -6,7 +6,7 @@ import * as filtro from '../../public/js/filtro-categoria.js';
 import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
-import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
+import { encuestaAlEntrar } from '../../public/js/menu-modelo.js';
 import { textoDisponibleHoy } from '../../public/js/promocion-vista.js';
 import * as instantanea from '../../public/js/instantanea.js';
 
@@ -87,7 +87,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     almacenSesion: () => sesion,
     cardName,
     revelarPagina: alRevelar,
-    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
+    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), encuestaAlEntrar,
     ...vista, ...filtro, ...tarjeta, ...instantanea
   };
   return { obtener, history, contexto, elementos, sesion, timerFake };
@@ -112,11 +112,15 @@ export async function abrirListado(opciones = {}) {
   } } });
   const consultas = [];
   const pedidas = { categorias: 0, tarjetas: 0, aperturas: 0 };
+  // H21: la hoja de la encuesta se sustituye por un registro de sus aperturas.
+  const hojas = [];
   const categorias = opciones.categorias ?? (() => CATEGORIAS);
   const tarjetas = opciones.tarjetas ?? (() => TARJETAS[perfil] ?? []);
   const responder = opciones.responder ?? (url => PROMOS[parametro(url, 'categoria') ?? 'todas']);
   Object.assign(nav.contexto, {
     registrarAperturaPromociones: async () => { pedidas.aperturas++; },
+    encuestaOmitida: () => Boolean(opciones.omitida),
+    abrirEncuestaHoja: datos => { hojas.push(datos); },
     document: {
       querySelector: nav.obtener,
       querySelectorAll: selector => selector === '.filter-chip' ? [todas] : [],
@@ -148,7 +152,7 @@ export async function abrirListado(opciones = {}) {
     return el;
   };
   return {
-    ...nav, cards, consultas, pedidas, chips,
+    ...nav, cards, consultas, pedidas, chips, hojas,
     obtener: obtenerConFlush,
     activo: () => pulsados(chips()),
     chip: nombre => chips().find(chip => chip.textContent === nombre),
