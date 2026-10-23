@@ -21,7 +21,7 @@ test('H10 escribir nombre filtra ignorando mayúsculas/espacios y borrar restabl
   assert.equal(p.enlaces().length, 4);
 
   await p.obtener('#merchant-search').input('  sImAn  ');
-  assert.equal(p.consultas.at(-1), `/api/promociones?comercio=sImAn&${BASICA_A}`);
+  assert.equal(p.consultas.at(-1), `/api/para-ti?comercio=sImAn&${BASICA_A}`);
   assert.equal(p.history.url, '/promociones.html?comercio=sImAn');
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-tienda']);
   assert.equal(p.obtener('#clear-search').hidden, false);
@@ -29,7 +29,7 @@ test('H10 escribir nombre filtra ignorando mayúsculas/espacios y borrar restabl
   await p.obtener('#clear-search').click();
   assert.equal(p.obtener('#merchant-search').value, '');
   assert.equal(p.obtener('#clear-search').hidden, true);
-  assert.equal(p.consultas.at(-1), `/api/promociones?${BASICA_A}`);
+  assert.equal(p.consultas.at(-1), `/api/para-ti?${BASICA_A}`);
   assert.equal(p.enlaces().length, 4);
 });
 
@@ -51,7 +51,7 @@ test('H10 cada resultado abre su detalle con contexto y al volver conserva texto
   await p.opcion('Black •••• 7754').click();
   await p.obtener('#merchant-search').input('Siman');
 
-  assert.equal(p.consultas.at(-1), '/api/promociones?categoria=Compras&hoy=1&comercio=Siman&tarjeta=cta-a-4');
+  assert.equal(p.consultas.at(-1), '/api/para-ti?categoria=Compras&hoy=1&comercio=Siman&tarjeta=cta-a-4');
   assert.deepEqual(p.enlaces().map(e => e.href), ['/detalle.html?id=tienda&categoria=Compras&hoy=1&comercio=Siman']);
 
   const detalle = await abrirDetalle({
@@ -81,7 +81,7 @@ test('H10 cambiar de usuario limpia el texto y contexto del perfil anterior', as
   });
   assert.equal(p.obtener('#merchant-search').value, '');
   assert.equal(p.history.url, '/promociones.html');
-  assert.deepEqual(p.consultas, ['/api/promociones?tarjeta=cta-b-2']);
+  assert.deepEqual(p.consultas, ['/api/para-ti?tarjeta=cta-b-2']);
 });
 
 test('H10 un fallo de consulta ofrece reintento conservando el texto escrito', async () => {

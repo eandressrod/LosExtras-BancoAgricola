@@ -1,6 +1,7 @@
 import { actualizarSesion, iniciarInactividad, avisarCierre, expirarSesion } from '../pwa/inactividad.js';
 import { conMinimoCarga } from './carga-tiempo.js';
 import { leerSegundoPlano, limpiarSegundoPlano, vencioSegundoPlano } from '../pwa/inactividad-modelo.js';
+import { olvidarInstantaneas } from './instantanea.js';
 export const categories = ['Restaurantes', 'Compras', 'Entretenimiento'];
 const CARD_NAMES = { basica: 'Básica', black: 'Black' };
 const LOGIN_HINT_KEY = 'los-extras-sesion-iniciada';
@@ -42,8 +43,10 @@ export function forgetCardSelections(storage = almacenSesion()) {
 
 // Pista de presentación; nunca sustituye la consulta de sesión al backend.
 // La identidad nunca se guarda en el navegador: la conoce el backend por la cookie HttpOnly.
-export function rememberLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, '1'); forgetCardSelections(); }
-export function forgetLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, null); forgetCardSelections(); }
+// Una sesión nueva empieza sin tarjeta elegida ni instantánea de Para ti (H16 y H22).
+function forgetSessionChoices() { forgetCardSelections(); olvidarInstantaneas(almacenSesion()); }
+export function rememberLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, '1'); forgetSessionChoices(); }
+export function forgetLogin() { saveStorage(localStorage, LOGIN_HINT_KEY, null); forgetSessionChoices(); }
 export function mayHaveSession() { return readStorage(localStorage, LOGIN_HINT_KEY) === '1'; }
 
 export function revelarPagina() {

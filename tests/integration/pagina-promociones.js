@@ -8,6 +8,7 @@ import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
 import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
 import { textoDisponibleHoy } from '../../public/js/promocion-vista.js';
+import * as instantanea from '../../public/js/instantanea.js';
 
 export const CATEGORIAS = ['Restaurantes', 'Compras', 'Entretenimiento'].map((id, orden) => ({ id, nombre: id, orden }));
 export const TARJETAS = {
@@ -87,7 +88,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     cardName,
     revelarPagina: alRevelar,
     conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
-    ...vista, ...filtro, ...tarjeta
+    ...vista, ...filtro, ...tarjeta, ...instantanea
   };
   return { obtener, history, contexto, elementos, sesion, timerFake };
 }
@@ -127,7 +128,9 @@ export async function abrirListado(opciones = {}) {
       if (url === '/api/categorias') { pedidas.categorias += 1; return categorias(); }
       if (url === '/api/tarjetas') { pedidas.tarjetas += 1; return tarjetas(); }
       consultas.push(url);
-      return responder(url);
+      // H22: /api/para-ti responde un sobre; las pruebas anteriores siguen describiendo solo la lista.
+      const datos = await responder(url);
+      return Array.isArray(datos) ? { version: 'prueba', estrategia: 'base', vacio: datos.length ? null : 'filtros', promociones: datos } : datos;
     }
   });
   await vm.runInNewContext(`(async () => { ${await fuente('promociones.js')} })()`, nav.contexto);

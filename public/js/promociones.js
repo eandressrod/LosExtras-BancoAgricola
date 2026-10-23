@@ -4,6 +4,7 @@ import { destinoEntradaPromociones } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
 import { conIndicador } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
+import { guardarInstantanea, leerInstantanea, marcarVencidas } from './instantanea.js';
 
 import { leerCategoria, leerHoy, leerBusqueda, normalizarBusqueda, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
@@ -24,11 +25,21 @@ function crearOferta(promotion, categoria, hoy, busqueda) {
   const disponible = card.querySelector('.promo-today');
   disponible.textContent = textoDisponibleHoy(promotion);
   disponible.hidden = !disponible.textContent;
+  // H22: una sola razón del motor; los criterios declarados solo como insignias.
+  const razon = card.querySelector('.promo-reason');
+  razon.textContent = promotion.razon?.texto ?? '';
+  razon.hidden = !razon.textContent;
+  const insignias = card.querySelector('.promo-badges');
+  insignias.textContent = (promotion.insignias ?? []).map(insignia => insignia.texto).join(' · ');
+  insignias.hidden = !insignias.textContent;
+  const vencida = card.querySelector('.promo-expired');
+  vencida.textContent = 'Vencida';
+  vencida.hidden = !promotion.vencida;
   card.querySelector('.promo-applicability').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
   const badge = card.querySelector('.promo-exclusive');
   badge.hidden = !promotion.exclusive;
   badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
-  if (promotion.expired || promotion.upcoming) link.classList.add('promo-card--inactive');
+  if (promotion.expired || promotion.upcoming || promotion.vencida) link.classList.add('promo-card--inactive');
   mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion);
@@ -92,6 +103,7 @@ if (profile) {
   let consultaActual = 0;
   let timerBusqueda = null;
   let aperturaRegistrada = false;
+  let volverDelDetalle = location.hash.startsWith('#promo-');
   const indicador = document.querySelector('#promotions-loading');
 
   searchInput.value = busqueda ?? '';
@@ -221,18 +233,25 @@ if (profile) {
     cards.replaceChildren();
     indicador.hidden = false;
     try {
-      // La API valida la tarjeta y aplica sus beneficios, intereses, categoría, Disponibles hoy y búsqueda por comercio.
-      const promotions = await conMinimoCarga(() => getJSON(conTarjeta(urlConsulta(categoria, hoy, busqueda), tarjeta.id)));
+      // La API valida la tarjeta y el motor ordena sus beneficios según tus intereses, con categoría, Disponibles hoy y búsqueda.
+      const consulta = conTarjeta(urlConsulta(categoria, hoy, busqueda), tarjeta.id);
+      // H22: al volver del detalle se conserva el orden de la visita; entrar o cambiar un filtro lo recalcula.
+      const guardada = volverDelDetalle ? leerInstantanea(sesion, profile.id, consulta) : null;
+      volverDelDetalle = false;
+      const respuesta = guardada ?? await conMinimoCarga(() => getJSON(consulta));
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
+      if (!guardada) guardarInstantanea(sesion, profile.id, consulta, respuesta);
+      const promotions = marcarVencidas(respuesta.promociones);
       idsGuardados = await leerIdsGuardados();
       if (turno !== consultaActual) return;
       for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda));
       const vacio = promotions.length === 0;
-      status.textContent = vacio ? textoVacio() : '';
-      clearSearchEmpty.hidden = !vacio || !busqueda;
-      showAll.hidden = !vacio || !categoria;
-      exitToday.hidden = !vacio || !hoy;
-      emptyPreferences.hidden = !vacio || hoy || Boolean(busqueda);
+      const sinCatalogo = respuesta.vacio === 'sin-catalogo';
+      status.textContent = !vacio ? '' : sinCatalogo ? 'No hay promociones para tu tarjeta.' : textoVacio();
+      clearSearchEmpty.hidden = !vacio || sinCatalogo || !busqueda;
+      showAll.hidden = !vacio || sinCatalogo || !categoria;
+      exitToday.hidden = !vacio || sinCatalogo || !hoy;
+      emptyPreferences.hidden = !vacio || sinCatalogo || hoy || Boolean(busqueda);
       const seleccionado = document.getElementById(decodeURIComponent(location.hash.slice(1)));
       if (seleccionado?.classList.contains('promo-card')) seleccionado.scrollIntoView({ block: 'center' });
     } catch (error) {
