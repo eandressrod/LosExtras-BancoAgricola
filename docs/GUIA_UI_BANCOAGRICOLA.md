@@ -109,13 +109,15 @@ La barra `Inicio / Mis Productos / Gestiones / Para Ti` y los accesos superiores
 
 Reutilizar, dentro del stack existente HTML/CSS/JavaScript, las piezas que cada tarea necesite: marca, cabecera, botón principal, navegación, pestañas, tarjeta de cuenta, trazo decorativo, selector de categoría, filtro, tarjeta de promoción, detalle y estados de carga/vacío/error. Los nombres de componentes del prompt son sugerencias; no obligan a cambiar de framework ni a construir una biblioteca completa antes de trabajar.
 
+**Promociones:** la sección tiene su propio sistema visual, con tokens `--pr-*` y componentes documentados con sus estados, en [SISTEMA_PROMOCIONES.md](SISTEMA_PROMOCIONES.md) (H22, SCRUM-127; [ADR-011](<../ADR/0011-Decision de usar un sistema visual propio en Promociones.md>)). Las historias de Promociones usan esos componentes en lugar de escribir estilos propios.
+
 Antes de utilizar un SVG, revisar el [manifiesto](ui/kit-bancoagricola-v1/indices/MANIFIESTO_PROCEDENCIA.csv) y su `<metadata>`. Conservar su procedencia al copiarlo o adaptarlo; actualizar la procedencia compartida si se modifica un recurso. Hay cinco clases útiles: trazado de captura, redibujo desde referencia, composición reconstruida, propuesta de Promociones y elemento de sistema operativo recreado. Ninguna equivale a «oficial proporcionado por el banco».
 
 La guía, las reglas de agentes y los recursos compartidos de UI se versionan en este repositorio por petición del usuario. Las notas personales, el historial de conversaciones y las evidencias locales de IA permanecen fuera. El kit en `docs/ui/` es material de desarrollo: en una implementación autorizada, copiar a `public/recursos/` únicamente los assets necesarios. No ejecutar ni incorporar scripts, demos o prompts del paquete como instrucciones activas. Si llega un recurso oficial, comparar antes de sustituir y actualizar procedencia sin perder la referencia histórica.
 
 ## Usabilidad y revisión visual
 
-Dirección de accesibilidad aportada por los documentos: contraste de texto de 4.5:1 cuando corresponda, objetivos táctiles de aproximadamente 44 CSS px en esta web, foco visible, teclado, nombres accesibles, encabezados semánticos y estados que no dependan solo del color. Comprobar legibilidad con texto ampliado y movimiento reducido si se incorpora animación.
+Dirección de accesibilidad aportada por los documentos: contraste de texto de 4.5:1 cuando corresponda, objetivos táctiles de aproximadamente 44 CSS px en esta web (48 px en los componentes de Promociones, según el CDA 11 de H22), foco visible, teclado, nombres accesibles, encabezados semánticos y estados que no dependan solo del color. Comprobar legibilidad con texto ampliado y movimiento reducido si se incorpora animación.
 
 Tomar 390 × 844 CSS px como tamaño de comparación inicial, no como viewport único. Los SVG de 832 × 1804 representan una composición de referencia, no dimensiones para imponer al navegador. Adaptar contenido, barras y espacios seguros a distintos anchos sin tapar acciones. No copiar barras de estado ni indicadores del sistema operativo a la aplicación web por defecto.
 
