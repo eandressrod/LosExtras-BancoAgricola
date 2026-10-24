@@ -1,15 +1,5 @@
 // H22: motor de Para ti, fases 1–2 (ADR-004 y ADR-009). Función pura: misma entrada, mismo orden.
 // Corre en el backend (/api/para-ti) y, sin cambios, en el cliente para la vista previa de H21.
-//
-// Recorrido de ordenarParaTi, en este orden:
-//   1. Elegibilidad (elegibilidad.js): fuera lo que la tarjeta no puede usar; cada descarte guarda su motivo.
-//   2. Perfil (perfil.js): se deriva de las señales activas en cada llamada; no se guarda.
-//   3. Alcance (alcance.js) y filtros explícitos (filtros.js): qué ofertas compiten. Las reglas externas pueden excluir.
-//   4. Estrategia: 'base' sin intereses declarados; 'personalizada' con puntaje (puntaje.js).
-//   5. Armado (orden.js): posición por posición, con variedad por comercio y cobertura de categorías.
-//   6. Explicación: una razón (término dominante) y las insignias de los criterios declarados (insignias.js).
-//
-// El motor no lee el reloj ni el almacenamiento: la vigencia ya viene calculada en cada oferta (canUse, availableToday).
 import { CONFIGURACION } from './config.js';
 import { separarOrdenables } from './elegibilidad.js';
 import { perfilDeSenales } from './perfil.js';
@@ -18,6 +8,15 @@ import { aplicarFiltros, hayFiltros } from './filtros.js';
 import { puntuar, razonDe } from './puntaje.js';
 import { insigniasDe } from './insignias.js';
 import { armarLista } from './orden.js';
+
+export {
+  CHIPS_HOY_BUSCO,
+  normalizarIntencion,
+  leerIntencionTemporal,
+  calcularTerminoIntencion,
+  reglaIntencion,
+  textoPrimeroHoyBusco
+} from './intencion.js';
 
 /**
  * Reglas que no cambian nada. H23 (rechazos) y H25 («Hoy busco») reemplazan solo la que necesitan.
@@ -50,22 +49,25 @@ export function ordenarParaTi({ ofertas = [], senales = [], filtros = {}, config
   const candidatas = aplicarFiltros(enAlcance(ordenables, perfil, filtros.categoria), filtros)
     .filter(oferta => !aplicadas.excluir(oferta, perfil));
   const vacio = candidatas.length ? null : hayFiltros(filtros) ? 'filtros' : 'intereses';
+  const hayIntencion = aplicadas.intencion !== REGLAS_NEUTRAS.intencion
+    && candidatas.some(oferta => aplicadas.intencion(oferta, config) > 0);
 
   // 4a. Estrategia base: no lee comercios elegidos ni criterios; es la referencia de comparación.
   // Ordena por alta más reciente y solo aplica el límite por comercio (sin penalización ni cobertura).
-  if (perfil.sinIntereses) {
+  if (perfil.sinIntereses && !hayIntencion) {
     const lista = armarLista(candidatas, { penalizar: false, config });
     return responder('base', lista.map(oferta => ({ ...oferta, componentes: { ...SIN_PUNTAJE }, razon: null, insignias: [] })), vacio);
   }
 
   // 4b–5. Estrategia personalizada: se puntúa una vez cada candidata y el armado consulta ese puntaje.
-  // Solo una oferta de interés declarado (C = 1) cuenta como alternativa pertinente para la variedad y la cobertura.
+  // Solo una oferta de interés declarado (C = 1) o con intención activa (T > 0) cuenta como alternativa pertinente.
   const componentes = new Map(candidatas.map(oferta => [oferta.id, puntuar(oferta, perfil, config, aplicadas)]));
   const de = oferta => componentes.get(oferta.id);
   const lista = armarLista(candidatas, {
     valor: oferta => de(oferta).R,
-    pertinente: oferta => de(oferta).C === 1,
+    pertinente: oferta => de(oferta).C === 1 || de(oferta).T > 0,
     categoriasCubrir: [...perfil.categorias],
+    penalizar: !perfil.sinIntereses,
     config
   });
   // 6. Cada oferta sale con sus componentes, su razón (o null) y sus insignias, en el orden armado.

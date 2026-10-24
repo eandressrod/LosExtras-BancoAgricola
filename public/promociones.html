@@ -40,6 +40,12 @@
         <a href="/guardadas.html">Guardadas</a>
         <a href="/preferencias.html">Mis preferencias</a>
       </nav>
+      <!-- H25: intención del día («Hoy busco»). Reordena sin filtrar y vive solo durante la visita. -->
+      <section id="intent-box" class="card-choice">
+        <p id="intent-label" class="card-choice-label">Hoy busco</p>
+        <div id="intent-filter" class="category-filter" role="radiogroup" aria-labelledby="intent-label"></div>
+        <p id="intent-status" class="promo-today" role="status" hidden></p>
+      </section>
       <!-- H16: tarjetas propias. El selector solo aparece con dos o más tarjetas. -->
       <section id="card-choice" class="card-choice" hidden>
         <p id="card-choice-label" class="card-choice-label">Ver beneficios de</p>

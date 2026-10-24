@@ -5,9 +5,12 @@ import { destinoEntradaPromociones } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
 import { conIndicador } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
-import { guardarInstantanea, leerInstantanea, marcarVencidas } from './instantanea.js';
+import { guardarInstantanea, leerInstantanea, marcarVencidas, visitaVencida } from './instantanea.js';
 
-import { leerCategoria, leerHoy, leerBusqueda, normalizarBusqueda, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
+import {
+  leerCategoria, leerHoy, leerBusqueda, leerIntencion, normalizarBusqueda, categoriaVigente,
+  estadoNavegacion, urlConsulta, urlListado, urlDetalle, CHIPS_HOY_BUSCO, textoPrimeroHoyBusco
+} from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
 
 let idsGuardados = [];
@@ -43,11 +46,11 @@ async function alternarGuardada(boton, error, id, conAviso) {
   }
 }
 
-function crearOferta(promotion, categoria, hoy, busqueda) {
+function crearOferta(promotion, categoria, hoy, busqueda, intencion) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
   const link = card.querySelector('a');
   link.id = 'promo-' + promotion.id;
-  link.href = urlDetalle(promotion.id, categoria, hoy, busqueda);
+  link.href = urlDetalle(promotion.id, categoria, hoy, busqueda, intencion);
   link.setAttribute('aria-label', `${promotion.merchant}: ${promotion.benefit}. Ver promoción`);
   card.querySelector('h2').textContent = promotion.merchant;
   card.querySelector('.promo-benefit').textContent = promotion.benefit;
@@ -106,6 +109,10 @@ if (profile) {
   const todayFilter = document.querySelector('#today-filter');
   const filtros = document.querySelector('#category-filter');
   const chips = [...document.querySelectorAll('.filter-chip')];
+  const intentBox = document.querySelector('#intent-box');
+  const intentFilter = document.querySelector('#intent-filter');
+  const intentStatus = document.querySelector('#intent-status');
+  const chipsIntencion = [];
   const cardChoice = document.querySelector('#card-choice');
   const cardOptions = document.querySelector('#card-options');
   const cardSingle = document.querySelector('#card-single');
@@ -118,6 +125,7 @@ if (profile) {
   let categoria = null;
   let hoy = leerHoy(location.search, history.state, profile.id);
   let busqueda = leerBusqueda(location.search, history.state, profile.id);
+  let intencion = visitaVencida(sesion, profile.id) ? null : leerIntencion(location.search, history.state, profile.id);
   let tarjeta = null;
   let preparada = false;
   let consultaActual = 0;
@@ -129,10 +137,14 @@ if (profile) {
   searchInput.value = busqueda ?? '';
   clearSearch.hidden = !searchInput.value;
 
-  // H5, H17 y H10: los filtros activos quedan marcados y en la entrada del historial, para volver del detalle al mismo listado.
+  // H5, H17, H10 y H25: los filtros y el chip activo quedan marcados y en la entrada del historial para volver del detalle.
   function mostrarFiltro(url) {
     for (const chip of chips) chip.setAttribute('aria-pressed', String((chip.dataset.category || null) === categoria));
     todayFilter.setAttribute('aria-pressed', String(hoy));
+    for (const chip of chipsIntencion) chip.setAttribute('aria-checked', String(chip.dataset.intent === intencion));
+    const primero = textoPrimeroHoyBusco(intencion);
+    intentStatus.textContent = primero;
+    intentStatus.hidden = !primero;
     history.replaceState(estadoNavegacion(profile.id, categoria), '', url);
   }
 
@@ -157,6 +169,19 @@ if (profile) {
     chips.push(chip);
   }
 
+  function crearChipIntencion(item) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'filter-chip';
+    chip.setAttribute('role', 'radio');
+    chip.setAttribute('aria-checked', 'false');
+    chip.dataset.intent = item.id;
+    chip.textContent = item.nombre;
+    chip.addEventListener('click', () => cambiarIntencion(item.id));
+    intentFilter.append(chip);
+    chipsIntencion.push(chip);
+  }
+
   // H16: la tarjeta activa se marca en el selector y en la cabecera.
   function mostrarTarjeta() {
     for (const opcion of opcionesTarjeta) opcion.setAttribute('aria-pressed', String(opcion.dataset.card === tarjeta.id));
@@ -178,6 +203,7 @@ if (profile) {
   function mostrarSinTarjetas() {
     status.textContent = 'No tienes tarjetas para consultar beneficios.';
     status.className = 'note';
+    intentBox.hidden = true;
     filtros.hidden = true;
     todayFilter.hidden = true;
     searchBox.hidden = true;
@@ -221,9 +247,10 @@ if (profile) {
       retry.hidden = false;
       return false;
     }
+    CHIPS_HOY_BUSCO.forEach(crearChipIntencion);
     categorias.forEach(crearFiltro);
     categoria = categoriaVigente(pedida, categorias)?.id ?? null;
-    mostrarFiltro(urlListado(categoria, null, hoy, busqueda) + location.hash);
+    mostrarFiltro(urlListado(categoria, null, hoy, busqueda, intencion) + location.hash);
     tarjeta = tarjetaActiva(tarjetas, leerTarjetaElegida(sesion, profile.id));
     preparada = true;
     if (!tarjeta) {
@@ -253,9 +280,9 @@ if (profile) {
     cards.replaceChildren();
     indicador.hidden = false;
     try {
-      // La API valida la tarjeta y el motor ordena sus beneficios según tus intereses, con categoría, Disponibles hoy y búsqueda.
-      const consulta = conTarjeta(urlConsulta(categoria, hoy, busqueda), tarjeta.id);
-      // H22: al volver del detalle se conserva el orden de la visita; entrar o cambiar un filtro lo recalcula.
+      // La API valida la tarjeta y el motor ordena sus beneficios según tus intereses e intención del día, con filtros y búsqueda.
+      const consulta = conTarjeta(urlConsulta(categoria, hoy, busqueda, intencion), tarjeta.id);
+      // H22 y H25: al volver del detalle se conserva el orden de la visita; entrar o cambiar un filtro o chip lo recalcula.
       const guardada = volverDelDetalle ? leerInstantanea(sesion, profile.id, consulta) : null;
       volverDelDetalle = false;
       const respuesta = guardada ?? await conMinimoCarga(() => getJSON(consulta));
@@ -264,7 +291,7 @@ if (profile) {
       const promotions = marcarVencidas(respuesta.promociones);
       idsGuardados = await leerIdsGuardados();
       if (turno !== consultaActual) return;
-      for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda));
+      for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda, intencion));
       const vacio = promotions.length === 0;
       const sinCatalogo = respuesta.vacio === 'sin-catalogo';
       status.textContent = !vacio ? '' : sinCatalogo ? 'No hay promociones para tu tarjeta.' : textoVacio();
@@ -287,14 +314,21 @@ if (profile) {
   function elegir(nueva) {
     if (nueva === categoria) return;
     categoria = nueva;
-    mostrarFiltro(urlListado(categoria, null, hoy, busqueda));
+    mostrarFiltro(urlListado(categoria, null, hoy, busqueda, intencion));
     return loadPromotions();
   }
 
   function cambiarHoy(activo) {
     if (!tarjeta || activo === hoy) return;
     hoy = activo;
-    mostrarFiltro(urlListado(categoria, null, hoy, busqueda));
+    mostrarFiltro(urlListado(categoria, null, hoy, busqueda, intencion));
+    return loadPromotions();
+  }
+
+  function cambiarIntencion(id) {
+    if (!tarjeta) return;
+    intencion = intencion === id ? null : id;
+    mostrarFiltro(urlListado(categoria, null, hoy, busqueda, intencion));
     return loadPromotions();
   }
 
@@ -304,7 +338,7 @@ if (profile) {
     const nueva = normalizarBusqueda(texto);
     if (nueva === busqueda) return;
     busqueda = nueva;
-    mostrarFiltro(urlListado(categoria, null, hoy, busqueda));
+    mostrarFiltro(urlListado(categoria, null, hoy, busqueda, intencion));
     if (!tarjeta) return;
     // Debounce: actualiza URL de inmediato pero espera 300 ms antes de consultar la API.
     if (timerBusqueda != null) clearTimeout(timerBusqueda);

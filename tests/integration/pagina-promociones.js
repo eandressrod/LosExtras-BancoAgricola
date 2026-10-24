@@ -26,7 +26,14 @@ export const PROMOS = {
 };
 export const parametro = (url, nombre) => new URL(url, 'http://localhost').searchParams.get(nombre);
 
-const fuente = async archivo => (await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8')).replace(/^import[^\n]+\n/gm, '');
+// Elimina sentencias import tanto de una línea como multilinea (import {\n  ...\n} from '...';).
+const fuente = async archivo => {
+  const texto = await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8');
+  // Primero elimina imports multilínea: import { ... } from '...'; que abarcan varias líneas.
+  const sinMultilinea = texto.replace(/^import\s*\{[^}]*\}\s*from\s*['"][^'"]+['"]\s*;?\s*\n/gms, '');
+  // Luego elimina imports de una sola línea que puedan haber quedado.
+  return sinMultilinea.replace(/^import[^\n]+\n/gm, '');
+};
 const vista = { textoVigencia: () => '', textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, mostrarImagen: () => {}, mostrarCondiciones: () => {} };
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 
@@ -99,6 +106,10 @@ export async function abrirListado(opciones = {}) {
   const todas = elemento({ dataset: { category: '' }, textContent: 'Todas' });
   const conHijos = extra => elemento({ hijos: [], append(nodo) { this.hijos.push(nodo); }, ...extra });
   const filtros = conHijos();
+  const intenciones = conHijos({ attributes: { role: 'radiogroup' } });
+  nav.elementos.set('#intent-filter', intenciones);
+  nav.elementos.set('#intent-box', elemento());
+  nav.elementos.set('#intent-status', elemento({ hidden: true }));
   const opcionesTarjeta = conHijos();
   const cards = conHijos({ replaceChildren() { this.hijos = []; } });
   nav.elementos.set('#category-filter', filtros);
@@ -150,11 +161,15 @@ export async function abrirListado(opciones = {}) {
     el.click = async () => { const r = await clickOriginal(); await esperarMicrotareas(); return r; };
     return el;
   };
+  const marcados = lista => lista.filter(boton => boton.attributes['aria-checked'] === 'true').map(boton => boton.textContent);
   return {
     ...nav, cards, consultas, pedidas, chips, aviso,
     obtener: obtenerConFlush,
     activo: () => pulsados(chips()),
     chip: nombre => chips().find(chip => chip.textContent === nombre),
+    chipsIntencion: () => intenciones.hijos,
+    chipIntencion: nombre => intenciones.hijos.find(chip => chip.textContent === nombre),
+    intencionActiva: () => marcados(intenciones.hijos),
     enlaces: () => cards.hijos.map(oferta => oferta.querySelector('a')),
     opciones: () => opcionesTarjeta.hijos,
     tarjetaActiva: () => pulsados(opcionesTarjeta.hijos),

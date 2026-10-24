@@ -1,6 +1,6 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
 import { textoVigencia, textoDisponibleHoy, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
-import { leerCategoria, leerHoy, leerBusqueda, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
+import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { conMinimoCarga } from './carga-tiempo.js';
 
@@ -10,19 +10,20 @@ if (profile) {
   const id = parametros.get('id');
   // Se lee antes de normalizar la URL: replaceState no debe borrar el origen.
   const desdeGuardadas = parametros.get('desde') === 'guardadas';
-  // H5, H17 y H10: volver al listado conserva los filtros y la búsqueda si esta entrada pertenece al mismo perfil.
+  // H5, H17, H10 y H25: volver al listado conserva los filtros, la búsqueda y el chip si esta entrada pertenece al mismo perfil.
   const categoria = leerCategoria(location.search, history.state, profile.id);
   const hoy = leerHoy(location.search, history.state, profile.id);
   const busqueda = leerBusqueda(location.search, history.state, profile.id);
+  const intencion = leerIntencion(location.search, history.state, profile.id);
   const back = document.querySelector('#back-to-list');
   const retornoGuardadas = '/guardadas.html' + (busqueda ? '?comercio=' + encodeURIComponent(busqueda) : '');
-  const destino = id ? urlDetalle(id, categoria, hoy, busqueda) + (desdeGuardadas ? '&desde=guardadas' : '') : location.href;
+  const destino = id ? urlDetalle(id, categoria, hoy, busqueda, intencion) + (desdeGuardadas ? '&desde=guardadas' : '') : location.href;
   history.replaceState(estadoNavegacion(profile.id, categoria), '', destino);
   if (desdeGuardadas) {
     back.href = retornoGuardadas;
     back.textContent = 'Volver a guardadas';
   } else {
-    back.href = urlListado(categoria, null, hoy, busqueda);
+    back.href = urlListado(categoria, null, hoy, busqueda, intencion);
   }
   // H16: el detalle muestra el beneficio de la tarjeta elegida en "Para ti" (el backend valida que sea propia).
   const tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
@@ -55,7 +56,7 @@ if (profile) {
         back.href = retornoGuardadas;
         back.textContent = 'Volver a guardadas';
       } else {
-        back.href = urlListado(categoria, promotion.id, hoy, busqueda);
+        back.href = urlListado(categoria, promotion.id, hoy, busqueda, intencion);
         back.textContent = 'Volver al listado';
       }
       const sessionBadge = document.querySelector('#session-profile');

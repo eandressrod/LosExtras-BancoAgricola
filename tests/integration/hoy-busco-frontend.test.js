@@ -98,7 +98,8 @@ test('H25 ir al detalle y volver conserva el chip activo y reutiliza la instant√
 
   const detalle = await abrirDetalle({
     search: '?id=pizza&intencion=salir',
-    sesion: p.sesion
+    sesion: p.sesion,
+    promocion: {id: "pizza"}
   });
   assert.equal(detalle.volver(), '/promociones.html?intencion=salir#promo-pizza');
 

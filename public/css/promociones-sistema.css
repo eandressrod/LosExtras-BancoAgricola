@@ -182,7 +182,7 @@
 }
 
 /* ── Chips de filtro ──────────────────────────────────────────────────
-   button[aria-pressed]; marcado = fondo de acción + borde oscuro + ✓. */
+   button[aria-pressed] o button[role="radio"][aria-checked]; marcado = fondo de acción + borde oscuro + ✓. */
 .category-filter { display: flex; flex-wrap: wrap; gap: var(--pr-esp-2); margin: -6px 0 var(--pr-esp-5); }
 .filter-chip, .today-filter {
   display: inline-flex; align-items: center; gap: 6px; min-height: var(--pr-tactil); padding: 0 var(--pr-esp-4);
@@ -190,9 +190,11 @@
   font-size: .9rem; font-weight: 600; transition: background var(--pr-rapido), border-color var(--pr-rapido);
 }
 .filter-chip:hover, .today-filter:hover { background: #f0f0f0; }
-.filter-chip[aria-pressed="true"], .filter-chip[aria-pressed="true"]:hover,
+.filter-chip:is([aria-pressed="true"], [aria-checked="true"]),
+.filter-chip:is([aria-pressed="true"], [aria-checked="true"]):hover,
 .today-filter[aria-pressed="true"], .today-filter[aria-pressed="true"]:hover { border-color: var(--pr-texto); background: var(--pr-accion); }
-.filter-chip[aria-pressed="true"]::before, .today-filter[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; font-weight: 800; }
+.filter-chip:is([aria-pressed="true"], [aria-checked="true"])::before,
+.today-filter[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; font-weight: 800; }
 .filter-chip:disabled, .today-filter:disabled { opacity: .55; cursor: not-allowed; }
 .today-filter { margin: -6px 0 14px; font-weight: 700; }
 
