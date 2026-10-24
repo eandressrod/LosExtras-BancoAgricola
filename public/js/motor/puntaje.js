@@ -13,7 +13,7 @@ export function puntuar(oferta, perfil, config, reglas) {
   const { pesos } = config;
   const M = perfil.comercios.has(oferta.merchantId) ? 1 : 0;
   const C = M || perfil.categorias.has(oferta.category) ? 1 : 0;
-  const T = reglas.intencion(oferta);
+  const T = reglas.intencion(oferta, config);
   const R = reglas.multiplicador(oferta, perfil) * (pesos.categoria * C + pesos.comercio * M) + pesos.intencion * T;
   return { C, M, T, R };
 }
