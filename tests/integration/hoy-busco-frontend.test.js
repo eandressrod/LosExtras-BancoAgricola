@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { abrirListado, abrirDetalle, parametro } from './pagina-promociones.js';
 import { CHIPS_HOY_BUSCO } from '../../public/js/motor/index.js';
 
-const BASICA_A = 'tarjeta=cta-a-3';
+// Sin tarjeta elegida, Para ti consulta todas las tarjetas propias y no envía ?tarjeta= (SCRUM-133).
 const OFERTAS = [
   { id: 'pizza', merchant: 'Pizza Hut', category: 'Restaurantes', benefit: '2×1', validUntil: '2099-12-31', occasions: { salir: 1 }, intentTags: [] },
   { id: 'siman', merchant: 'Siman', category: 'Compras', benefit: '15 %', validUntil: '2099-12-31', occasions: { salir: 0 }, intentTags: ['regalo'] },
@@ -55,7 +55,7 @@ test('H25 muestra los 12 chips accesibles (11 ocasiones + Regalo) con role="radi
   assert.deepEqual(p.intencionActiva(), ['Salir con amigos o pareja']);
   assert.equal(p.obtener('#intent-status').hidden, false);
   assert.equal(p.obtener('#intent-status').textContent, 'Primero: salir con amigos o pareja');
-  assert.equal(p.consultas.at(-1), `/api/para-ti?intencion=salir&${BASICA_A}`);
+  assert.equal(p.consultas.at(-1), '/api/para-ti?intencion=salir');
   // Reordena sin filtrar (siguen las 3 ofertas, primero las que tienen T=1)
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-pizza', 'promo-cine', 'promo-siman']);
   assert.equal(p.cards.hijos[0].querySelector('.promo-reason').textContent, 'Por lo que buscas hoy');
@@ -64,14 +64,14 @@ test('H25 muestra los 12 chips accesibles (11 ocasiones + Regalo) con role="radi
   await p.chipIntencion('Regalo').click();
   assert.deepEqual(p.intencionActiva(), ['Regalo']);
   assert.equal(p.obtener('#intent-status').textContent, 'Primero: regalo');
-  assert.equal(p.consultas.at(-1), `/api/para-ti?intencion=regalo&${BASICA_A}`);
+  assert.equal(p.consultas.at(-1), '/api/para-ti?intencion=regalo');
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-siman', 'promo-pizza', 'promo-cine']);
 
   // Pulsar de nuevo el chip activo lo quita y recalcula la instantánea
   await p.chipIntencion('Regalo').click();
   assert.deepEqual(p.intencionActiva(), []);
   assert.equal(p.obtener('#intent-status').hidden, true);
-  assert.equal(p.consultas.at(-1), `/api/para-ti?${BASICA_A}`);
+  assert.equal(p.consultas.at(-1), '/api/para-ti');
 });
 
 test('H25 activar o quitar el chip conserva los filtros explícitos, la búsqueda y la tarjeta elegida', async () => {
@@ -98,7 +98,8 @@ test('H25 ir al detalle y volver conserva el chip activo y reutiliza la instant�
 
   const detalle = await abrirDetalle({
     search: '?id=pizza&intencion=salir',
-    sesion: p.sesion
+    sesion: p.sesion,
+    promocion: {id: "pizza"}
   });
   assert.equal(detalle.volver(), '/promociones.html?intencion=salir#promo-pizza');
 
@@ -123,5 +124,5 @@ test('H25 el chip se limpia al cambiar de perfil o al iniciar una visita nueva',
   assert.deepEqual(p.intencionActiva(), []);
   assert.equal(p.obtener('#intent-status').hidden, true);
   assert.equal(p.history.url, '/promociones.html');
-  assert.deepEqual(p.consultas, ['/api/para-ti?tarjeta=cta-b-2']);
+  assert.deepEqual(p.consultas, ['/api/para-ti']);
 });

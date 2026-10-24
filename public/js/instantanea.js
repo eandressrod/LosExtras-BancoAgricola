@@ -1,13 +1,6 @@
 // H22: instantánea de Para ti. El orden se conserva durante la visita, en esta pestaña y por perfil; el servidor no lo guarda.
 // Una visita nueva empieza tras 30 minutos sin usarla o al cambiar de día en El Salvador.
 
-//
-// Ciclo de vida:
-//   - promociones.js guarda cada respuesta recibida de /api/para-ti con su consulta (URL con filtros y tarjeta);
-//   - al volver del detalle la lee; si la consulta, el día o la visita no coinciden, vuelve a pedir el orden;
-//   - leerla renueva la visita; iniciar o cerrar sesión borra todas (comun.js).
-// Todos los accesos toleran un almacenamiento ausente o lleno: en ese caso simplemente se recalcula.
-
 export const PREFIJO_INSTANTANEA = 'los-extras-instantanea:';
 export const DURACION_VISITA_MS = 30 * 60 * 1000;
 
@@ -26,6 +19,14 @@ const clave = (perfilId, consulta) => PREFIJO_INSTANTANEA + perfilId + ':' + alc
 
 function escribir(almacen, perfilId, consulta, datos) {
   try { almacen?.setItem(clave(perfilId, consulta), JSON.stringify(datos)); } catch { /* Sin almacenamiento se vuelve a ordenar. */ }
+}
+
+/** Indica si había una visita previa registrada para este perfil que ya terminó por tiempo o cambio de día (H25, CDA 6). */
+export function visitaVencida(almacen, perfilId, ahora = new Date()) {
+  let guardada;
+  try { guardada = JSON.parse(almacen?.getItem(clave(perfilId)) ?? 'null'); } catch { return false; }
+  if (!guardada) return false;
+  return guardada.dia !== fechaLocal.format(ahora) || ahora.getTime() - guardada.usadaEn >= DURACION_VISITA_MS;
 }
 
 /** Guarda la respuesta de una consulta como orden de la visita actual. */

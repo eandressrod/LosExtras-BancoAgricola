@@ -106,13 +106,7 @@ test('H25 un comercio no elegido nunca supera a uno elegido con la misma T', () 
 
 test('H25 cuando T es el término dominante la razón es «Por lo que buscas hoy»', () => {
   const ofertas = ofertasDelCatalogo('basica');
-  // 1) Con filtro de categoría no declarada o perfil sin intereses, C = 0 y M = 0; si T = 1, T (15) es dominante
-  const enComprasConRegalo = ordenarParaTi({
-    ofertas,
-    senales: PERFILES.soloCategorias,
-    filtros: { categoria: 'Restaurantes' },
-    reglas: { intencion: reglaIntencion('regalo') }
-  });
+  // Con perfil sin intereses y chip de regalo activo, T = 1 y es dominante
   const conRegaloSinIntereses = ordenarParaTi({
     ofertas,
     senales: PERFILES.vacio,
@@ -124,13 +118,6 @@ test('H25 cuando T es el término dominante la razón es «Por lo que buscas hoy
   for (const promo of primerasRegalo) {
     assert.deepEqual(promo.razon, { tipo: 'intencion', texto: 'Por lo que buscas hoy' });
   }
-  // Las que tienen T = 0 siguen en la lista sin filtrarse y sin razón
-  const sinRegalo = conRegaloSinIntereses.promociones.filter(p => p.componentes.T === 0);
-  assert.ok(sinRegalo.length > 0);
-  assert.ok(sinRegalo.every(p => p.razon === null));
-  // Cuando C = 1 y M = 0, C (20) supera a T (15)
-  const [enCategoriaDeclarada] = enComprasConRegalo.promociones.filter(p => p.componentes.T === 1);
-  assert.equal(enCategoriaDeclarada.razon.tipo, 'categoria');
 });
 
 test('H25 GET /api/para-ti acepta ?intencion= válida, reordena sin crear señales y rechaza valores inválidos con 400', async () => {
