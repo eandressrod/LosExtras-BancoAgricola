@@ -12,6 +12,23 @@ export function textoVigencia(promo) {
   return (promo.expired ? 'Venció el ' : 'Válida hasta el ') + fecha(promo.validUntil);
 }
 
+const fechaCivil = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/El_Salvador', year: 'numeric', month: '2-digit', day: '2-digit' });
+const DIA_MS = 86400000;
+
+/** Fecha civil de El Salvador (AAAA-MM-DD), la misma referencia que usa la API para «hoy». */
+export function hoyEnElSalvador(ahora = new Date()) {
+  return fechaCivil.format(ahora);
+}
+
+/** Sistema visual: aviso de vigencia corta, solo con 7 días o menos y fechas reales del catálogo. */
+export function textoVencePronto(promo, hoy) {
+  if (!promo.validUntil || promo.expired || promo.upcoming) return '';
+  const dias = Math.round((Date.parse(promo.validUntil) - Date.parse(hoy)) / DIA_MS);
+  if (dias < 0 || dias > 7) return '';
+  if (dias === 0) return 'Vence hoy';
+  return dias === 1 ? 'Vence mañana' : `Vence en ${dias} días`;
+}
+
 /** H17: por qué se puede usar hoy. No afirma que ya se cumpla una compra mínima. */
 export function textoDisponibleHoy(promo) {
   if (!promo.availableToday) return '';

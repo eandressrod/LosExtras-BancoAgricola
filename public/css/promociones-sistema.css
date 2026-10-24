@@ -1,0 +1,253 @@
+/* Sistema visual de Promociones (H22, SCRUM-127). Referencia de uso y estados: docs/SISTEMA_PROMOCIONES.md.
+   Capa propia de la sección: deriva de los globales de styles.css y no los modifica. */
+
+:root {
+  /* Color */
+  --pr-accion: var(--primary);
+  --pr-accion-hover: var(--primary-dark);
+  --pr-seleccion: #fffbea;
+  --pr-seleccion-borde: #f2d65a;
+  --pr-texto: var(--text);
+  --pr-texto-2: #575757; /* 7.2:1 sobre blanco */
+  --pr-texto-3: #6b6b6b; /* 5.3:1 sobre blanco */
+  --pr-superficie: var(--surface);
+  --pr-fondo: #f7f7f7;
+  --pr-hundido: #eeede8;
+  --pr-borde: #e0e0e0;
+  --pr-borde-fuerte: #b4b4b4;
+  --pr-black: #1c1c1c;
+  --pr-naranja: var(--brand-orange);
+  --pr-naranja-suave: #fff1ea;
+  --pr-error: var(--error);
+  --pr-error-suave: #fdecee;
+  --pr-aviso-fondo: #292929;
+  /* Forma */
+  --pr-radio-s: 8px;
+  --pr-radio-m: 14px;
+  --pr-radio-l: 20px;
+  --pr-radio-pill: 999px;
+  --pr-esp-1: 4px;
+  --pr-esp-2: 8px;
+  --pr-esp-3: 12px;
+  --pr-esp-4: 16px;
+  --pr-esp-5: 20px;
+  --pr-esp-6: 24px;
+  --pr-sombra-1: 0 1px 2px rgb(0 0 0 / .05), 0 3px 12px rgb(0 0 0 / .04);
+  --pr-sombra-2: 0 6px 24px rgb(0 0 0 / .18);
+  --pr-tactil: 48px;
+  --pr-talon: 64px;
+  /* Movimiento */
+  --pr-curva: cubic-bezier(.2, .8, .2, 1);
+  --pr-rapido: 120ms;
+  --pr-medio: 240ms;
+  --pr-lento: 320ms;
+  /* Iconos lineales propios del sistema (dibujo del equipo, no recursos del banco). */
+  --pr-icono-guardar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M6.5 3.5h11v17l-5.5-3.8-5.5 3.8z'/%3E%3C/svg%3E");
+  --pr-icono-guardada: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M6.5 3.5h11v17l-5.5-3.8-5.5 3.8z'/%3E%3C/svg%3E");
+  --pr-icono-reloj: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.5V12l3 2'/%3E%3C/svg%3E");
+  --pr-icono-calendario: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5.5' width='16' height='14' rx='2'/%3E%3Cpath d='M4 10h16M8.5 3.5v4M15.5 3.5v4'/%3E%3C/svg%3E");
+  --pr-icono-buscar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23292929' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6'/%3E%3Cpath d='m15 15 4.5 4.5'/%3E%3C/svg%3E");
+  --pr-icono-alerta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8102e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 3 19.5h18z'/%3E%3Cpath d='M12 10v4.5M12 17.2v.1'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --pr-rapido: 0ms; --pr-medio: 0ms; --pr-lento: 0ms; }
+}
+
+/* Las páginas con tarjetas usan el fondo gris suave de la guía, el mismo de las muescas. */
+.saved-page { background: var(--pr-fondo); }
+
+/* ── Tarjeta de promoción ─────────────────────────────────────────────
+   article.promo-item > a.promo-card + button.guardar-promo + p.guardar-error.
+   El botón es hermano del enlace (HTML válido) y se superpone al talón inferior de la tarjeta. */
+.promo-list { display: grid; gap: var(--pr-esp-5); }
+.promo-item { display: grid; grid-template-columns: auto 1fr; padding: 0; border: 0; background: none; }
+.promo-item > .promo-card { grid-area: 1 / 1 / 2 / -1; }
+.promo-item > .guardar-promo { grid-area: 1 / 1; align-self: end; z-index: 1; margin: 0 0 var(--pr-esp-2) var(--pr-esp-3); }
+.promo-item > .guardar-error { grid-column: 1 / -1; margin: var(--pr-esp-2) var(--pr-esp-1) 0; font-size: .85rem; }
+
+.promo-card {
+  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid var(--pr-borde); border-radius: var(--pr-radio-l);
+  color: var(--pr-texto); background: var(--pr-superficie); text-decoration: none; box-shadow: var(--pr-sombra-1);
+  transition: border-color var(--pr-rapido), box-shadow var(--pr-rapido);
+}
+.promo-card:hover { border-color: var(--pr-borde-fuerte); }
+.promo-card:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+/* Muescas de cupón en los extremos del talón. */
+.promo-card::before, .promo-card::after {
+  content: ""; position: absolute; bottom: calc(var(--pr-talon) - 9px); width: 18px; height: 18px;
+  border: 1px solid var(--pr-borde); border-radius: 50%; background: var(--pr-fondo);
+}
+.promo-card::before { left: -10px; }
+.promo-card::after { right: -10px; }
+
+.promo-card .promo-media { position: relative; aspect-ratio: 16 / 9; min-height: 0; background: var(--pr-hundido); }
+.promo-card .promo-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* La placa del logo cruza el borde de la foto: conserva la proporción del logo (1:1 a 5.8:1) en una caja fija. */
+.promo-card .merchant-mark {
+  position: absolute; left: var(--pr-esp-4); bottom: -26px; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center;
+  width: 104px; height: 52px; padding: var(--pr-esp-2) var(--pr-esp-3);
+  border: 1px solid var(--pr-borde); border-radius: var(--pr-radio-m); background: var(--pr-superficie); box-shadow: var(--pr-sombra-1);
+}
+.promo-card .merchant-logo { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: contain; }
+.promo-card .merchant-mark:has(img[hidden]) { display: none; }
+/* Sin foto: el logo ocupa el centro del espacio de la imagen. */
+.promo-card .promo-media:has(.promo-photo[hidden]) .merchant-mark { inset: 0; margin: auto; width: 136px; height: 68px; }
+.promo-card .promo-media:has(.promo-photo[hidden]) + .promo-content { padding-top: var(--pr-esp-5); }
+
+.promo-content { display: flex; flex-direction: column; align-items: flex-start; gap: var(--pr-esp-2); padding: 38px var(--pr-esp-5) 0; }
+.promo-content > * { margin: 0; }
+.promo-category { color: var(--pr-texto-2); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.promo-card h2 { margin: -4px 0 0; font-size: 1.05rem; line-height: 1.3; }
+.promo-benefit { font-size: 1.55rem; font-weight: 800; line-height: 1.15; letter-spacing: -.02em; }
+.promo-description { color: var(--pr-texto-2); font-size: .9rem; line-height: 1.45; }
+
+/* Razón del motor (CDA 6): una sola, siempre en texto. */
+.promo-reason {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px;
+  border: 1px solid var(--pr-seleccion-borde); border-radius: var(--pr-radio-pill); background: var(--pr-seleccion);
+  font-size: .78rem; font-weight: 700; line-height: 1.3;
+}
+.promo-reason::before { content: ""; flex: none; width: 8px; height: 8px; border: 1px solid var(--pr-texto); border-radius: 50%; background: var(--pr-accion); }
+/* Criterios declarados (canal, beneficio): insignia, nunca razón. */
+.promo-badges { color: var(--pr-texto-2); font-size: .8rem; font-weight: 600; }
+
+.promo-card .promo-applicability, .promo-card .promo-validity { display: inline-flex; align-items: center; gap: var(--pr-esp-2); font-size: .82rem; }
+.promo-card .promo-applicability { font-weight: 700; }
+.promo-card .promo-applicability[data-tarjeta]::before {
+  content: ""; flex: none; width: 22px; height: 14px; border-radius: 3px; box-shadow: 0 1px 2px rgb(0 0 0 / .25);
+  background: linear-gradient(135deg, var(--accent), var(--primary) 60%, var(--primary-dark));
+}
+.promo-card .promo-applicability[data-tarjeta="black"]::before { background: linear-gradient(135deg, #4a4a4a, var(--pr-black) 55%, #0d0d0d); }
+.promo-card .promo-validity { color: var(--pr-texto-2); }
+.promo-card .promo-validity::before, .promo-ending::before {
+  content: ""; flex: none; width: 16px; height: 16px; background: currentColor;
+  -webkit-mask: var(--pr-icono-calendario) center / contain no-repeat; mask: var(--pr-icono-calendario) center / contain no-repeat;
+}
+.promo-card .promo-validity:empty { display: none; }
+
+/* Vence pronto: 7 días o menos, con fecha real. Icono + texto, no solo color. */
+.promo-ending {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px;
+  border-radius: var(--pr-radio-pill); background: var(--pr-naranja-suave); box-shadow: inset 3px 0 0 var(--pr-naranja);
+  font-size: .8rem; font-weight: 700;
+}
+.promo-ending::before { -webkit-mask-image: var(--pr-icono-reloj); mask-image: var(--pr-icono-reloj); }
+/* Vencida durante la visita (CDA 7). */
+.promo-expired { padding: 3px 10px; border-radius: var(--pr-radio-pill); background: var(--pr-error-suave); color: var(--pr-error); font-size: .8rem; font-weight: 700; }
+
+.promo-card .promo-today { padding: 6px 10px; border-left: 3px solid var(--pr-accion); border-radius: 0 var(--pr-radio-s) var(--pr-radio-s) 0; background: var(--pr-seleccion); font-size: .82rem; font-weight: 600; }
+.promo-card .promo-conditions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; list-style: none; }
+.promo-card .promo-conditions li { margin: 0; padding: 3px 10px; border-radius: var(--pr-radio-s); background: #f1f1f1; color: var(--pr-texto-2); font-size: .78rem; font-weight: 600; }
+
+.promo-card .promo-exclusive {
+  position: absolute; left: var(--pr-esp-3); top: var(--pr-esp-3); display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px 5px 7px; border-radius: var(--pr-radio-s); background: var(--pr-black); color: var(--pr-accion); font-size: .75rem; font-weight: 700;
+}
+.promo-card .promo-exclusive::before { content: ""; width: 16px; height: 10px; border: 1px solid var(--pr-accion); border-radius: 2px; }
+
+/* Talón: «Ver promoción» a la derecha; a la izquierda queda el espacio del botón Guardar. */
+.promo-open {
+  display: flex; align-items: center; justify-content: flex-end; gap: var(--pr-esp-2);
+  min-height: var(--pr-talon); margin: var(--pr-esp-4) var(--pr-esp-4) 0; padding-left: 124px;
+  border-top: 1.5px dashed var(--pr-borde); font-size: .9rem; font-weight: 700;
+}
+.promo-open span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--pr-accion); font-size: 1.05rem; transition: transform var(--pr-rapido) var(--pr-curva); }
+.promo-card:hover .promo-open span { transform: translate(2px, -2px); }
+
+.promo-card--inactive .promo-photo { filter: grayscale(1); opacity: .7; }
+.promo-card--inactive .promo-validity { color: var(--pr-error); font-weight: 700; }
+
+/* Guardar: icono + texto; guardada = icono lleno, borde oscuro y fondo tenue. */
+.promo-item .guardar-promo {
+  display: inline-flex; align-items: center; gap: 6px; min-height: var(--pr-tactil); padding: 0 16px 0 12px;
+  border: 1px solid var(--pr-borde-fuerte); border-radius: var(--pr-radio-pill); background: var(--pr-superficie);
+  color: var(--pr-texto); font-size: .9rem; font-weight: 700;
+  transition: background var(--pr-rapido), border-color var(--pr-rapido);
+}
+.promo-item .guardar-promo::before {
+  content: ""; width: 18px; height: 18px; background: currentColor;
+  -webkit-mask: var(--pr-icono-guardar) center / contain no-repeat; mask: var(--pr-icono-guardar) center / contain no-repeat;
+}
+.promo-item .guardar-promo:hover, .promo-item .guardar-promo:disabled:hover { background: #f0f0f0; }
+.promo-item .guardar-promo[data-guardada="si"] { border-color: var(--pr-texto); background: var(--pr-seleccion); }
+.promo-item .guardar-promo[data-guardada="si"]::before { -webkit-mask-image: var(--pr-icono-guardada); mask-image: var(--pr-icono-guardada); }
+.promo-item .guardar-promo:active::before { transform: scale(.85); transition: transform var(--pr-rapido); }
+
+@media (max-width: 359px) {
+  .promo-content { padding-inline: var(--pr-esp-4); }
+  .promo-open { margin-inline: var(--pr-esp-2); padding-left: 116px; font-size: .85rem; }
+  .promo-item > .guardar-promo { margin-left: var(--pr-esp-2); }
+}
+
+/* ── Chips de filtro ──────────────────────────────────────────────────
+   button[aria-pressed]; marcado = fondo de acción + borde oscuro + ✓. */
+.category-filter { display: flex; flex-wrap: wrap; gap: var(--pr-esp-2); margin: -6px 0 var(--pr-esp-5); }
+.filter-chip, .today-filter {
+  display: inline-flex; align-items: center; gap: 6px; min-height: var(--pr-tactil); padding: 0 var(--pr-esp-4);
+  border: 1px solid #c9c9c9; border-radius: var(--pr-radio-pill); background: var(--pr-superficie);
+  font-size: .9rem; font-weight: 600; transition: background var(--pr-rapido), border-color var(--pr-rapido);
+}
+.filter-chip:hover, .today-filter:hover { background: #f0f0f0; }
+.filter-chip[aria-pressed="true"], .filter-chip[aria-pressed="true"]:hover,
+.today-filter[aria-pressed="true"], .today-filter[aria-pressed="true"]:hover { border-color: var(--pr-texto); background: var(--pr-accion); }
+.filter-chip[aria-pressed="true"]::before, .today-filter[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; font-weight: 800; }
+.filter-chip:disabled, .today-filter:disabled { opacity: .55; cursor: not-allowed; }
+.today-filter { margin: -6px 0 14px; font-weight: 700; }
+
+/* ── Estado vacío o de error ──────────────────────────────────────────
+   .pr-estado contiene un [role="status"]; se oculta mientras ese mensaje está vacío.
+   Con .error dentro, cambia a la variante de error. */
+.pr-estado {
+  display: grid; justify-items: center; gap: var(--pr-esp-3); margin: 0 0 var(--pr-esp-5);
+  padding: var(--pr-esp-6) var(--pr-esp-5); border: 1px solid var(--pr-borde); border-radius: var(--pr-radio-l);
+  background: var(--pr-superficie); text-align: center;
+}
+.pr-estado:has(> [role="status"]:empty) { display: none; }
+.pr-estado::before { content: ""; width: 56px; height: 56px; border-radius: 50%; background: var(--pr-seleccion) var(--pr-icono-buscar) center / 28px no-repeat; }
+.pr-estado:has(> .error)::before { background-color: var(--pr-error-suave); background-image: var(--pr-icono-alerta); }
+.pr-estado > p { max-width: 34ch; margin: 0; font-size: .95rem; font-weight: 600; }
+.pr-estado > .note { color: var(--pr-texto); }
+.pr-estado > button, .pr-estado .empty-actions { width: 100%; }
+.pr-estado .empty-actions { display: grid; gap: var(--pr-esp-2); }
+.pr-estado .empty-actions:not(:has(> :not([hidden]))) { display: none; }
+.pr-estado button, .pr-estado .button { min-height: var(--pr-tactil); }
+
+/* ── Hoja inferior ────────────────────────────────────────────────────
+   <dialog class="pr-hoja"> abierto con showModal(); Esc cierra y el foco vuelve al control que la abrió.
+   .pr-hoja--sin-velo deja ver la lista detrás sin oscurecerla (criterio de ADR-010 para la encuesta). */
+.pr-hoja {
+  position: fixed; inset: auto 0 0; display: flex; flex-direction: column; gap: var(--pr-esp-3);
+  width: min(100%, 480px); max-width: none; max-height: 85dvh; margin: 0 auto;
+  padding: var(--pr-esp-2) var(--pr-esp-4) max(var(--pr-esp-4), env(safe-area-inset-bottom));
+  border: 0; border-radius: var(--pr-radio-l) var(--pr-radio-l) 0 0; background: var(--pr-superficie); color: var(--pr-texto);
+  box-shadow: 0 -4px 20px rgb(0 0 0 / .12); animation: pr-hoja-entra var(--pr-lento) var(--pr-curva);
+}
+.pr-hoja:not([open]) { display: none; }
+.pr-hoja::backdrop { background: rgb(0 0 0 / .32); }
+.pr-hoja--sin-velo::backdrop { background: transparent; }
+.pr-hoja__asa { flex: none; width: 40px; height: 4px; margin: 0 auto var(--pr-esp-1); border-radius: 2px; background: #c9c9c9; }
+.pr-hoja__titulo { margin: 0; font-size: 1.2rem; }
+.pr-hoja__cuerpo { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.pr-hoja__acciones { display: flex; flex: none; gap: var(--pr-esp-2); }
+.pr-hoja__acciones > * { flex: 1; min-height: var(--pr-tactil); }
+@keyframes pr-hoja-entra { from { transform: translateY(100%); } }
+
+/* ── Aviso con deshacer ───────────────────────────────────────────────
+   Uno a la vez, abajo y sin tapar la navegación del módulo; lo controla js/aviso-deshacer.js. */
+.pr-aviso {
+  position: fixed; z-index: 30; left: 50%; bottom: max(var(--pr-esp-4), env(safe-area-inset-bottom));
+  display: flex; align-items: center; gap: var(--pr-esp-2); width: min(calc(100% - 32px), 448px); min-height: 56px;
+  padding: var(--pr-esp-1) var(--pr-esp-1) var(--pr-esp-1) var(--pr-esp-4); border-radius: var(--pr-radio-m);
+  background: var(--pr-aviso-fondo); color: #ffffff; box-shadow: var(--pr-sombra-2);
+  transform: translateX(-50%); animation: pr-aviso-entra var(--pr-medio) var(--pr-curva);
+}
+.pr-aviso__texto { flex: 1; margin: 0; font-size: .9rem; font-weight: 600; }
+.pr-aviso__accion {
+  flex: none; min-height: var(--pr-tactil); padding: 0 var(--pr-esp-4); border: 0; border-radius: 10px;
+  background: transparent; color: var(--pr-accion); font-weight: 700; text-decoration: underline; text-underline-offset: 3px;
+}
+.pr-aviso__accion:hover { background: rgb(255 255 255 / .1); }
+.pr-aviso :focus-visible { outline-color: var(--pr-accion); outline-offset: 0; }
+@keyframes pr-aviso-entra { from { opacity: 0; transform: translate(-50%, 12px); } }

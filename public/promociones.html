@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/carga.css">
     <link rel="stylesheet" href="/css/promociones.css">
     <link rel="stylesheet" href="/css/guardadas.css">
+    <link rel="stylesheet" href="/css/promociones-sistema.css">
     <script type="module" src="/js/promociones.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -59,42 +60,49 @@
       <div id="category-filter" class="category-filter" role="group" aria-label="Filtrar por categoría">
         <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
       </div>
-      <p id="list-status" class="note" role="status"></p>
       <p id="saved-status" class="error" role="alert"></p>
       <div id="promotions-loading" class="module-loading" role="status" aria-label="Cargando promociones" hidden><svg class="loading-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="147 22.65" transform="rotate(230 32 32)"/></svg><span>CARGANDO...</span></div>
-      <button id="retry" class="secondary" hidden>Reintentar</button>
+      <!-- Sistema visual: estado vacío o de error; se oculta mientras #list-status está vacío. -->
+      <section class="pr-estado">
+        <p id="list-status" class="note" role="status"></p>
+        <button id="retry" class="secondary" hidden>Reintentar</button>
+        <div class="empty-actions">
+          <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
+          <button id="show-all" type="button" class="secondary" hidden>Ver todas</button>
+          <button id="exit-today" type="button" class="secondary" hidden>Quitar Disponibles hoy</button>
+          <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>
+        </div>
+      </section>
       <div id="cards" class="promo-list"></div>
-      <div class="empty-actions">
-        <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
-        <button id="show-all" type="button" class="secondary" hidden>Ver todas</button>
-        <button id="exit-today" type="button" class="secondary" hidden>Quitar Disponibles hoy</button>
-        <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>
-      </div>
       <template id="promotion-card">
-        <a class="promo-card">
-          <div class="promo-media">
-            <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
-            <div class="merchant-mark"><img class="merchant-logo" alt="" loading="lazy"></div>
-            <span class="promo-exclusive" hidden></span>
-          </div>
-          <div class="promo-content">
-            <p class="promo-category"></p>
-            <p class="promo-reason" hidden></p>
-            <h2></h2>
-            <p class="promo-benefit"></p>
-            <p class="promo-description"></p>
-            <p class="promo-applicability"></p>
-            <p class="promo-validity"></p>
-            <p class="promo-today" hidden></p>
-            <p class="promo-expired" hidden>Vencida</p>
-            <p class="promo-badges" hidden></p>
-            <ul class="promo-conditions"></ul>
-            <button type="button" class="secondary guardar-promo">Guardar</button>
-            <p class="error guardar-error" role="alert"></p>
+        <article class="promo-item">
+          <a class="promo-card">
+            <div class="promo-media">
+              <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
+              <div class="merchant-mark"><img class="merchant-logo" alt="" loading="lazy"></div>
+              <span class="promo-exclusive" hidden></span>
+            </div>
+            <div class="promo-content">
+              <p class="promo-category"></p>
+              <p class="promo-reason" hidden></p>
+              <h2></h2>
+              <p class="promo-benefit"></p>
+              <p class="promo-description"></p>
+              <p class="promo-applicability"></p>
+              <p class="promo-validity"></p>
+              <p class="promo-ending" hidden></p>
+              <p class="promo-expired" hidden>Vencida</p>
+              <p class="promo-today" hidden></p>
+              <p class="promo-badges" hidden></p>
+              <ul class="promo-conditions"></ul>
+            </div>
             <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
-          </div>
-        </a>
+          </a>
+          <button type="button" class="guardar-promo" data-guardada="no">Guardar</button>
+          <p class="error guardar-error" role="alert"></p>
+        </article>
       </template>
+      <div id="pr-aviso" class="pr-aviso" role="status" hidden><p class="pr-aviso__texto"></p><button type="button" class="pr-aviso__accion">Deshacer</button></div>
       <div class="actions"><a class="button secondary" href="/menu.html">Volver al menú</a></div>
     </main>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>

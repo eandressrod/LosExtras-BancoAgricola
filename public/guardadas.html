@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/carga.css">
     <link rel="stylesheet" href="/css/promociones.css">
     <link rel="stylesheet" href="/css/guardadas.css">
+    <link rel="stylesheet" href="/css/promociones-sistema.css">
     <script type="module" src="/js/guardadas.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -55,7 +56,7 @@
       <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
       <p id="empty-action" hidden><a class="button secondary" href="/promociones.html">Ver el listado</a></p>
       <template id="promotion-card">
-        <div class="promo-card-wrap">
+        <article class="promo-item">
           <a class="promo-card">
             <div class="promo-media">
               <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
@@ -70,12 +71,12 @@
               <p class="promo-applicability"></p>
               <p class="promo-validity"></p>
               <ul class="promo-conditions"></ul>
-              <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
             </div>
+            <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
           </a>
-          <button type="button" class="secondary guardar-promo">Quitar</button>
+          <button type="button" class="guardar-promo" data-guardada="si">Quitar</button>
           <p class="error guardar-error" role="alert"></p>
-        </div>
+        </article>
       </template>
       <div class="actions"><a class="button secondary" href="/menu.html">Volver al menú</a></div>
     </main>

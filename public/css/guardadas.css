@@ -1,13 +1,3 @@
-.promo-card-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.guardar-promo {
-  width: 100%;
-}
-
 .module-nav {
   display: flex;
   flex-wrap: wrap;
