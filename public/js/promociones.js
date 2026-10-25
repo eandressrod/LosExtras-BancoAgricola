@@ -1,5 +1,6 @@
 import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
-import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { filtrosActivos, textoBotonFiltros } from './filtros-activos.js';
 import { crearAviso } from './aviso-deshacer.js';
 import { diapositivasFranja } from './franja.js';
 import { montarCarrusel } from './carrusel.js';
@@ -10,10 +11,17 @@ import { conMinimoCarga } from './carga-tiempo.js';
 import { guardarInstantanea, leerInstantanea, marcarVencidas } from './instantanea.js';
 
 import { leerCategoria, leerHoy, leerBusqueda, normalizarBusqueda, categoriaVigente, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from './filtro-categoria.js';
-import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
+import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
 
 let idsGuardados = [];
 let avisoGuardar = null;
+
+// Cabecera: el icono de Guardadas cuenta las guardadas de la sesión.
+function pintarContadorGuardadas() {
+  const contador = document.querySelector('#pr-contador-guardadas');
+  contador.textContent = idsGuardados.length ? String(idsGuardados.length) : '';
+  contador.hidden = !idsGuardados.length;
+}
 
 function marcarGuardada(boton, guardada) {
   boton.dataset.guardada = guardada ? 'si' : 'no';
@@ -34,6 +42,7 @@ async function alternarGuardada(boton, error, id, conAviso) {
     if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
     marcarGuardada(boton, !quitar);
     idsGuardados = quitar ? idsGuardados.filter(guardado => guardado !== id) : [...idsGuardados, id];
+    pintarContadorGuardadas();
     if (conAviso) avisoGuardar.mostrar({
       texto: quitar ? 'Promoción quitada de Guardadas.' : 'Promoción guardada.',
       alDeshacer: async () => {
@@ -80,6 +89,10 @@ function crearOferta(promotion, categoria, hoy, busqueda) {
   const aplica = card.querySelector('.promo-applicability');
   aplica.textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
   aplica.dataset.tarjeta = promotion.applicableCard === 'black' ? 'black' : 'basica';
+  // Todas las tarjetas (SCRUM-133): la otra tarjeta propia solo se menciona si su beneficio cambia.
+  const otras = card.querySelector('.promo-otras');
+  otras.textContent = textoOtrasTarjetas(promotion);
+  otras.hidden = !otras.textContent;
   const badge = card.querySelector('.promo-exclusive');
   badge.hidden = !promotion.exclusive;
   badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
@@ -119,6 +132,9 @@ if (profile) {
   const cardOptions = document.querySelector('#card-options');
   const cardSingle = document.querySelector('#card-single');
   const sessionBadge = document.querySelector('#session-profile');
+  const abrirFiltros = document.querySelector('#abrir-filtros');
+  const hojaFiltros = document.querySelector('#filtros');
+  const pildoras = document.querySelector('#filtros-activos');
   const franja = document.querySelector('#franja');
   const conteo = document.querySelector('#pr-conteo');
   avisoGuardar = crearAviso(document.querySelector('#pr-aviso'));
@@ -131,7 +147,9 @@ if (profile) {
   let categoria = null;
   let hoy = leerHoy(location.search, history.state, profile.id);
   let busqueda = leerBusqueda(location.search, history.state, profile.id);
-  let tarjeta = null;
+  // H16 desde el 24 de octubre: Para ti considera todas las tarjetas propias; filtroTarjeta (null = todas) es opcional.
+  let tarjetas = [];
+  let filtroTarjeta = null;
   let preparada = false;
   let consultaActual = 0;
   let timerBusqueda = null;
@@ -147,6 +165,26 @@ if (profile) {
     for (const chip of chips) chip.setAttribute('aria-pressed', String((chip.dataset.category || null) === categoria));
     todayFilter.setAttribute('aria-pressed', String(hoy));
     history.replaceState(estadoNavegacion(profile.id, categoria), '', url);
+    pintarFiltrosActivos();
+  }
+
+  // Sobre la lista solo se ven los filtros activos; cada píldora quita el suyo.
+  function pintarFiltrosActivos() {
+    const activos = filtrosActivos({ categoria, categorias: categorias ?? [], hoy, tarjeta: filtroTarjeta });
+    const quitar = { categoria: () => elegir(null), tarjeta: () => cambiarTarjeta(null), hoy: () => cambiarHoy(false) };
+    pildoras.replaceChildren(...activos.map(({ tipo, texto }) => {
+      const pildora = document.createElement('button');
+      pildora.type = 'button';
+      pildora.className = 'pr-pildora';
+      pildora.dataset.tipo = tipo;
+      pildora.textContent = texto;
+      pildora.setAttribute('aria-label', 'Quitar filtro ' + texto);
+      pildora.addEventListener('click', quitar[tipo]);
+      return pildora;
+    }));
+    pildoras.hidden = activos.length === 0;
+    abrirFiltros.setAttribute('aria-label', textoBotonFiltros(activos.length));
+    abrirFiltros.dataset.activos = String(activos.length);
   }
 
   function textoVacio() {
@@ -170,22 +208,22 @@ if (profile) {
     chips.push(chip);
   }
 
-  // H16: la tarjeta activa se marca en el selector y en la cabecera.
+  // H16: el filtro de tarjeta se marca en la hoja Filtros y la cabecera dice qué tarjetas se consideran.
   function mostrarTarjeta() {
-    for (const opcion of opcionesTarjeta) opcion.setAttribute('aria-pressed', String(opcion.dataset.card === tarjeta.id));
-    // Sistema visual: la cabecera toma el color de la tarjeta elegida.
-    if (document.body) document.body.dataset.tarjeta = tarjeta.tipoTarjeta === 'black' ? 'black' : 'basica';
-    cardSingle.textContent = 'Tus beneficios con ' + textoTarjeta(tarjeta);
-    if (sessionBadge) sessionBadge.textContent = `${profile.nombre} · ${cardName(tarjeta)}`;
+    for (const opcion of opcionesTarjeta) opcion.setAttribute('aria-pressed', String(opcion.dataset.card === (filtroTarjeta?.id ?? '')));
+    const descripcion = filtroTarjeta ? cardName(filtroTarjeta) : tarjetas.length === 1 ? cardName(tarjetas[0]) : `${tarjetas.length} tarjetas`;
+    if (sessionBadge) sessionBadge.textContent = `${profile.nombre} · ${descripcion}`;
+    pintarFiltrosActivos();
   }
 
+  // item null = «Todas mis tarjetas».
   function crearOpcionTarjeta(item) {
     const opcion = document.createElement('button');
     opcion.type = 'button';
     opcion.className = 'card-option';
-    opcion.dataset.card = item.id;
-    opcion.dataset.tipo = item.tipoTarjeta;
-    opcion.textContent = etiquetaTarjeta(item);
+    opcion.dataset.card = item?.id ?? '';
+    opcion.dataset.tipo = item?.tipoTarjeta ?? 'todas';
+    opcion.textContent = item ? etiquetaTarjeta(item) : 'Todas mis tarjetas';
     opcion.addEventListener('click', () => cambiarTarjeta(item));
     cardOptions.append(opcion);
     opcionesTarjeta.push(opcion);
@@ -197,6 +235,7 @@ if (profile) {
     filtros.hidden = true;
     todayFilter.hidden = true;
     searchBox.hidden = true;
+    abrirFiltros.hidden = true;
   }
 
   async function leerIdsGuardados() {
@@ -220,7 +259,7 @@ if (profile) {
     status.textContent = '';
     status.className = 'note';
     retry.hidden = true;
-    let tarjetas;
+    let lista;
     try {
       if (!aperturaRegistrada) { await registrarAperturaPromociones(); aperturaRegistrada = true; }
       if (new URLSearchParams(location.search).get('entrada') === 'menu') {
@@ -229,7 +268,7 @@ if (profile) {
         if (destino) { location.replace(destino); return false; }
       }
       revelarPagina();
-      [categorias, tarjetas] = await Promise.all([getJSON('/api/categorias'), getJSON('/api/tarjetas')]);
+      [categorias, lista] = await Promise.all([getJSON('/api/categorias'), getJSON('/api/tarjetas')]);
     } catch (error) {
       revelarPagina();
       status.textContent = error.message;
@@ -240,17 +279,21 @@ if (profile) {
     categorias.forEach(crearFiltro);
     categoria = categoriaVigente(pedida, categorias)?.id ?? null;
     mostrarFiltro(urlListado(categoria, null, hoy, busqueda) + location.hash);
-    tarjeta = tarjetaActiva(tarjetas, leerTarjetaElegida(sesion, profile.id));
+    tarjetas = lista;
     preparada = true;
-    if (!tarjeta) {
+    if (!tarjetas.length) {
       mostrarSinTarjetas();
       return false;
     }
-    guardarTarjetaElegida(sesion, profile.id, tarjeta.id);
+    // Una elección guardada que ya no es propia se descarta y se vuelve a todas.
+    const elegida = leerTarjetaElegida(sesion, profile.id);
+    filtroTarjeta = (elegida && tarjetas.find(item => item.id === elegida)) || null;
+    if (!filtroTarjeta) guardarTarjetaElegida(sesion, profile.id, null);
     if (tarjetas.length > 1) {
-      tarjetas.forEach(crearOpcionTarjeta);
+      [null, ...tarjetas].forEach(crearOpcionTarjeta);
       cardChoice.hidden = false;
     } else {
+      cardSingle.textContent = 'Tus beneficios con ' + textoTarjeta(tarjetas[0]);
       cardSingle.hidden = false;
     }
     mostrarTarjeta();
@@ -296,7 +339,7 @@ if (profile) {
     indicador.hidden = false;
     try {
       // La API valida la tarjeta y el motor ordena sus beneficios según tus intereses, con categoría, Disponibles hoy y búsqueda.
-      const consulta = conTarjeta(urlConsulta(categoria, hoy, busqueda), tarjeta.id);
+      const consulta = conTarjeta(urlConsulta(categoria, hoy, busqueda), filtroTarjeta?.id);
       // H22: al volver del detalle se conserva el orden de la visita; entrar o cambiar un filtro lo recalcula.
       const guardada = volverDelDetalle ? leerInstantanea(sesion, profile.id, consulta) : null;
       volverDelDetalle = false;
@@ -306,6 +349,7 @@ if (profile) {
       const promotions = marcarVencidas(respuesta.promociones);
       idsGuardados = await leerIdsGuardados();
       if (turno !== consultaActual) return;
+      pintarContadorGuardadas();
       for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda));
       const vacio = promotions.length === 0;
       conteo.textContent = vacio ? '' : promotions.length === 1 ? '1 promoción' : `${promotions.length} promociones`;
@@ -337,7 +381,7 @@ if (profile) {
   }
 
   function cambiarHoy(activo) {
-    if (!tarjeta || activo === hoy) return;
+    if (!tarjetas.length || activo === hoy) return;
     hoy = activo;
     mostrarFiltro(urlListado(categoria, null, hoy, busqueda));
     return loadPromotions();
@@ -350,7 +394,7 @@ if (profile) {
     if (nueva === busqueda) return;
     busqueda = nueva;
     mostrarFiltro(urlListado(categoria, null, hoy, busqueda));
-    if (!tarjeta) return;
+    if (!tarjetas.length) return;
     // Debounce: actualiza URL de inmediato pero espera 300 ms antes de consultar la API.
     if (timerBusqueda != null) clearTimeout(timerBusqueda);
     timerBusqueda = setTimeout(() => {
@@ -360,16 +404,16 @@ if (profile) {
   }
 
   function cambiarTarjeta(nueva) {
-    if (nueva.id === tarjeta.id) return;
-    tarjeta = nueva;
-    guardarTarjetaElegida(sesion, profile.id, tarjeta.id);
+    if ((nueva?.id ?? null) === (filtroTarjeta?.id ?? null)) return;
+    filtroTarjeta = nueva;
+    guardarTarjetaElegida(sesion, profile.id, nueva?.id ?? null);
     mostrarTarjeta();
     return loadPromotions();
   }
 
   async function cargar() {
     if (!preparada && !await conIndicador(indicador, prepararPagina)) return;
-    if (tarjeta) await loadPromotions();
+    if (tarjetas.length) await loadPromotions();
   }
 
   const [todas] = chips;
@@ -381,5 +425,9 @@ if (profile) {
   clearSearch.addEventListener('click', () => buscarComercio(''));
   clearSearchEmpty.addEventListener('click', () => buscarComercio(''));
   retry.addEventListener('click', cargar);
+  // Hoja Filtros: los cambios se aplican al tocarlos; Listo, Esc o tocar fuera la cierran.
+  abrirFiltros.addEventListener('click', () => hojaFiltros.showModal());
+  document.querySelector('#cerrar-filtros').addEventListener('click', () => hojaFiltros.close());
+  hojaFiltros.addEventListener('click', evento => { if (evento.target === hojaFiltros) hojaFiltros.close(); });
   await cargar();
 }

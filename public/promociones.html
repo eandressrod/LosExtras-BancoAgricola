@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
   </head>
-  <body class="promotions-page pr" data-session="pending" data-tarjeta="basica">
+  <body class="promotions-page pr" data-session="pending">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso a promociones"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
       <a class="pr-volver" href="/menu.html" aria-label="Volver al menú"></a>
@@ -34,20 +34,18 @@
       </div>
     </header>
     <main>
-      <!-- Sistema visual: cabecera de la sección; su color sigue a la tarjeta elegida (data-tarjeta del body). -->
+      <!-- Sistema visual: cabecera de la sección. Cerca de ti (H8) se muestra cuando su pantalla exista. -->
       <section class="pr-hero">
-        <h1>Para ti</h1>
-        <nav class="module-nav" aria-label="Promociones">
+        <div class="pr-hero__barra">
+          <h1>Para ti</h1>
+          <a class="pr-icono pr-icono--guardadas" href="/guardadas.html" aria-label="Guardadas"><span id="pr-contador-guardadas" class="pr-contador" hidden></span></a>
+          <a class="pr-icono pr-icono--preferencias" href="/preferencias.html" aria-label="Mis preferencias"></a>
+        </div>
+        <nav class="pr-secciones" aria-label="Secciones de Promociones">
           <a href="/promociones.html" aria-current="page">Para ti</a>
-          <a href="/guardadas.html">Guardadas</a>
-          <a href="/preferencias.html">Mis preferencias</a>
+          <a href="/cerca-de-ti.html" hidden>Cerca de ti</a>
         </nav>
-        <!-- H16: tarjetas propias. El selector solo aparece con dos o más tarjetas. -->
-        <section id="card-choice" class="card-choice" hidden>
-          <p id="card-choice-label" class="card-choice-label">Ver beneficios de</p>
-          <div id="card-options" class="card-options" role="group" aria-labelledby="card-choice-label"></div>
-        </section>
-        <p id="card-single" class="card-single" hidden></p>
+        <div class="pr-buscador">
         <!-- H10: búsqueda temporal por nombre de comercio sobre el catálogo aplicable. -->
         <div id="search-box" class="search-box" role="search">
           <label for="merchant-search" class="search-label">Buscar comercio</label>
@@ -56,17 +54,13 @@
             <button id="clear-search" type="button" class="search-clear" aria-label="Limpiar búsqueda" hidden>Limpiar</button>
           </div>
         </div>
+        <button id="abrir-filtros" type="button" class="pr-boton-filtros" aria-label="Filtros" aria-haspopup="dialog" aria-controls="filtros" data-activos="0"></button>
+        </div>
       </section>
       <!-- Franja de avisos: no repite tarjetas de la lista (js/franja.js, js/carrusel.js). -->
       <section id="franja" class="pr-franja" aria-roledescription="carrusel" aria-label="Avisos para ti" hidden></section>
-      <div class="pr-filtros">
-        <!-- H17: Disponibles hoy; filtro temporal que no cambia las preferencias guardadas. -->
-        <button id="today-filter" type="button" class="today-filter" aria-pressed="false">Disponibles hoy</button>
-        <!-- H5: filtro temporal; no cambia las preferencias guardadas. Las categorías llegan de /api/categorias. -->
-        <div id="category-filter" class="category-filter" role="group" aria-label="Filtrar por categoría">
-          <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
-        </div>
-      </div>
+      <!-- Solo los filtros activos, como píldoras que se quitan con un toque. -->
+      <div id="filtros-activos" class="pr-pildoras" role="group" aria-label="Filtros activos" hidden></div>
       <p id="pr-conteo" class="pr-conteo" aria-live="polite"></p>
       <p id="saved-status" class="error" role="alert"></p>
       <div id="promotions-loading" class="pr-esqueleto" role="status" aria-label="Cargando promociones" hidden>
@@ -109,7 +103,10 @@
               <p class="promo-badges" hidden></p>
               <ul class="promo-conditions"></ul>
               <div class="promo-pie">
-                <p class="promo-applicability"></p>
+                <div class="promo-tarjetas">
+                  <p class="promo-applicability"></p>
+                  <p class="promo-otras" hidden></p>
+                </div>
                 <span class="promo-open">Ver promoción</span>
               </div>
             </div>
@@ -118,6 +115,32 @@
           <p class="error guardar-error" role="alert"></p>
         </article>
       </template>
+      <!-- Hoja Filtros: tarjeta (H16), categoría (H5) y aplica hoy (H17). Los cambios se aplican al tocarlos. -->
+      <dialog id="filtros" class="pr-hoja" aria-labelledby="filtros-titulo">
+        <div class="pr-hoja__asa" aria-hidden="true"></div>
+        <h2 id="filtros-titulo" class="pr-hoja__titulo">Filtros</h2>
+        <div class="pr-hoja__cuerpo">
+          <section class="pr-hoja__grupo">
+            <h3>Tarjeta</h3>
+            <section id="card-choice" class="card-choice" hidden>
+              <p id="card-choice-label" class="card-choice-label">Ver beneficios de</p>
+              <div id="card-options" class="card-options" role="group" aria-labelledby="card-choice-label"></div>
+            </section>
+            <p id="card-single" class="card-single" hidden></p>
+          </section>
+          <section class="pr-hoja__grupo">
+            <h3 id="grupo-categoria">Categoría</h3>
+            <div id="category-filter" class="category-filter" role="group" aria-labelledby="grupo-categoria">
+              <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
+            </div>
+          </section>
+          <section class="pr-hoja__grupo">
+            <h3>Cuándo</h3>
+            <button id="today-filter" type="button" class="today-filter" aria-pressed="false">Solo lo que aplica hoy</button>
+          </section>
+        </div>
+        <div class="pr-hoja__acciones"><button id="cerrar-filtros" type="button">Listo</button></div>
+      </dialog>
       <div id="pr-aviso" class="pr-aviso" role="status" hidden><p class="pr-aviso__texto"></p><button type="button" class="pr-aviso__accion">Deshacer</button></div>
     </main>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>

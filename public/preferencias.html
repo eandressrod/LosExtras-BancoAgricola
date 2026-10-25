@@ -26,18 +26,17 @@
   <body class="preferences-page pr" data-session="pending">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
-      <a class="pr-volver" href="/menu.html" aria-label="Volver al menú"></a>
+      <a class="pr-volver" href="/promociones.html" aria-label="Volver a Para ti"></a>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <p id="session-profile" class="session-profile" hidden></p>
     </header>
     <main>
       <section class="pr-hero">
-        <h1>Mis preferencias</h1>
-        <nav class="module-nav" aria-label="Promociones">
-          <a href="/promociones.html">Para ti</a>
-          <a href="/guardadas.html">Guardadas</a>
-          <a href="/preferencias.html" aria-current="page">Mis preferencias</a>
-        </nav>
+        <div class="pr-hero__barra">
+          <h1>Mis preferencias</h1>
+          <a class="pr-icono pr-icono--guardadas" href="/guardadas.html" aria-label="Guardadas"><span id="pr-contador-guardadas" class="pr-contador" hidden></span></a>
+          <a class="pr-icono pr-icono--preferencias" href="/preferencias.html" aria-label="Mis preferencias" aria-current="page"></a>
+        </div>
       </section>
       <p id="preferences-status" class="note" role="status">Cargando preferencias…</p>
       <button id="retry" class="secondary" type="button" hidden>Reintentar</button>

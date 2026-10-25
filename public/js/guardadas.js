@@ -117,7 +117,6 @@ if (profile) {
       tarjetaId = activa.id;
       const badge = document.querySelector('#session-profile');
       if (badge) badge.textContent = `${profile.nombre} · ${cardName(activa)}`;
-      if (document.body) document.body.dataset.tarjeta = activa.tipoTarjeta === 'black' ? 'black' : 'basica';
     }
   } catch { /* si las tarjetas fallan, la lista sigue con la elección guardada */ }
 

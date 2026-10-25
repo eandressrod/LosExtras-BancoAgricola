@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import { abrirListado, almacen } from './pagina-promociones.js';
 import { guardarInstantanea } from '../../public/js/instantanea.js';
 
-const BASICA_A = 'tarjeta=cta-a-3';
 const promo = (id, extra = {}) => ({ id, merchant: id.toUpperCase(), benefit: '10 %', category: 'Compras', validUntil: '2099-12-31', ...extra });
 const respuesta = (promociones, extra = {}) => ({ version: 'v', estrategia: 'personalizada', vacio: null, promociones, ...extra });
 const parte = (enlace, selector) => enlace.querySelector(selector);
@@ -15,7 +14,7 @@ test('H22 cada tarjeta muestra la razón y las insignias que entrega el motor, e
     promo('tienda', { razon: { tipo: 'comercio', texto: 'Porque elegiste TIENDA' }, insignias: [{ tipo: 'canal', valor: 'delivery', texto: 'A domicilio' }] }),
     promo('cine', { razon: null, insignias: [] })
   ]) });
-  assert.deepEqual(p.consultas, [`/api/para-ti?${BASICA_A}`]);
+  assert.deepEqual(p.consultas, [`/api/para-ti`]);
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-tienda', 'promo-cine']);
   const [tienda, cine] = tarjetas(p);
   assert.equal(parte(tienda, '.promo-reason').textContent, 'Porque elegiste TIENDA');
@@ -35,7 +34,7 @@ test('H22 sin catálogo para la tarjeta se indica sin ofrecer cambiar filtros ni
 test('H22 volver del detalle reutiliza la instantánea: mismo orden, sin consultar y con las vencidas marcadas', async () => {
   const sesion = almacen();
   const guardada = respuesta([promo('cine'), promo('tienda', { validUntil: '2020-01-01' })]);
-  guardarInstantanea(sesion, 'A', `/api/para-ti?${BASICA_A}`, guardada);
+  guardarInstantanea(sesion, 'A', `/api/para-ti`, guardada);
   const p = await abrirListado({ sesion, hash: '#promo-tienda', responder: () => assert.fail('No debe volver a ordenar') });
   assert.deepEqual(p.consultas, []);
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-cine', 'promo-tienda']);
@@ -47,11 +46,11 @@ test('H22 volver del detalle reutiliza la instantánea: mismo orden, sin consult
 
 test('H22 entrar de nuevo o cambiar un filtro recalcula y guarda la instantánea nueva', async () => {
   const sesion = almacen();
-  guardarInstantanea(sesion, 'A', `/api/para-ti?${BASICA_A}`, respuesta([promo('vieja')]));
+  guardarInstantanea(sesion, 'A', `/api/para-ti`, respuesta([promo('vieja')]));
   const p = await abrirListado({ sesion, responder: url => respuesta([promo(url.includes('categoria') ? 'filtrada' : 'nueva')]) });
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-nueva']);
   await p.chip('Compras').click();
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-filtrada']);
-  assert.deepEqual(p.consultas, [`/api/para-ti?${BASICA_A}`, `/api/para-ti?categoria=Compras&${BASICA_A}`]);
-  assert.match(sesion.getItem('los-extras-instantanea:A:tarjeta:cta-a-3'), /filtrada/);
+  assert.deepEqual(p.consultas, [`/api/para-ti`, `/api/para-ti?categoria=Compras`]);
+  assert.match(sesion.getItem('los-extras-instantanea:A:todas'), /filtrada/);
 });

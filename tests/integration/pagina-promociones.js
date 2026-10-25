@@ -7,7 +7,8 @@ import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
 import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
-import { textoDisponibleHoy, textoVencePronto, hoyEnElSalvador } from '../../public/js/promocion-vista.js';
+import { textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas } from '../../public/js/promocion-vista.js';
+import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
 import { diapositivasFranja } from '../../public/js/franja.js';
 import * as instantanea from '../../public/js/instantanea.js';
 
@@ -29,7 +30,7 @@ export const parametro = (url, nombre) => new URL(url, 'http://localhost').searc
 
 const fuente = async archivo => (await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8')).replace(/^import[^\n]+\n/gm, '');
 const vista = {
-  textoVigencia: () => '', textoDisponibleHoy, textoVencePronto, hoyEnElSalvador,
+  textoVigencia: () => '', textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas,
   mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarDias: () => {}
 };
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
@@ -110,6 +111,7 @@ export async function abrirListado(opciones = {}) {
   nav.elementos.set('#card-choice', elemento({ hidden: true }));
   nav.elementos.set('#card-single', elemento({ hidden: true }));
   nav.elementos.set('#cards', cards);
+  nav.elementos.set('#filtros-activos', conHijos({ replaceChildren(...nodos) { this.hijos = nodos; } }));
   nav.elementos.set('#promotion-card', { content: { cloneNode() {
     const partes = new Map();
     return { querySelector(selector) { if (!partes.has(selector)) partes.set(selector, elemento()); return partes.get(selector); } };
@@ -125,7 +127,7 @@ export async function abrirListado(opciones = {}) {
   Object.assign(nav.contexto, {
     registrarAperturaPromociones: async () => { pedidas.aperturas++; },
     crearAviso: () => aviso,
-    diapositivasFranja,
+    diapositivasFranja, filtrosActivos, textoBotonFiltros,
     montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },
     document: {
       body: { dataset: {} },
