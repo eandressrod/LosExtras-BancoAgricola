@@ -1,7 +1,7 @@
 // H22: la instantánea de Para ti conserva el orden durante la visita, solo en esta pestaña y por perfil.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { guardarInstantanea, leerInstantanea, marcarVencidas, olvidarInstantaneas, DURACION_VISITA_MS } from '../../public/js/instantanea.js';
+import { guardarInstantanea, leerInstantanea, marcarVencidas, olvidarInstantaneas, alcanceDeConsulta, DURACION_VISITA_MS } from '../../public/js/instantanea.js';
 
 function almacen() {
   const datos = new Map();
@@ -43,7 +43,7 @@ test('H22 sin almacenamiento disponible o con datos dañados no hay instantánea
   assert.doesNotThrow(() => guardarInstantanea(null, 'A', CONSULTA, RESPUESTA, MEDIODIA));
   assert.equal(leerInstantanea(null, 'A', CONSULTA, MEDIODIA), null);
   const sesion = almacen();
-  sesion.setItem('los-extras-instantanea:A', '{dañado');
+  sesion.setItem('los-extras-instantanea:A:tarjeta:cta-a-3', '{dañado');
   assert.equal(leerInstantanea(sesion, 'A', CONSULTA, MEDIODIA), null);
 });
 
@@ -60,4 +60,20 @@ test('H22 cerrar o iniciar sesión olvida las instantáneas de todos los perfile
   olvidarInstantaneas(sesion);
   assert.deepEqual([...sesion.datos.keys()], ['los-extras-tarjeta:A']);
   assert.doesNotThrow(() => olvidarInstantaneas(null));
+});
+
+test('SCRUM-133 la clave distingue «todas las tarjetas» de una tarjeta concreta y conserva ambos órdenes', () => {
+  const sesion = almacen();
+  const TODAS = '/api/para-ti';
+  const OTRO = { ...RESPUESTA, promociones: [{ id: 'z' }] };
+  assert.equal(alcanceDeConsulta(TODAS), 'todas');
+  assert.equal(alcanceDeConsulta('/api/para-ti?categoria=Compras'), 'todas');
+  assert.equal(alcanceDeConsulta(CONSULTA), 'tarjeta:cta-a-3');
+  guardarInstantanea(sesion, 'A', TODAS, OTRO, MEDIODIA);
+  guardarInstantanea(sesion, 'A', CONSULTA, RESPUESTA, MEDIODIA);
+  assert.deepEqual([...sesion.datos.keys()].sort(), ['los-extras-instantanea:A:tarjeta:cta-a-3', 'los-extras-instantanea:A:todas']);
+  assert.deepEqual(leerInstantanea(sesion, 'A', TODAS, despues(60_000)), OTRO);
+  assert.deepEqual(leerInstantanea(sesion, 'A', CONSULTA, despues(60_000)), RESPUESTA);
+  olvidarInstantaneas(sesion);
+  assert.equal(sesion.length, 0);
 });
