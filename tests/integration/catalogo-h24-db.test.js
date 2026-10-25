@@ -159,25 +159,3 @@ test('H24 la última carga generada coincide con la fuente actual', async () => 
   assert.ok(generadas.length > 0, 'Falta la migración generada con npm run catalogo:generar.');
   assert.equal(generadas.at(-1), generarSqlCatalogo(fuente), 'La fuente cambió: genera una migración nueva con npm run catalogo:generar -- <nombre>.');
 });
-
-test('H24 Midi sigue creando y eliminando comercios y promociones sin conocer las columnas nuevas', async () => {
-  const otra = await baseConMigraciones();
-  const guardar = async cambios => (await otra.query('select public.midi_guardar_cambios($1::jsonb) as datos', [JSON.stringify(cambios)])).rows[0].datos;
-  try {
-    await guardar([
-      { tabla: 'comercios', operacion: 'crear', clave: { id: 'midi-h24' }, datos: { id: 'midi-h24', nombre: 'Comercio de Midi', logo_url: null } },
-      { tabla: 'categoria_comercios', operacion: 'crear', clave: { categoria_id: 'Compras', comercio_id: 'midi-h24' },
-        datos: { categoria_id: 'Compras', comercio_id: 'midi-h24' } },
-      { tabla: 'promociones', operacion: 'crear', clave: { id: 'midi-h24' }, datos: { id: 'midi-h24', merchant: 'Comercio de Midi',
-        category: 'Compras', benefit: '5 %', description: 'Oferta creada en Midi', payment: 'Tarjeta Básica', restrictions: '', orden: 99,
-        comercio_id: 'midi-h24', instrucciones: '', descripcion_detalle: '' } }
-    ]);
-    const [creada] = await filas("select canales, tipo_beneficio, fecha_alta from promociones where id = 'midi-h24'", [], otra);
-    assert.deepEqual(creada, { canales: null, tipo_beneficio: null, fecha_alta: null });
-
-    const conSucursales = fuente.promociones.find(p => sucursalesParticipantes(p, fuente.sucursales).length);
-    const leida = (await otra.query('select public.midi_leer_datos() as datos')).rows[0].datos.promociones.find(p => p.id === conSucursales.id);
-    await guardar([{ tabla: 'promociones', operacion: 'eliminar', clave: { id: leida.id }, version: leida._version, dependencias: leida._dependencias }]);
-    assert.deepEqual(await filas('select * from promocion_sucursales where promocion_id = $1', [leida.id], otra), []);
-  } finally { await otra.close(); }
-});

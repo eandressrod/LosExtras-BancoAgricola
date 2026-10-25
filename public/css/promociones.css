@@ -41,6 +41,9 @@
 .exclusive-label { display: inline-block; margin-bottom: 10px; }
 .promo-content { padding: 19px 20px 18px; }
 .promo-category { margin: 0 0 5px; color: #656565; font-size: .75rem; font-weight: 600; }
+.promo-reason { margin: 0 0 6px; font-size: .8rem; font-weight: 700; }
+.promo-badges { margin: 8px 0; color: var(--muted); font-size: .8rem; font-weight: 600; }
+.promo-expired { margin: 8px 0; color: var(--error); font-size: .85rem; font-weight: 700; }
 .promo-content h2 { font-size: 1.1rem; margin: 0 0 5px; }
 .promo-benefit { margin: 0 0 8px; font-size: 1.5rem; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; }
 .promo-description { margin: 0 0 13px; font-size: .9rem; color: #575757; }

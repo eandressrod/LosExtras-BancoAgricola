@@ -6,7 +6,7 @@ Adaptación local autorizada: `cuentas` contiene solo cuentas bancarias, con nú
 
 La migración `20261016015547_regenerar_cuentas_tarjetas.sql` está **aplicada al proyecto compartido** por autorización explícita del 15 de octubre de 2026; el nombre local está alineado con la versión registrada en Supabase. Es una regeneración explícitamente destructiva de cuentas/tarjetas de prueba, no un seed para repetir: no modifica perfiles, credenciales, preferencias, catálogo, puntos, mensajes, metas ni sesiones. El backend adaptado ya está publicado directamente en Vercel, sin commit/push. La versión de main anterior a esta adaptación obtiene tarjetas de `cuentas`: integrar estos cambios antes de otro despliegue automático. No volver a publicar ese backend anterior. El frontend actualizado permanece local; esta publicación conserva las pantallas anteriores. No ejecutar automáticamente sobre una base compartida ni reaplicar migraciones históricas después de esta regeneración.
 
-Los datos mock reflejan la misma estructura y contienen once cuentas y trece tarjetas para los seis perfiles locales. La migración también contempla perfiles adicionales existentes en la base. El campo legado `cuentas.numero_enmascarado` se sincroniza con el número completo para compatibilidad, sin ocultarlo; usar `numero_completo` para cuentas. Midi genera y edita ese número completo y deja de crear filas de tarjeta dentro de cuentas. Las tarjetas siguen restringidas por propietario en las API y por FK compuesta en la base; no se exponen números completos de tarjeta.
+Los datos mock reflejan la misma estructura y contienen once cuentas y trece tarjetas para los seis perfiles locales. La migración también contempla perfiles adicionales existentes en la base. El campo legado `cuentas.numero_enmascarado` se sincroniza con el número completo para compatibilidad, sin ocultarlo; usar `numero_completo` para cuentas. Las tarjetas siguen restringidas por propietario en las API y por FK compuesta en la base; no se exponen números completos de tarjeta.
 
 El [registro de integración de UI, menú y PWA](INTEGRACION_UI_PWA.md) explica el incremento del 15 de octubre de 2026, su convivencia con H5/H16, los conflictos resueltos y las verificaciones realizadas.
 
@@ -28,7 +28,7 @@ Corrección del 15 de octubre: Promociones, detalle y lectura de mensajes muestr
 
 `POST /api/auth/actividad` exige cookie válida y mismo origen. Login, sesión y actividad devuelven `{perfil, sesion:{id, ahora, inactivaEn, expiraEn}}`, con fechas en milisegundos; `GET /api/auth/sesion` no renueva y, sin sesión válida (ausente, alterada, revocada o vencida), responde 200 con `{perfil:null, sesion:null}` para que la primera visita al login no registre un 4xx en consola; las demás API privadas mantienen 401. La validación compartida de todas las API privadas consulta `sesiones_actividad` mediante `estado_actividad_sesion`, con reloj/bloqueo de PostgreSQL, RLS y permisos exclusivos del backend. Las sesiones vencidas o revocadas no reviven, ni con copia de la cookie. La firma incorpora la fecha de creación; cookies anteriores requieren iniciar sesión nuevamente. La marca local del login ya no determina si se consulta la sesión.
 
-Antes de ejecutar/desplegar este código en otra base, aplicar en orden las migraciones `20261015013734_h13_sesion_inactividad.sql` y `20261015014018_h13_actividad_eliminar_perfil.sql`. La segunda permite que Midi retire un perfil con su estado efímero de actividad. Ambas están aplicadas en el proyecto compartido. No volver a ejecutar migraciones anteriores. No se usa Supabase Auth ni se exponen claves privadas al navegador.
+Antes de ejecutar/desplegar este código en otra base, aplicar en orden las migraciones `20261015013734_h13_sesion_inactividad.sql` y `20261015014018_h13_actividad_eliminar_perfil.sql`. La segunda permite retirar un perfil con su estado efímero de actividad. Ambas están aplicadas en el proyecto compartido. No volver a ejecutar migraciones anteriores. No se usa Supabase Auth ni se exponen claves privadas al navegador.
 
 Verificación: `npm test`; `npm run test:remote` incluye la prueba H13 de renovación, vencimiento y revocación con sesiones propias de prueba. Sus registros quedan revocados al finalizar; no modifica categorías, cuentas ni catálogo. La instalación real y la DoD completa requieren su evidencia independiente.
 
@@ -151,9 +151,9 @@ Al pasar a segundo plano, el navegador registra `{id, desde}` de la sesión en `
 
 Las comprobaciones de sesión y cargas de módulos esperan al menos 1 s en paralelo con la petición mediante `conMinimoCarga`; una petición lenta no añade otro segundo al terminar. Volver de la Bandeja de entrada selecciona Cuentas y repite su indicador usando los datos ya disponibles, sin otro GET `/api/menu`. Un fallo mantiene Reintentar y la verificación de sesión; no entra en un bucle automático. El aro compartido está en `public/recursos/menu/carga.svg`; recursos y lógica de carga en `public/recursos/inicio/`, `public/css/inicio.css`, `public/css/carga.css`, `inicio.js` y `transiciones.js`. CIB Sans Light/Bold local conserva la procedencia y el permiso indicados en la guía UI.
 
-El login usa `public/css/login.css` y los iconos de `public/recursos/login/`. «Ver usuarios de prueba» abre un diálogo que refresca todos los perfiles de la base, incluidos los creados y guardados desde Midi. Elegir uno rellena usuario y clave; Continuar valida mediante H1. Recuperar usuario o clave abre el mismo selector; Contacto y Ayuda muestran la información de Los Extras. Se omite Clave Dinámica. La respuesta pública de testing contiene únicamente `id`, `nombre`, `tipoTarjeta`, `usuarioAcceso`, `clavePrueba` y `promocionesAbiertas`, sin hash, con `Cache-Control: no-store`; el GET sin `testing=1` mantiene su contrato anterior. Son credenciales ficticias del proyecto expresamente autorizadas para autocompletar, nunca claves privadas de Supabase ni acceso bancario.
+El login usa `public/css/login.css` y los iconos de `public/recursos/login/`. «Ver usuarios de prueba» abre un diálogo que refresca todos los perfiles de la base, incluidos los creados directamente en Supabase. Elegir uno rellena usuario y clave; Continuar valida mediante H1. Recuperar usuario o clave abre el mismo selector; Contacto y Ayuda muestran la información de Los Extras. Se omite Clave Dinámica. La respuesta pública de testing contiene únicamente `id`, `nombre`, `tipoTarjeta`, `usuarioAcceso`, `clavePrueba` y `promocionesAbiertas`, sin hash, con `Cache-Control: no-store`; el GET sin `testing=1` mantiene su contrato anterior. Son credenciales ficticias del proyecto expresamente autorizadas para autocompletar, nunca claves privadas de Supabase ni acceso bancario.
 
-La migración `20261014212538_login_usuarios_prueba.sql`, aplicada el 14 de octubre, añade `perfiles.clave_prueba` y `promociones_abiertas`. Midi guarda la clave ficticia junto con el hash al crear/cambiar contraseña; edición sin contraseña conserva ambos y retirar usuario de acceso borra ambos. Perfiles externos sin clave de prueba siguen visibles y requieren escribirla manualmente. El punto azul indica flag false: al entrar a Promociones se envía POST `/api/promociones-apertura`, con propietario obtenido exclusivamente de la sesión. Se registra antes de decidir encuesta/listado, independientemente de guardar u omitir encuesta. No hay historial de visitas. La flag se inicializa false para los perfiles existentes porque no había estado histórico de apertura. Prueba remota del flujo: `node --env-file-if-exists=.env --test tests/remote/usuarios-prueba.test.js`; crea/edita un perfil temporal y elimina solo ese registro al finalizar.
+La migración `20261014212538_login_usuarios_prueba.sql`, aplicada el 14 de octubre, añade `perfiles.clave_prueba` y `promociones_abiertas`. Al crear o cambiar la contraseña de un perfil se guardan juntos la clave ficticia y su hash (sección 8). Perfiles externos sin clave de prueba siguen visibles y requieren escribirla manualmente. El punto azul indica flag false: al entrar a Promociones se envía POST `/api/promociones-apertura`, con propietario obtenido exclusivamente de la sesión. Se registra antes de decidir encuesta/listado, independientemente de guardar u omitir encuesta. No hay historial de visitas. La flag se inicializa false para los perfiles existentes porque no había estado histórico de apertura. Prueba remota del flujo: `node --env-file-if-exists=.env --test tests/remote/usuarios-prueba.test.js`; crea el perfil temporal directamente en Supabase, le cambia la clave y elimina solo ese registro al finalizar.
 
 ## 5. Ubicar archivos y trabajar con TDD
 
@@ -253,44 +253,16 @@ Completar manualmente las tres variables necesarias en `.env`. Nuestro servidor 
 
 Referencia operativa del equipo: [SCRUM-63](https://somos-agilistas.atlassian.net/browse/SCRUM-63). Consultar también los criterios de aceptación y la DoD en la historia que se esté desarrollando.
 
-## 8. Midi: administrar los datos localmente
+## 8. Administrar los datos
 
-Desde la raíz del repositorio, con Node 24, `npm ci` y el `.env` configurado:
+Midi, la herramienta local de `hola/`, se retiró el 22 de octubre de 2026 ([ADR-008](<../ADR/0008-Decision de retirar Midi.md>)). Los datos se administran así:
 
-```powershell
-npm run midi
-```
+- **Catálogo:** se cambia en `catalogo/catalogo.json` y se genera su migración con `npm run catalogo:generar -- <nombre>` (sección 10).
+- **Cambios puntuales en la base compartida:** Table Editor o editor SQL de Supabase, con acceso autorizado. Lo que deba conservarse o reproducirse en otra base se escribe además como migración en `supabase/migrations/`, con su prueba de integración primero.
+- **Perfiles de prueba:** insertar en `perfiles` con `usuario_acceso`, `contrasena_hash` y `clave_prueba`, y su fila en `preferencias_usuario`. El hash se genera con `npm run hash -- "Clave"`. Para retirar un perfil, borrar antes sus filas de `promociones_guardadas`, `sesiones_revocadas` y `preferencias_usuario`; cuentas, tarjetas, metas, mensajes y actividad se borran en cascada.
+- **Imágenes:** las que creó Midi siguen en `public/recursos/midi/` porque la base las referencia por su ruta. Las nuevas siguen la convención de la sección 10.
 
-Abrir `http://127.0.0.1:3001`. La herramienta está en `hola/`; no se publica con las pantallas de `public/`. `SUPABASE_URL` y `SUPABASE_SECRET_KEY` permanecen en Node. Midi administra Supabase real independientemente de `DATA_SOURCE`; no utiliza el catálogo mock.
-
-El proyecto destino necesita las migraciones `midi_administracion`, `midi_borrado_revocaciones` y `midi_categorias`, que preparan lectura conjunta, guardado transaccional, categorías administrables y permisos del backend. Fueron aplicadas al proyecto compartido el 13 de octubre de 2026 (la última tiene versión UTC `20261014024012`). El selector posterior del login requiere también `20261014212538_login_usuarios_prueba.sql`, que prepara la clave ficticia y el valor inicial de primera apertura para altas desde Midi. Un proyecto distinto necesita aplicar las migraciones en orden mediante su flujo autorizado; no ejecutar de nuevo las cargas iniciales sobre la base compartida.
-
-El árbol lateral contiene usuarios y el catálogo de promociones. En `Promociones → Categorías` se crean las categorías que utiliza la encuesta; Propiedades → Comercios permite asociar varios locales a cada categoría. Al desplegar una categoría se accede a sus comercios y, desde cada comercio, a sus ofertas. El botón Asociar comercios recupera esa selección; Nuevo dentro de la categoría permite crear un comercio ya vinculado. Comercios y Beneficios por tarjeta conservan sus vistas generales. Se puede editar directamente la cuadrícula o usar Propiedades. Las claves existentes están bloqueadas; cambiar Nombre no cambia el ID. Contraseña vacía en una edición conserva la actual; `NULL` en usuario de acceso retira también su hash. Al crear perfiles se requieren usuario y contraseña.
-
-Perfil rápido agrega un usuario con ID y acceso legibles (`usuario-001`, etc.), contraseña `123` editable, Básica/Black, cero a tres cuentas y encuesta pendiente. Evita los IDs/accesos cargados y los creados en el borrador; la base rechaza posibles duplicados de otra instancia. Las cuentas nuevas usan IDs como `cuenta-001`. Los identificadores anteriores se conservan. Generar, editar, cambiar de sección o aceptar Propiedades solo cambia el borrador. Guardar se pone azul cuando hay cambios y aplica el conjunto; Cancelar lo descarta. Actualizar conserva los campos editados, trae los demás valores y exige revisar los registros que cambiaron externamente. Ante un alta ya existente o una edición eliminada, se conserva el borrador y se informa del conflicto.
-
-Para imágenes de categorías, logos de comercios y fotos de ofertas, arrastrar el archivo sobre el campo o usar Elegir imagen. Se admiten PNG/JPG/WebP de hasta 2 MB, diez archivos y 8 MB de imágenes por guardado. La vista previa permanece en el navegador hasta Guardar; Cancelar no sube el borrador. No hay fotos de perfil. Al guardar, Node escribe los archivos en `public/recursos/midi/` con nombre derivado del contenido y envía solo su ruta a Supabase. Repetir la misma imagen reutiliza el archivo. Los archivos quedan locales: incluirlos en una publicación requiere el flujo habitual de Git/despliegue, no ocurre automáticamente por guardar en Midi. Quitar una imagen retira la referencia, sin borrar archivos que puedan estar compartidos. Un guardado remoto fallido puede dejar el archivo ya escrito; se conserva para reintentar y no se borra automáticamente.
-
-Al eliminar un perfil se retiran sus cuentas, preferencias, guardadas y revocaciones. Al eliminar ofertas se retiran beneficios y guardadas. Los comercios con ofertas o sucursales no se eliminan mientras existan esas referencias. No se puede desvincular un comercio de una categoría mientras tenga ofertas en ella, ni borrar una categoría todavía usada por comercios, ofertas o preferencias. Midi muestra las dependencias y pide confirmación antes de guardar las bajas.
-
-Límites por proceso: una RPC para leer las ocho tablas administradas, caché compartida de 30 segundos y agrupación de lecturas concurrentes; ninguna consulta por celda, pestaña o generación. Cada Guardar hace una RPC y devuelve la lectura actualizada. Se admiten hasta 200 cambios/1 MB de datos por lote, más las imágenes dentro de un cuerpo HTTP local máximo de 12 MB, con intervalo mínimo de dos segundos y máximo de diez guardados por minuto. Los bytes de imagen no se mandan a Supabase. El identificador de petición deduplica reintentos durante diez minutos. Un fallo de lectura aplica enfriamiento de cinco segundos. Si se pierde la respuesta de un guardado, comprobar su resultado antes de iniciar otra petición; la deduplicación local se pierde al reiniciar el servidor.
-
-Pruebas aisladas, incluidas también en `npm test`:
-
-```powershell
-npm run test:midi
-npm test
-```
-
-Comprobación remota explícita:
-
-```powershell
-npm run test:midi:remote
-```
-
-La prueba remota crea un perfil con ID legible y registros de catálogo UUID propios, comprueba categoría nueva con varios comercios, login/cuentas/encuesta/promociones, edición y rollback, y elimina exclusivamente esos registros al finalizar. Consulta previamente los IDs ocupados. No modifica A, B o demo ni vacía tablas compartidas. Hace como máximo siete RPC de Midi, además de las consultas de los endpoints del producto. Requiere `DATA_SOURCE=supabase` y las migraciones aplicadas; los errores de red o permisos pueden impedir la limpieza, que debe revisarse si falla.
-
-Para probar el perfil desde la aplicación, ejecutar `npm run dev` en otra terminal y abrir `http://127.0.0.1:3000`. Si el puerto 3001 está ocupado, cerrar la instancia anterior o definir `MIDI_PORT` en `.env`.
+Las funciones `midi_leer_datos`, `midi_guardar_cambios` y `midi_dependencias` siguen en la base sin uso. Una migración posterior las retirará cuando esta versión sea destino de regreso (ADR-005).
 
 ## 9. H19: menú y datos por usuario — 14 de octubre de 2026
 
@@ -310,7 +282,7 @@ Las letras y números del menú usan CIB Sans Light/Bold localmente, por correcc
 
 El botón Para Ti abre `/promociones.html?entrada=menu`. Esa entrada relee preferencias y resuelve encuesta pendiente; una entrada ordinaria desde Omitir no vuelve a forzarla. La API de promociones mantiene su filtro actual Básica/Black y categorías. Mostrar varias tarjetas no modifica ese filtro ni selecciona una tarjeta de H16.
 
-Todos estos registros son editables mediante Table Editor/SQL con acceso autorizado. La carga inicial quedó reproducible en la migración; no cambia valores al recargar la página. `backend/datos-menu.json` es el equivalente aislado para mock/pruebas, no la fuente usada con `DATA_SOURCE=supabase`. La ampliación de Midi para editar/aleatorizar estas entidades está acordada solo como documentación futura: aún no dispone de sus editores ni de un botón para regenerar esos datos. No confundir sus controles actuales de Perfil rápido con esa ampliación.
+Todos estos registros son editables mediante Table Editor/SQL con acceso autorizado. La carga inicial quedó reproducible en la migración; no cambia valores al recargar la página. `backend/datos-menu.json` es el equivalente aislado para mock/pruebas, no la fuente usada con `DATA_SOURCE=supabase`.
 
 Comprobación aislada: `npm test`. `npm run test:remote` incluye la prueba H19 de los tres perfiles y CRUD de una meta temporal propia; esa prueba requiere la migración y retira su meta al finalizar. No modifica cuentas/saldos ni preferencias de A/B/demo. Mantener las credenciales de prueba en esta guía, fuera de la interfaz.
 
@@ -347,4 +319,36 @@ npm test
 
 El comando valida la fuente (esquema, referencias, sensibles sin ocasiones, presencial con sucursales, delivery con cobertura, coordenadas en El Salvador, descripciones únicas, vigencia e imágenes existentes) y, si no hay errores, escribe una migración nueva con la carga. La carga es idempotente: inserta o actualiza por clave y sincroniza beneficios, sucursales participantes y cobertura de lo que define la fuente, sin borrar promociones ni comercios creados fuera de ella. La prueba `catalogo-h24-db` falla si la última carga generada no coincide con la fuente. El mock lee la fuente directamente. Las reglas de cantidades, variedad, vocabulario y el reporte de cobertura se completan en SCRUM-126.
 
-**Migraciones de esta entrega:** `20261020203000_h24_catalogo_contrato.sql` (tablas y columnas nuevas, todas opcionales para que Midi siga creando filas) y `20261020203100_h24_catalogo_esqueleto.sql` (carga generada: 20 promociones en 6 categorías, 12 comercios, 7 zonas y cobertura). Antes de aplicarlas a la base compartida, sacar la foto de datos; después, `npm run test:remote` incluye `tests/remote/catalogo-h24.test.js`, que compara Supabase con la fuente. Las 5 promociones anteriores conservan su identificador y su vigencia pasa al 31 de diciembre de 2026. Midi no edita las columnas nuevas: esta historia no lo adapta. Midi tampoco elimina comercios con sucursales, porque no administra esa tabla.
+**Migraciones de esta entrega:** `20261020203000_h24_catalogo_contrato.sql` (tablas y columnas nuevas, todas opcionales) y `20261020203100_h24_catalogo_esqueleto.sql` (carga generada: 20 promociones en 6 categorías, 12 comercios, 7 zonas y cobertura). Antes de aplicarlas a la base compartida, sacar la foto de datos; después, `npm run test:remote` incluye `tests/remote/catalogo-h24.test.js`, que compara Supabase con la fuente. Las 5 promociones anteriores conservan su identificador y su vigencia pasa al 31 de diciembre de 2026.
+
+## 11. H22: motor de Para ti y registro de señales — 22 de octubre de 2026
+
+Subtareas 2 y 3 de H22 ([SCRUM-128](https://somos-agilistas.atlassian.net/browse/SCRUM-128) y [SCRUM-133](https://somos-agilistas.atlassian.net/browse/SCRUM-133)). Las decisiones técnicas están en [ADR-009](<../ADR/0009-Decision de implementar el motor beta de Para ti.md>). Un cambio de este contrato se avisa en H20, H21, H23 y H25.
+
+**Motor.** Es un paquete ESM puro en `public/js/motor/`, sin dependencias: el backend lo importa y el navegador puede cargarlo tal cual (vista previa de H21). Entrada de `ordenarParaTi`:
+
+- `ofertas`: las de la tarjeta elegida, aplanadas por `filtrarPromociones` sin filtrar por intereses.
+- `senales`: las activas del usuario.
+- `filtros`: `{categoria, hoy, comercio}`.
+- `reglas` (opcional): `excluir` y `multiplicador` para H23, `intencion` para H25.
+
+Los parámetros y su versión están en `config.js`; cambiar un valor exige cambiar la versión. Formas y tipos: `public/js/motor/contrato.js`. Ejemplos: `docs/contrato-motor/`. Datos de prueba: `tests/fixtures/motor/perfiles.js`, con perfiles vacío, solo categorías, con comercios elegidos y con rechazos.
+
+| Endpoint | Método | Contrato |
+| --- | --- | --- |
+| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`). Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
+| `/api/senales` | GET | `{senales}`: las activas del dueño de la sesión. |
+| `/api/senales` | POST | `{clase, ambito, valor, origen}` crea la señal o reactiva la existente; responde `{senal}`. Valida el vocabulario y que el valor exista en el catálogo. |
+| `/api/senales` | PATCH | `{id, activa}` desactiva (quitar) o reactiva (deshacer); 404 si la señal no es del usuario. |
+
+Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (`backend/http.js`). `/api/promociones` conserva su contrato. Para ti ya no lo usa: consume `/api/para-ti` y conserva el orden de la visita en `sessionStorage` (`public/js/instantanea.js`).
+
+**Datos.**
+
+- La migración `20261023013727_h22_senales_usuario.sql` crea `senales_usuario` (RLS, solo backend) y copia las categorías de `preferencias_usuario` como interés·categoría con origen encuesta.
+- `/api/preferencias` conserva su contrato. Escribe en `preferencias_usuario` y sincroniza esas señales; `encuesta_completada` no cambia de tabla.
+- El mock deriva sus señales iniciales de las preferencias de `backend/datos-menu.json`.
+- La tabla está en el respaldo de datos.
+- Abre una transición de regreso en `supabase/versiones.json`, porque las pruebas de PR 21 cuentan las tablas de forma fija. El PR del motor se registra como destino al fusionarse.
+
+**Aplicar en la base compartida** (solo con autorización): sacar la foto de datos (`npm run respaldo -- crear`), aplicar la migración y comprobar con `npm run test:remote`.
