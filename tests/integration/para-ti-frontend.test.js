@@ -53,5 +53,5 @@ test('H22 entrar de nuevo o cambiar un filtro recalcula y guarda la instantánea
   await p.chip('Compras').click();
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-filtrada']);
   assert.deepEqual(p.consultas, [`/api/para-ti?${BASICA_A}`, `/api/para-ti?categoria=Compras&${BASICA_A}`]);
-  assert.match(sesion.getItem('los-extras-instantanea:A'), /filtrada/);
+  assert.match(sesion.getItem('los-extras-instantanea:A:tarjeta:cta-a-3'), /filtrada/);
 });

@@ -1,4 +1,5 @@
-// H22: GET /api/para-ti. El motor ordena las promociones de la tarjeta elegida con las señales del dueño de la sesión.
+// H22: GET /api/para-ti. El motor ordena las promociones de la tarjeta elegida, o de todas las propias sin ?tarjeta= (SCRUM-133),
+// con las señales del dueño de la sesión.
 // La instantánea vive en el navegador: el servidor no guarda órdenes, puntajes ni impresiones.
 import { filtrarPromociones } from '../promociones.js';
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioPreferencias, obtenerRepositorioProductosMenu,
@@ -36,8 +37,11 @@ export function crearHandlerParaTi(repositorios = {
         repositorios.catalogo().listarPromocionesConBeneficios()
       ]);
       const ahora = reloj();
+      // SCRUM-133: sin ?tarjeta= compiten todas las tarjetas propias (del repositorio, nunca del cliente);
+      // con ella, solo la elegida, como antes.
+      const alcance = consulta.todas ? { tarjetas: consulta.tarjetas, predeterminadaId: consulta.tarjeta.id } : consulta.tarjeta.tipoTarjeta;
       // Las preferencias no filtran aquí: el motor decide el alcance y el orden a partir de las señales.
-      const ofertas = filtrarPromociones(catalogo, consulta.tarjeta.tipoTarjeta, [], ahora);
+      const ofertas = filtrarPromociones(catalogo, alcance, [], ahora);
       return responderJson(ordenarParaTi({ ofertas, senales, filtros: consulta.filtros }));
     } catch {
       return responderJson({ error: 'No se pudieron cargar las promociones.' }, 503);
