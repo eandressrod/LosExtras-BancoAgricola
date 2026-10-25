@@ -1,6 +1,9 @@
 import { obtenerRepositorio } from './repositorios/index.js';
 import { CATEGORIAS_PERMITIDAS } from './servicios/preferencias.js';
 
+// Los filtros explícitos viven con el motor para que el backend y el cliente usen la misma copia.
+export { filtrarPorCategoria, filtrarDisponiblesHoy, filtrarPorComercio } from '../public/js/motor/filtros.js';
+
 export async function listarPromociones() {
   return obtenerRepositorio().listarPromociones();
 }
@@ -91,11 +94,6 @@ export function leerCategoriaTemporal(parametros, vigentes = CATEGORIAS_PERMITID
   return { ok: false };
 }
 
-/** Restringe a una categoría las ofertas que ya aplican a la tarjeta y los intereses; null es Todas. */
-export function filtrarPorCategoria(promociones, categoria) {
-  return categoria ? promociones.filter(promo => promo.category === categoria) : promociones;
-}
-
 /**
  * Filtro Disponibles hoy de H17. Sin parámetro `hoy` es el listado habitual; `hoy=1` lo activa.
  * Como el de categoría, es temporal y no cambia las preferencias.
@@ -109,10 +107,6 @@ export function leerDisponibleHoy(parametros) {
   return { ok: false };
 }
 
-/** Deja solo las ofertas aplicables que se pueden usar hoy; apagado devuelve la misma lista. */
-export function filtrarDisponiblesHoy(promociones, hoy) {
-  return hoy ? promociones.filter(promo => promo.availableToday) : promociones;
-}
 /**
  * Búsqueda temporal por nombre de comercio de H10. Recorta espacios al inicio/final;
  * vacío o ausente equivale a no filtrar por comercio. No modifica las preferencias.
@@ -126,14 +120,4 @@ export function leerBusquedaComercio(parametros) {
   const limpio = valores[0].trim();
   if (limpio.length > 100) return { ok: false };
   return { ok: true, comercio: limpio || null };
-}
-
-/** Filtra por coincidencia parcial en el nombre del comercio sin distinguir mayúsculas/minúsculas. */
-export function filtrarPorComercio(promociones, comercio) {
-  const termino = typeof comercio === 'string' ? comercio.trim().toLowerCase() : '';
-  if (!termino) return promociones;
-  return (promociones ?? []).filter(promo => {
-    const nombre = String(promo.merchant ?? promo.comercio?.nombre ?? '').trim().toLowerCase();
-    return nombre.includes(termino);
-  });
 }

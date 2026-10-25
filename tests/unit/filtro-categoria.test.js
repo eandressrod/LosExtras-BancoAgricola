@@ -25,8 +25,8 @@ test('H5 el contexto de navegación pertenece a su perfil: otro usuario no lo he
 });
 
 test('H5 la consulta, el detalle y el retorno llevan el mismo filtro', () => {
-  assert.equal(urlConsulta(null), '/api/promociones');
-  assert.equal(urlConsulta('Compras'), '/api/promociones?categoria=Compras');
+  assert.equal(urlConsulta(null), '/api/para-ti');
+  assert.equal(urlConsulta('Compras'), '/api/para-ti?categoria=Compras');
   assert.equal(urlDetalle('tienda', 'Compras'), '/detalle.html?id=tienda&categoria=Compras');
   assert.equal(urlDetalle('tienda', null), '/detalle.html?id=tienda');
   assert.equal(urlListado('Compras', 'tienda'), '/promociones.html?categoria=Compras#promo-tienda');

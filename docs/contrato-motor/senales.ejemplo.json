@@ -1,0 +1,58 @@
+{
+  "senales": [
+    {
+      "id": 1,
+      "clase": "interes",
+      "ambito": "categoria",
+      "valor": "Restaurantes",
+      "origen": "encuesta",
+      "creadaEn": "2026-10-21T17:00:00.000Z",
+      "activa": true
+    },
+    {
+      "id": 2,
+      "clase": "interes",
+      "ambito": "comercio",
+      "valor": "pizza-hut",
+      "origen": "encuesta",
+      "creadaEn": "2026-10-21T17:00:00.000Z",
+      "activa": true
+    },
+    {
+      "id": 3,
+      "clase": "interes",
+      "ambito": "comercio",
+      "valor": "cine",
+      "origen": "encuesta",
+      "creadaEn": "2026-10-21T17:00:00.000Z",
+      "activa": true
+    },
+    {
+      "id": 4,
+      "clase": "criterio",
+      "ambito": "canal",
+      "valor": "delivery",
+      "origen": "encuesta",
+      "creadaEn": "2026-10-21T17:00:00.000Z",
+      "activa": true
+    },
+    {
+      "id": 5,
+      "clase": "criterio",
+      "ambito": "beneficio",
+      "valor": "2x1-combo",
+      "origen": "encuesta",
+      "creadaEn": "2026-10-21T17:00:00.000Z",
+      "activa": true
+    },
+    {
+      "id": 6,
+      "clase": "criterio",
+      "ambito": "descubrir",
+      "valor": "mezcla",
+      "origen": "encuesta",
+      "creadaEn": "2026-10-21T17:00:00.000Z",
+      "activa": true
+    }
+  ]
+}
