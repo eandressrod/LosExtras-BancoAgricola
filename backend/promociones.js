@@ -3,6 +3,7 @@ import { CATEGORIAS_PERMITIDAS } from './servicios/preferencias.js';
 
 // Los filtros explícitos viven con el motor para que el backend y el cliente usen la misma copia.
 export { filtrarPorCategoria, filtrarDisponiblesHoy, filtrarPorComercio } from '../public/js/motor/filtros.js';
+import { ordenarBeneficios } from '../public/js/motor/elegibilidad.js';
 
 export async function listarPromociones() {
   return obtenerRepositorio().listarPromociones();
@@ -58,10 +59,32 @@ function camposCatalogo({ sucursales, occasions, priceLevel, restrictions }, com
   };
 }
 
-export function filtrarPromociones(promociones, tipoTarjeta, categoriasPreferidas, ahora = new Date()) {
+/**
+ * SCRUM-133: beneficios de las tarjetas propias que aplican a la oferta, del mejor al peor (regla en elegibilidad.js).
+ * @returns {{ mejorBeneficio: object, otrosBeneficios: object[] } | null} null si ninguna tarjeta propia aplica.
+ */
+function beneficiosDeTodas(beneficios, { tarjetas, predeterminadaId }) {
+  const candidatos = tarjetas.flatMap(tarjeta => {
+    const fila = beneficios?.find(item => item.tipo_tarjeta === tarjeta.tipoTarjeta);
+    return fila ? [{ tarjetaId: tarjeta.id, tipoTarjeta: tarjeta.tipoTarjeta, texto: fila.beneficio }] : [];
+  });
+  if (!candidatos.length) return null;
+  const [mejorBeneficio, ...otrosBeneficios] = ordenarBeneficios(candidatos, predeterminadaId);
+  return { mejorBeneficio, otrosBeneficios };
+}
+
+/**
+ * Aplana el catálogo para una tarjeta. `alcance` es el tipo de la tarjeta elegida ('basica' o 'black') o, sin ?tarjeta=,
+ * `{ tarjetas, predeterminadaId }` con todas las propias: la oferta entra si aplica con al menos una, sus campos de
+ * beneficio son los del mejor y suma mejorBeneficio y otrosBeneficios.
+ */
+export function filtrarPromociones(promociones, alcance, categoriasPreferidas, ahora = new Date()) {
   const hoy = fechaLocal.format(ahora);
+  const todas = typeof alcance === 'object' && alcance !== null;
   return (promociones ?? []).flatMap(({ beneficios, comercio, categoria, sucursales, ...promo }) => {
     if (categoriasPreferidas.length && !categoriasPreferidas.includes(promo.category)) return [];
+    const propios = todas ? beneficiosDeTodas(beneficios, alcance) : null;
+    const tipoTarjeta = todas ? propios?.mejorBeneficio.tipoTarjeta : alcance;
     const beneficio = beneficios?.find(item => item.tipo_tarjeta === tipoTarjeta);
     if (!beneficio) return [];
     const expired = Boolean(promo.validUntil && hoy > promo.validUntil);
@@ -75,7 +98,8 @@ export function filtrarPromociones(promociones, tipoTarjeta, categoriasPreferida
       minimumPurchase: beneficio.compra_minima == null ? null : Number(beneficio.compra_minima),
       discountCap: beneficio.tope_descuento == null ? null : Number(beneficio.tope_descuento),
       expired, upcoming, canUse: !expired && !upcoming,
-      availableToday: disponibleHoy(promo, ahora)
+      availableToday: disponibleHoy(promo, ahora),
+      ...propios
     }];
   });
 }

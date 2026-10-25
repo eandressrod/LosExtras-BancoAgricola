@@ -9,7 +9,8 @@ const rechazo = (estado, error) => ({ ok: false, estado, cuerpo: { error } });
  * @param {Array<{id: string}>} categorias vigentes del catálogo
  * @param {object[]} propias tarjetas del dueño de la sesión
  * @param {import('../repositorios/contrato.js').PerfilSesion} perfil
- * @returns {{ ok: true, filtros: import('../../public/js/motor/contrato.js').FiltrosExplicitos, tarjeta: object | null }
+ * @returns {{ ok: true, filtros: import('../../public/js/motor/contrato.js').FiltrosExplicitos, tarjeta: object | null,
+ *   tarjetas: object[], todas: boolean }
  *   | { ok: false, estado: number, cuerpo: { error: string } }}
  */
 export function leerConsultaPromociones(parametros, categorias, propias, perfil) {
@@ -21,10 +22,13 @@ export function leerConsultaPromociones(parametros, categorias, propias, perfil)
   const busqueda = leerBusquedaComercio(parametros);
   if (!busqueda.ok) return rechazo(400, 'Búsqueda por comercio no válida.');
   // H16: los beneficios son los de la tarjeta elegida, siempre que sea del dueño de la sesión.
-  const eleccion = elegirTarjeta(tarjetasDelUsuario(propias, perfil), parametros, perfil.tipoTarjeta);
+  // SCRUM-133: sin ?tarjeta=, `tarjeta` es la predeterminada y `todas` indica a Para ti que evalúe todas las propias.
+  const tarjetas = tarjetasDelUsuario(propias, perfil);
+  const eleccion = elegirTarjeta(tarjetas, parametros, perfil.tipoTarjeta);
   if (!eleccion.ok) {
     const { cuerpo, estado } = rechazoDeTarjeta(eleccion);
     return { ok: false, estado, cuerpo };
   }
-  return { ok: true, filtros: { categoria: filtro.categoria, hoy: disponibilidad.hoy, comercio: busqueda.comercio }, tarjeta: eleccion.tarjeta };
+  return { ok: true, filtros: { categoria: filtro.categoria, hoy: disponibilidad.hoy, comercio: busqueda.comercio }, tarjeta: eleccion.tarjeta,
+    tarjetas, todas: !parametros.has('tarjeta') };
 }
