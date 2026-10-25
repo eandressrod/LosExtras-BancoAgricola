@@ -43,6 +43,18 @@ Decidió además:
    - Movimiento reducido.
    - Área táctil ampliada por pseudoelemento en los iconos pequeños.
 
+## Revisión del 24 de octubre de 2026 (versión 3)
+
+Tras revisar la versión 2, el PO operativo decidió simplificar la pantalla:
+
+- **Todas las tarjetas.** Para ti considera todas las tarjetas propias y la tarjeta pasa a ser un filtro (comentario 10031 en SCRUM-116; backend en SCRUM-133). Por eso la cabecera **deja de cambiar de color por tarjeta** y queda siempre amarilla.
+- **Menos controles a la vista.** Tarjeta, categoría y «Solo lo que aplica hoy» se mueven a una hoja **Filtros**. Sobre la lista solo quedan las píldoras de los filtros activos. Guardadas y Mis preferencias pasan a iconos de la cabecera. La fila fija de chips y el selector de tarjetas visible se retiran.
+- **Paleta.** Fondo blanco puro y acentos por categoría «de compras» (mandarina, sandía, uva, menta, agua y cielo). El beneficio va en una etiqueta de precio.
+- **Secciones.** Para ti | Cerca de ti. El espacio queda listo y H8 muestra la segunda sección cuando exista.
+- **Tamaño táctil.** El CDA 11 se ajustó a un área táctil efectiva de al menos 44 × 44 px (comentario 10034).
+
+Los puntos 2 y 3 de la decisión original («cabecera según la tarjeta» y «chips de 36 px en una fila») quedan sustituidos por esta revisión.
+
 ## Alternativas consideradas
 
 | Alternativa | Por qué no |
