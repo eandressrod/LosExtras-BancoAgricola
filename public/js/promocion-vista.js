@@ -97,3 +97,19 @@ export function mostrarDias(lista, promo, diaHoy = diaDeLaSemana(hoyEnElSalvador
     lista.append(item);
   }
 }
+
+const NOMBRE_TARJETA = { basica: 'Básica', black: 'Black' };
+
+/** Todas las tarjetas (SCRUM-133): menciona otra tarjeta propia solo si su beneficio es distinto al mejor. */
+export function textoOtrasTarjetas(promo) {
+  const mejor = promo.mejorBeneficio;
+  if (!mejor) return '';
+  const vistos = new Set([mejor.tipoTarjeta + '|' + mejor.texto]);
+  const otros = (promo.otrosBeneficios ?? []).filter(beneficio => {
+    const clave = beneficio.tipoTarjeta + '|' + beneficio.texto;
+    if (vistos.has(clave) || beneficio.texto === mejor.texto) return false;
+    vistos.add(clave);
+    return true;
+  });
+  return otros.map(beneficio => `También ${beneficio.texto} con tu ${NOMBRE_TARJETA[beneficio.tipoTarjeta] ?? beneficio.tipoTarjeta}`).join(' · ');
+}
