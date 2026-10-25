@@ -1,7 +1,7 @@
 import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
 import { leerCookie } from '../backend/servicios/sesion.js';
 import { validarYGuardarPreferencias } from '../backend/servicios/preferencias.js';
-import { obtenerRepositorioAccesos, obtenerRepositorioPreferencias } from '../backend/repositorios/index.js';
+import { obtenerRepositorioAccesos, obtenerRepositorioPreferencias, obtenerRepositorioSenales } from '../backend/repositorios/index.js';
 import { responderJson, metodoNoPermitido } from '../backend/http.js';
 
 // Endpoint para guardar las categorías de interés del usuario autenticado (H3).
@@ -32,7 +32,7 @@ export default {
         return responderJson({ error: 'Formato de datos inválido.' }, 400);
       }
       
-      await validarYGuardarPreferencias(perfil.id, cuerpo?.categorias, repoPreferencias);
+      await validarYGuardarPreferencias(perfil.id, cuerpo?.categorias, repoPreferencias, obtenerRepositorioSenales());
       return responderJson({ ok: true });
 
     } catch (error) {
