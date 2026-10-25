@@ -2,7 +2,7 @@
 
 Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRUM-127)). Es la capa visual propia de la sección Promociones: Para ti, Detalle, Guardadas y Mis preferencias. La decisión de tenerla está en [ADR-011](<../ADR/0011-Decision de usar un sistema visual propio en Promociones.md>). Por decisión del PO operativo del 23 de octubre de 2026, la sección no sigue las medidas de las demás interfaces de la [guía de UI](GUIA_UI_BANCOAGRICOLA.md), como el tamaño de los botones. Sí conserva la marca: amarillo y oscuro, tipografía CIB Sans y fotos reales del catálogo.
 
-**Estado:** implementado en la rama `hu/SCRUM-127-promociones-ui`, sobre la rama del motor (PR 25). Falta la aprobación del PO (David).
+**Estado:** versión 3 (24 de octubre de 2026) en la rama `hu/SCRUM-127-promociones-ui`, integrada con main y con Para ti con todas las tarjetas (SCRUM-133). Falta la aprobación del PO (David). Las decisiones de esta versión están en los comentarios 10031 y 10034 de SCRUM-116, 10032 de SCRUM-11, 10033 de SCRUM-67, 10035 de SCRUM-118 y 10036 de SCRUM-119.
 
 | Archivo | Contenido |
 | --- | --- |
@@ -11,25 +11,28 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 | `public/js/franja.js` | Qué avisos muestra el carrusel (función pura). |
 | `public/js/carrusel.js` | Reproductor del carrusel (`crearReproductor`) y su dibujo (`montarCarrusel`). |
 | `public/js/aviso-deshacer.js` | Aviso con «Deshacer». |
-| `public/js/promocion-vista.js` | Textos y piezas de la tarjeta: `textoVencePronto`, `tiraDias`, `mostrarDias`, `hoyEnElSalvador`, `diaDeLaSemana`. |
+| `public/js/promocion-vista.js` | Textos y piezas de la tarjeta: `textoVencePronto`, `tiraDias`, `mostrarDias`, `hoyEnElSalvador`, `diaDeLaSemana`, `textoOtrasTarjetas`. |
+| `public/js/filtros-activos.js` | Píldoras de los filtros activos y nombre accesible del botón Filtros. |
 
 **Regla para las demás historias** (H20, H21, H23 y H25): usar estas clases y tokens sin escribir estilos propios. Un estado nuevo se añade aquí y en el CSS del sistema.
 
 ## Idea
 
-- **La foto manda.** Cada tarjeta lleva la foto real del comercio con un degradado oscuro y el beneficio en blanco y grande sobre ella. Debajo van el comercio, la categoría, los días y las condiciones.
-- **El color sigue a la tarjeta.** La cabecera de la sección es amarilla con la Básica y negra, con aros dorados, con la Black. Cambia con el selector.
-- **Cada categoría tiene su acento.** Se ve en un punto, una barra corta bajo la foto y el icono del filtro. El texto siempre es oscuro, así que el color no lleva información por sí solo.
-- **Controles compactos.** Filtros de 36 px en una sola fila deslizable, Guardar como botón redondo sobre la foto y pestañas en una píldora. El área táctil de los iconos se amplía con un pseudoelemento invisible.
+- **Pocas opciones a la vista.** Arriba están el título, Guardadas y Mis preferencias como iconos, y una sola fila con la búsqueda y el botón **Filtros**. Tarjeta, categoría y «Solo lo que aplica hoy» viven en la hoja Filtros. Sobre la lista solo se ven los filtros activos, como píldoras que se quitan con ×.
+- **Todas tus tarjetas.** Para ti ordena lo mejor de todas las tarjetas propias. Cada promoción dice con cuál conviene («Aplica a tu tarjeta Black») y, si otra cambia el beneficio, la menciona («También 15 % con tu Básica»).
+- **Fondo blanco y cabecera amarilla.** El fondo es blanco puro, como la app del banco. El amarillo de la marca se queda en la cabecera, siempre igual, y en las acciones.
+- **Acentos de compras.** Cada categoría tiene un color alegre (mandarina, sandía, uva, menta, agua y cielo) que se usa como tinte suave con el icono saturado, nunca como color de texto. El beneficio va en una **etiqueta de precio** sobre la foto real.
+- **Simplicidad cuidada.** Mucho aire, jerarquía por peso y tamaño, hojas inferiores para las opciones y microanimaciones discretas.
 
 ## Tokens (`.pr`)
 
 | Grupo | Tokens |
 | --- | --- |
-| Tinta y superficies | `--pr-tinta` `#1d1b1a`, `--pr-texto-2` `#5a5753` (7:1), `--pr-texto-3` `#6f6b66` (5.2:1), `--pr-superficie`, `--pr-fondo` `#f3f2ee`, `--pr-hundido`, `--pr-linea` |
+| Tinta y superficies | `--pr-tinta` `#1d1b1a`, `--pr-texto-2` `#5a5753` (7:1), `--pr-texto-3` `#6f6b66` (5.2:1), `--pr-superficie`, `--pr-fondo` `#ffffff`, `--pr-hundido`, `--pr-linea` |
 | Marca | `--pr-amarillo` `#fdda24`, `--pr-amarillo-hondo`, `--pr-amarillo-suave`, `--pr-noche` `#141414` |
 | Estados | `--pr-verde` (disponible hoy), `--pr-naranja` y `--pr-naranja-suave` (vence pronto), `--pr-rojo` y `--pr-rojo-suave` (vencida, error) |
-| Cabecera | `--pr-hero`, `--pr-hero-tinta`, `--pr-hero-velo`, `--pr-hero-borde`, `--pr-hero-aro`, `--pr-hero-activa`; cambian con `body[data-tarjeta="basica"/"black"]` |
+| Acentos | `--pr-mandarina`, `--pr-sandia`, `--pr-uva`, `--pr-menta`, `--pr-agua`, `--pr-cielo`: tintes al 12–14 % con icono saturado |
+| Cabecera | `--pr-hero`, `--pr-hero-tinta`, `--pr-hero-velo`, `--pr-hero-borde`, `--pr-hero-aro`: amarillo de la marca, sin cambio por tarjeta |
 | Forma | `--pr-radio-tarjeta` 22 px, `--pr-sombra-tarjeta`, `--pr-sombra-flotante` |
 | Movimiento | `--pr-rapido` 160 ms, `--pr-medio` 280 ms, `--pr-lento` 420 ms, `--pr-curva`; con movimiento reducido valen 0 y se quitan las animaciones |
 | Iconos | `--pr-i-*`: trazos lineales propios en SVG dentro del CSS. Los de categoría son de Lucide y conservan su metadata en `recursos/categorias/`. |
@@ -38,21 +41,21 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 
 | Categoría | Acento |
 | --- | --- |
-| Restaurantes | naranja |
-| Compras | violeta |
-| Entretenimiento | rosa |
-| Supermercados | amarillo hondo |
-| Salud | verde |
-| Tecnología | azul |
+| Restaurantes | mandarina |
+| Compras | sandía |
+| Entretenimiento | uva |
+| Supermercados | menta |
+| Salud | agua |
+| Tecnología | cielo |
 
 ## Componentes
 
 ### Cabecera de la sección (`.pr-hero`)
 
-- **Contenido:** título, pestañas del módulo (`.module-nav`), selector de tarjeta y búsqueda.
-- **Selector de tarjeta:** cada opción es una mini tarjeta. La Black lleva `data-tipo="black"`. La elegida va en blanco (con Black, en amarillo) y con ✓.
-- **Búsqueda:** campo blanco con lupa y botón redondo para limpiar.
-- **Fondo y forma:** la cabecera de marca (`header`) comparte su color. El logo se invierte con Black. Los aros de fondo son decoración, sin contenido.
+- **Barra** (`.pr-hero__barra`): título grande; iconos `.pr-icono` de Guardadas (con `.pr-contador` de guardadas) y de Mis preferencias. El de la página actual lleva `aria-current`. En Guardadas y Mis preferencias, la flecha de volver lleva a Para ti.
+- **Secciones** (`.pr-secciones`): Para ti | Cerca de ti. Mientras solo haya una sección visible no se dibuja; H8 muestra «Cerca de ti» cuando exista su pantalla.
+- **Fila de búsqueda** (`.pr-buscador`): campo blanco con lupa y botón **Filtros** (`.pr-boton-filtros`), que muestra cuántos filtros hay activos y tiene un nombre accesible («Filtros, 2 activos»).
+- **Fondo:** amarillo de la marca con aros de fondo. Ya no cambia con la tarjeta.
 
 ### Franja de avisos (carrusel)
 
@@ -78,11 +81,13 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 - **Teclado:** las flechas navegan. La región en vivo está en `off` mientras avanza sola y en `polite` cuando está detenida.
 - **Acciones:** los avisos de promoción desplazan la lista hasta la tarjeta y la resaltan. El aviso semanal abre el detalle. Los demás llevan a Guardadas, a Mis preferencias o a la encuesta.
 
-### Filtros (`.pr-filtros`)
+### Hoja Filtros y píldoras
 
-- **Distribución:** una sola fila deslizable que queda fija arriba al desplazar. Primero «Disponibles hoy» y después las categorías.
-- **Chips:** 36 px, con icono de la categoría en su acento.
-- **Marcado:** fondo oscuro con icono claro y `aria-pressed`.
+- **Hoja** (`<dialog id="filtros" class="pr-hoja">`): se abre con el botón Filtros y se cierra con «Listo», Esc o tocando fuera. Los cambios se aplican al tocarlos. Contiene tres grupos:
+  - **Tarjeta (H16):** lista con mini tarjeta. «Todas mis tarjetas» va primero y es el valor por omisión; con una sola tarjeta se muestra solo su nombre.
+  - **Categoría (H5):** chips que envuelven, cada uno con su icono sobre un tinte de su acento. Marcado: relleno oscuro y `aria-pressed`.
+  - **Cuándo (H17):** «Solo lo que aplica hoy», con un interruptor y `aria-pressed`.
+- **Píldoras** (`.pr-pildoras`): solo aparecen con filtros activos, en orden fijo: categoría, tarjeta y aplica hoy. Cada una quita su filtro.
 
 ### Tarjeta de promoción
 
@@ -105,7 +110,9 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 | Disponible hoy | Línea verde con ✓. |
 | Vence pronto (≤ 7 días) | Píldora naranja suave con reloj: «Vence en N días». |
 | Vencida durante la visita | Píldora roja «Vencida» y foto en gris. |
-| Exclusiva Black | Insignia sobre la foto y cuerpo negro con filo dorado. |
+| Beneficio | Etiqueta de precio color sandía, con orificio y ligera inclinación, sobre la foto; el degradado de la foto es suave. |
+| Exclusiva Black | Insignia sobre la foto, etiqueta de precio negra con dorado y cuerpo negro con filo dorado. |
+| Todas las tarjetas | «Aplica a tu tarjeta …» con el mejor beneficio y, debajo, `.promo-otras` con la otra tarjeta si su beneficio cambia. Dos tarjetas del mismo tipo y beneficio no se repiten. |
 | Sin foto | Fondo oscuro con un halo del acento de la categoría. |
 | Guardada | Botón amarillo con icono lleno y un latido breve. Para ti confirma con el aviso «Deshacer». |
 | Error al guardar | Mensaje rojo bajo la tarjeta. |
@@ -140,11 +147,11 @@ aviso.mostrar({ texto: 'Promoción guardada.', alDeshacer: () => … });
 
 ## Pantallas
 
-- **Para ti:** cabecera, franja, filtros, conteo («17 promociones») y lista.
+- **Para ti:** cabecera con iconos, fila de búsqueda y Filtros, franja de avisos, píldoras activas, conteo («17 promociones») y lista.
 - **Detalle:**
   - foto cuadrada a sangre con «Volver» y Guardar flotantes;
   - comercio y beneficio sobre la foto;
-  - hoja con la categoría, la descripción y los bloques «Cuándo» (tira, vigencia, vence pronto, disponible hoy), «Con tu tarjeta» y «Condiciones».
+  - hoja con la categoría, la descripción y los bloques «Cuándo» (tira, vigencia, vence pronto, disponible hoy), «Con tu tarjeta» (con la otra tarjeta si cambia el beneficio) y «Condiciones».
 - **Guardadas:** misma cabecera y misma tarjeta. Busca entre las guardadas y muestra los vacíos en `.pr-estado--lista`.
 - **Mis preferencias:**
   - fichas en dos columnas con el icono y el acento de cada categoría, y ✓ al marcarlas;
