@@ -1,5 +1,5 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
-import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { leerCategoria, leerHoy, leerBusqueda, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { conMinimoCarga } from './carga-tiempo.js';
@@ -45,8 +45,11 @@ if (profile) {
       const aplica = document.querySelector('#payment');
       aplica.textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
       aplica.dataset.tarjeta = promotion.applicableCard === 'black' ? 'black' : 'basica';
-      // Sistema visual: la cabecera toma el color de la tarjeta y la categoría su acento.
-      if (document.body) document.body.dataset.tarjeta = aplica.dataset.tarjeta;
+      // Todas las tarjetas (SCRUM-133): la otra tarjeta propia solo se menciona si su beneficio cambia.
+      const otras = document.querySelector('#otras-tarjetas');
+      otras.textContent = textoOtrasTarjetas(promotion);
+      otras.hidden = !otras.textContent;
+      // Sistema visual: la categoría lleva su acento.
       const categoriaPromo = document.querySelector('#category');
       categoriaPromo.textContent = promotion.categoryName || promotion.category || '';
       categoriaPromo.dataset.categoria = promotion.category ?? '';

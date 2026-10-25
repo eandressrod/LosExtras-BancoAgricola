@@ -83,28 +83,63 @@ test('sin promociones no hay franja, y al recalcular se detiene el carrusel ante
   assert.equal(p.obtener('#pr-conteo').textContent, '');
 });
 
-test('el color de la cabecera sigue a la tarjeta elegida', async () => {
-  const b = await abrirListado({ perfil: 'B' });
-  assert.equal(b.contexto.document.body.dataset.tarjeta, 'black');
-  const a = await abrirListado();
-  assert.equal(a.contexto.document.body.dataset.tarjeta, 'basica');
-  await a.opcion('Black •••• 7754').click();
-  assert.equal(a.contexto.document.body.dataset.tarjeta, 'black');
-  assert.deepEqual(a.opciones().map(opcion => opcion.dataset.tipo), ['basica', 'black']);
+test('los filtros activos se ven como píldoras sobre la lista y cada una se quita con un toque', async () => {
+  const p = await abrirListado({ search: '?categoria=Compras&hoy=1' });
+  const pildoras = () => p.obtener('#filtros-activos').hijos;
+  assert.deepEqual(pildoras().map(pildora => pildora.textContent), ['Compras', 'Aplica hoy']);
+  assert.equal(p.obtener('#abrir-filtros').attributes['aria-label'], 'Filtros, 2 activos');
+  await pildoras()[0].click();
+  assert.equal(p.consultas.at(-1), '/api/para-ti?hoy=1');
+  assert.deepEqual(pildoras().map(pildora => pildora.textContent), ['Aplica hoy']);
+  await p.opcion('Black •••• 7754').click();
+  assert.deepEqual(pildoras().map(pildora => pildora.textContent), ['Black •••• 7754', 'Aplica hoy']);
+  await pildoras()[0].click();
+  assert.equal(p.consultas.at(-1), '/api/para-ti?hoy=1');
+  assert.equal(p.sesion.getItem('los-extras-tarjeta:A'), null);
+  assert.equal(p.obtener('#filtros-activos').hidden, false);
+  await pildoras()[0].click();
+  assert.equal(p.obtener('#filtros-activos').hidden, true);
+  assert.equal(p.obtener('#abrir-filtros').attributes['aria-label'], 'Filtros');
 });
 
-test('el detalle muestra la categoría con su acento, vence pronto y toma el color de la tarjeta de la promoción', async () => {
-  const p = await abrirDetalle({ search: '?id=tienda', promocion: { category: 'Compras', categoryName: 'Compras', validUntil: enDias(2), applicableCard: 'black' } });
+test('con todas las tarjetas la tarjeta dice con cuál conviene y menciona la otra solo si cambia el beneficio', async () => {
+  const p = await abrirListado({ responder: () => [{
+    id: 'tienda', category: 'Compras', applicableCard: 'black', benefit: '25 %',
+    mejorBeneficio: { tarjetaId: 'cta-a-4', tipoTarjeta: 'black', texto: '25 %' },
+    otrosBeneficios: [{ tarjetaId: 'cta-a-3', tipoTarjeta: 'basica', texto: '15 %' }]
+  }] });
+  const [oferta] = p.cards.hijos;
+  assert.equal(oferta.querySelector('.promo-applicability').textContent, 'Aplica a tu tarjeta Black');
+  assert.equal(oferta.querySelector('.promo-otras').textContent, 'También 15 % con tu Básica');
+  assert.equal(oferta.querySelector('.promo-otras').hidden, false);
+});
+
+test('el icono de Guardadas de la cabecera cuenta las guardadas y se actualiza al guardar', async () => {
+  const p = await abrirListado();
+  const contador = p.obtener('#pr-contador-guardadas');
+  assert.equal(contador.hidden, true);
+  p.contexto.fetch = async () => respuesta();
+  await clic(p.cards.hijos[0].querySelector('.guardar-promo'));
+  assert.equal(contador.textContent, '1');
+  assert.equal(contador.hidden, false);
+});
+
+test('el detalle muestra la categoría con su acento, vence pronto y las otras tarjetas propias', async () => {
+  const p = await abrirDetalle({ search: '?id=tienda', promocion: {
+    category: 'Compras', categoryName: 'Compras', validUntil: enDias(2), applicableCard: 'black',
+    mejorBeneficio: { tarjetaId: 'cta-a-4', tipoTarjeta: 'black', texto: '25 %' },
+    otrosBeneficios: [{ tarjetaId: 'cta-a-3', tipoTarjeta: 'basica', texto: '15 %' }]
+  } });
   const categoria = p.obtener('#category');
   assert.equal(categoria.textContent, 'Compras');
   assert.equal(categoria.dataset.categoria, 'Compras');
   assert.equal(p.obtener('#ending').textContent, 'Vence en 2 días');
   assert.equal(p.obtener('#ending').hidden, false);
   assert.equal(p.obtener('#payment').dataset.tarjeta, 'black');
-  assert.equal(p.contexto.document.body.dataset.tarjeta, 'black');
+  assert.equal(p.obtener('#otras-tarjetas').textContent, 'También 15 % con tu Básica');
 });
 
-test('Guardadas usa la misma tarjeta del sistema y el color de la tarjeta elegida', async () => {
+test('Guardadas usa la misma tarjeta del sistema', async () => {
   const p = await abrirGuardadas({ perfil: 'B', consultarGuardadas: () => ({
     promociones: [{ id: 'siman-black', merchant: 'Siman', benefit: '30 %', category: 'Compras', applicableCard: 'black', exclusive: true }],
     sinCoincidencias: false
@@ -113,5 +148,4 @@ test('Guardadas usa la misma tarjeta del sistema y el color de la tarjeta elegid
   assert.equal(oferta.querySelector('article').dataset.categoria, 'Compras');
   assert.equal(oferta.querySelector('article').dataset.exclusiva, 'si');
   assert.equal(oferta.querySelector('.promo-applicability').dataset.tarjeta, 'black');
-  assert.equal(p.contexto.document.body.dataset.tarjeta, 'black');
 });

@@ -23,10 +23,10 @@
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
   </head>
-  <body class="saved-page pr" data-session="pending" data-tarjeta="basica">
+  <body class="saved-page pr" data-session="pending">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
-      <a class="pr-volver" href="/menu.html" aria-label="Volver al menú"></a>
+      <a class="pr-volver" href="/promociones.html" aria-label="Volver a Para ti"></a>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <div class="header-row">
         <p>Los Extras</p>
@@ -35,12 +35,11 @@
     </header>
     <main>
       <section class="pr-hero">
-        <h1>Guardadas</h1>
-        <nav class="module-nav" aria-label="Promociones">
-          <a href="/promociones.html">Para ti</a>
-          <a href="/guardadas.html" aria-current="page">Guardadas</a>
-          <a href="/preferencias.html">Mis preferencias</a>
-        </nav>
+        <div class="pr-hero__barra">
+          <h1>Guardadas</h1>
+          <a class="pr-icono pr-icono--guardadas" href="/guardadas.html" aria-label="Guardadas" aria-current="page"><span id="pr-contador-guardadas" class="pr-contador" hidden></span></a>
+          <a class="pr-icono pr-icono--preferencias" href="/preferencias.html" aria-label="Mis preferencias"></a>
+        </div>
         <div id="search-box" class="search-box" role="search">
           <label for="merchant-search" class="search-label">Buscar comercio</label>
           <div class="search-field">
