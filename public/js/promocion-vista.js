@@ -29,6 +29,15 @@ export function textoVencePronto(promo, hoy) {
   return dias === 1 ? 'Vence mañana' : `Vence en ${dias} días`;
 }
 
+const SEMANA = [
+  ['L', 'lunes', 1], ['M', 'martes', 2], ['M', 'miércoles', 3], ['J', 'jueves', 4], ['V', 'viernes', 5], ['S', 'sábado', 6], ['D', 'domingo', 0]
+];
+
+/** Sistema visual: días de lunes a domingo; sin días fijos (null) vale toda la semana. `diaHoy` usa domingo = 0. */
+export function tiraDias(dias, diaHoy) {
+  return SEMANA.map(([letra, nombre, numero]) => ({ letra, nombre, valido: !dias?.length || dias.includes(numero), hoy: numero === diaHoy }));
+}
+
 /** H17: por qué se puede usar hoy. No afirma que ya se cumpla una compra mínima. */
 export function textoDisponibleHoy(promo) {
   if (!promo.availableToday) return '';
@@ -36,9 +45,9 @@ export function textoDisponibleHoy(promo) {
   return `Disponible hoy: ${motivo}${promo.minimumPurchase != null ? ', con la compra mínima indicada' : ''}.`;
 }
 
-export function condicionesVisibles(promo) {
+export function condicionesVisibles(promo, { dias: conDias = true } = {}) {
   const condiciones = [];
-  if (promo.usageDays?.length) {
+  if (conDias && promo.usageDays?.length) {
     const diasOrdenados = [...new Set(promo.usageDays)].sort();
     condiciones.push(diasOrdenados.join() === '1,2,3,4' ? 'Lunes a jueves' : diasOrdenados.map(dia => dias[dia]).join(', ').toLowerCase().replace(/^./, letra => letra.toUpperCase()));
   }
@@ -58,12 +67,33 @@ export function mostrarImagen(img, url, alt = '') {
   }
 }
 
-export function mostrarCondiciones(lista, promo) {
+export function mostrarCondiciones(lista, promo, opciones) {
   lista.replaceChildren();
-  for (const texto of condicionesVisibles(promo)) {
+  for (const texto of condicionesVisibles(promo, opciones)) {
     const item = document.createElement('li');
     item.textContent = texto;
     lista.append(item);
   }
   lista.hidden = lista.children.length === 0;
+}
+
+/** Día de la semana (domingo = 0) de una fecha civil AAAA-MM-DD. */
+export function diaDeLaSemana(fecha) {
+  return new Date(fecha + 'T12:00:00Z').getUTCDay();
+}
+
+/** Sistema visual: dibuja la tira L M M J V S D; solo aparece con días fijos. */
+export function mostrarDias(lista, promo, diaHoy = diaDeLaSemana(hoyEnElSalvador())) {
+  lista.replaceChildren();
+  lista.hidden = !promo.usageDays?.length;
+  if (lista.hidden) return;
+  for (const dia of tiraDias(promo.usageDays, diaHoy)) {
+    const item = document.createElement('li');
+    item.className = 'promo-dia';
+    item.textContent = dia.letra;
+    if (dia.valido) item.dataset.valido = '';
+    if (dia.hoy) item.dataset.hoy = '';
+    item.setAttribute('aria-label', dia.nombre + (dia.valido ? ', válido' : ', no válido') + (dia.hoy ? ', hoy' : ''));
+    lista.append(item);
+  }
 }
