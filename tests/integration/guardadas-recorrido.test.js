@@ -119,6 +119,7 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
     textoVigencia: () => '',
     mostrarImagen() {},
     mostrarCondiciones() {},
+    mostrarDias() {},
     document: { querySelector(selector) {
       if (selector === '#cards') return cards;
       if (selector === '#session-profile') return badge;

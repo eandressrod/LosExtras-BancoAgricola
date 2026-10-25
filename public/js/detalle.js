@@ -1,5 +1,5 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
-import { textoVigencia, textoDisponibleHoy, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
+import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { leerCategoria, leerHoy, leerBusqueda, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { conMinimoCarga } from './carga-tiempo.js';
@@ -42,7 +42,17 @@ if (profile) {
       document.title = promotion.merchant + ' · Promoción';
       document.querySelector('#benefit').textContent = promotion.benefit;
       document.querySelector('#description').textContent = promotion.detailDescription || promotion.description;
-      document.querySelector('#payment').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+      const aplica = document.querySelector('#payment');
+      aplica.textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+      aplica.dataset.tarjeta = promotion.applicableCard === 'black' ? 'black' : 'basica';
+      // Sistema visual: la cabecera toma el color de la tarjeta y la categoría su acento.
+      if (document.body) document.body.dataset.tarjeta = aplica.dataset.tarjeta;
+      const categoriaPromo = document.querySelector('#category');
+      categoriaPromo.textContent = promotion.categoryName || promotion.category || '';
+      categoriaPromo.dataset.categoria = promotion.category ?? '';
+      const vence = document.querySelector('#ending');
+      vence.textContent = textoVencePronto(promotion, hoyEnElSalvador());
+      vence.hidden = !vence.textContent;
       document.querySelector('#validity').textContent = textoVigencia(promotion);
       const disponible = document.querySelector('#today');
       disponible.textContent = textoDisponibleHoy(promotion);
@@ -50,7 +60,8 @@ if (profile) {
       document.querySelector('#exclusive').hidden = !promotion.exclusive;
       mostrarImagen(document.querySelector('#promotion-image'), promotion.imageUrl, promotion.imageAlt);
       mostrarImagen(document.querySelector('#merchant-logo'), promotion.logoUrl);
-      mostrarCondiciones(document.querySelector('#conditions'), promotion);
+      mostrarDias(document.querySelector('#days'), promotion);
+      mostrarCondiciones(document.querySelector('#conditions'), promotion, { dias: false });
       if (desdeGuardadas) {
         back.href = retornoGuardadas;
         back.textContent = 'Volver a guardadas';
