@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
     <link rel="stylesheet" href="/css/carga.css">
+    <link rel="stylesheet" href="/css/promociones-sistema.css">
     <link rel="stylesheet" href="/css/promociones.css">
-    <link rel="stylesheet" href="/css/guardadas.css">
     <script type="module" src="/js/promociones.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -23,9 +23,10 @@
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
   </head>
-  <body class="promotions-page" data-session="pending">
+  <body class="promotions-page pr" data-session="pending" data-tarjeta="basica">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso a promociones"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
+      <a class="pr-volver" href="/menu.html" aria-label="Volver al menú"></a>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <div class="header-row">
         <p>Los Extras</p>
@@ -33,69 +34,91 @@
       </div>
     </header>
     <main>
-      <h1>Para ti</h1>
-      <nav class="module-nav" aria-label="Promociones">
-        <a href="/promociones.html" aria-current="page">Para ti</a>
-        <a href="/guardadas.html">Guardadas</a>
-        <a href="/preferencias.html">Mis preferencias</a>
-      </nav>
-      <!-- H16: tarjetas propias. El selector solo aparece con dos o más tarjetas. -->
-      <section id="card-choice" class="card-choice" hidden>
-        <p id="card-choice-label" class="card-choice-label">Ver beneficios de</p>
-        <div id="card-options" class="card-options" role="group" aria-labelledby="card-choice-label"></div>
+      <!-- Sistema visual: cabecera de la sección; su color sigue a la tarjeta elegida (data-tarjeta del body). -->
+      <section class="pr-hero">
+        <h1>Para ti</h1>
+        <nav class="module-nav" aria-label="Promociones">
+          <a href="/promociones.html" aria-current="page">Para ti</a>
+          <a href="/guardadas.html">Guardadas</a>
+          <a href="/preferencias.html">Mis preferencias</a>
+        </nav>
+        <!-- H16: tarjetas propias. El selector solo aparece con dos o más tarjetas. -->
+        <section id="card-choice" class="card-choice" hidden>
+          <p id="card-choice-label" class="card-choice-label">Ver beneficios de</p>
+          <div id="card-options" class="card-options" role="group" aria-labelledby="card-choice-label"></div>
+        </section>
+        <p id="card-single" class="card-single" hidden></p>
+        <!-- H10: búsqueda temporal por nombre de comercio sobre el catálogo aplicable. -->
+        <div id="search-box" class="search-box" role="search">
+          <label for="merchant-search" class="search-label">Buscar comercio</label>
+          <div class="search-field">
+            <input id="merchant-search" type="search" class="search-input" placeholder="Buscar comercio" autocomplete="off" maxlength="100">
+            <button id="clear-search" type="button" class="search-clear" aria-label="Limpiar búsqueda" hidden>Limpiar</button>
+          </div>
+        </div>
       </section>
-      <p id="card-single" class="card-single" hidden></p>
-      <!-- H10: búsqueda temporal por nombre de comercio sobre el catálogo aplicable. -->
-      <div id="search-box" class="search-box" role="search">
-        <label for="merchant-search" class="search-label">Buscar comercio</label>
-        <div class="search-field">
-          <input id="merchant-search" type="search" class="search-input" placeholder="Escribe el nombre del comercio" autocomplete="off" maxlength="100">
-          <button id="clear-search" type="button" class="secondary search-clear" hidden>Limpiar</button>
+      <!-- Franja de avisos: no repite tarjetas de la lista (js/franja.js, js/carrusel.js). -->
+      <section id="franja" class="pr-franja" aria-roledescription="carrusel" aria-label="Avisos para ti" hidden></section>
+      <div class="pr-filtros">
+        <!-- H17: Disponibles hoy; filtro temporal que no cambia las preferencias guardadas. -->
+        <button id="today-filter" type="button" class="today-filter" aria-pressed="false">Disponibles hoy</button>
+        <!-- H5: filtro temporal; no cambia las preferencias guardadas. Las categorías llegan de /api/categorias. -->
+        <div id="category-filter" class="category-filter" role="group" aria-label="Filtrar por categoría">
+          <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
         </div>
       </div>
-      <!-- H17: Disponibles hoy; filtro temporal que no cambia las preferencias guardadas. -->
-      <button id="today-filter" type="button" class="today-filter" aria-pressed="false">Disponibles hoy</button>
-      <!-- H5: filtro temporal; no cambia las preferencias guardadas. Las categorías llegan de /api/categorias. -->
-      <div id="category-filter" class="category-filter" role="group" aria-label="Filtrar por categoría">
-        <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
-      </div>
-      <p id="list-status" class="note" role="status"></p>
+      <p id="pr-conteo" class="pr-conteo" aria-live="polite"></p>
       <p id="saved-status" class="error" role="alert"></p>
-      <div id="promotions-loading" class="module-loading" role="status" aria-label="Cargando promociones" hidden><svg class="loading-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="147 22.65" transform="rotate(230 32 32)"/></svg><span>CARGANDO...</span></div>
-      <button id="retry" class="secondary" hidden>Reintentar</button>
-      <div id="cards" class="promo-list"></div>
-      <div class="empty-actions">
-        <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
-        <button id="show-all" type="button" class="secondary" hidden>Ver todas</button>
-        <button id="exit-today" type="button" class="secondary" hidden>Quitar Disponibles hoy</button>
-        <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>
+      <div id="promotions-loading" class="pr-esqueleto" role="status" aria-label="Cargando promociones" hidden>
+        <div class="pr-esqueleto__tarjeta" aria-hidden="true"></div>
+        <div class="pr-esqueleto__tarjeta" aria-hidden="true"></div>
       </div>
+      <!-- Estado vacío o de error; se oculta mientras #list-status está vacío. -->
+      <section class="pr-estado">
+        <p id="list-status" class="note" role="status"></p>
+        <button id="retry" class="secondary" hidden>Reintentar</button>
+        <div class="empty-actions">
+          <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
+          <button id="show-all" type="button" class="secondary" hidden>Ver todas</button>
+          <button id="exit-today" type="button" class="secondary" hidden>Quitar Disponibles hoy</button>
+          <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>
+        </div>
+      </section>
+      <div id="cards" class="promo-list"></div>
       <template id="promotion-card">
-        <a class="promo-card">
-          <div class="promo-media">
-            <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
-            <div class="merchant-mark"><img class="merchant-logo" alt="" loading="lazy"></div>
-            <span class="promo-exclusive" hidden></span>
-          </div>
-          <div class="promo-content">
-            <p class="promo-category"></p>
-            <p class="promo-reason" hidden></p>
-            <h2></h2>
-            <p class="promo-benefit"></p>
-            <p class="promo-description"></p>
-            <p class="promo-applicability"></p>
-            <p class="promo-validity"></p>
-            <p class="promo-today" hidden></p>
-            <p class="promo-expired" hidden>Vencida</p>
-            <p class="promo-badges" hidden></p>
-            <ul class="promo-conditions"></ul>
-            <button type="button" class="secondary guardar-promo">Guardar</button>
-            <p class="error guardar-error" role="alert"></p>
-            <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
-          </div>
-        </a>
+        <article class="promo-item">
+          <a class="promo-card">
+            <div class="promo-media">
+              <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
+              <div class="merchant-mark"><img class="merchant-logo" alt="" loading="lazy"></div>
+              <span class="promo-exclusive" hidden></span>
+              <p class="promo-benefit"></p>
+            </div>
+            <div class="promo-content">
+              <div class="promo-cabeza">
+                <h2></h2>
+                <p class="promo-category"></p>
+              </div>
+              <p class="promo-reason" hidden></p>
+              <p class="promo-description"></p>
+              <ol class="promo-dias" hidden></ol>
+              <p class="promo-validity"></p>
+              <p class="promo-ending" hidden></p>
+              <p class="promo-expired" hidden>Vencida</p>
+              <p class="promo-today" hidden></p>
+              <p class="promo-badges" hidden></p>
+              <ul class="promo-conditions"></ul>
+              <div class="promo-pie">
+                <p class="promo-applicability"></p>
+                <span class="promo-open">Ver promoción</span>
+              </div>
+            </div>
+          </a>
+          <button type="button" class="guardar-promo" data-guardada="no">Guardar</button>
+          <p class="error guardar-error" role="alert"></p>
+        </article>
       </template>
-      <div class="actions"><a class="button secondary" href="/menu.html">Volver al menú</a></div>
+      <div id="pr-aviso" class="pr-aviso" role="status" hidden><p class="pr-aviso__texto"></p><button type="button" class="pr-aviso__accion">Deshacer</button></div>
     </main>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>
   </body>

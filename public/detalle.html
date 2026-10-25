@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
     <link rel="stylesheet" href="/css/carga.css">
+    <link rel="stylesheet" href="/css/promociones-sistema.css">
     <link rel="stylesheet" href="/css/promociones.css">
-    <link rel="stylesheet" href="/css/guardadas.css">
     <script type="module" src="/js/detalle.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -23,9 +23,10 @@
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
   </head>
-  <body class="detail-page" data-session="pending">
+  <body class="detail-page pr" data-session="pending" data-tarjeta="basica">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
+      <a class="pr-volver" href="/menu.html" aria-label="Volver al menú"></a>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <div class="header-row">
         <p>Los Extras</p>
@@ -33,27 +34,43 @@
       </div>
     </header>
     <main>
+      <a id="back-to-list" class="pr-atras" href="/promociones.html">Volver al listado</a>
       <p id="detail-status" class="note" role="status">Cargando detalle…</p>
       <button id="retry" class="secondary" hidden>Reintentar</button>
       <div id="detail" hidden>
         <div class="promo-media detail-media">
           <img id="promotion-image" class="promo-photo" width="960" height="540" alt="">
           <div class="merchant-mark"><img id="merchant-logo" class="merchant-logo" alt=""></div>
+          <div class="pr-detalle-titulo">
+            <h1>Promoción</h1>
+            <p id="benefit" class="detail-benefit"></p>
+          </div>
         </div>
+        <button id="guardar-promo" class="pr-guardar-detalle" type="button" data-guardada="no" hidden>Guardar</button>
         <div class="detail-content">
-          <span id="exclusive" class="exclusive-label" hidden>Exclusiva Black</span>
-          <h1>Promoción</h1>
-          <p id="benefit" class="detail-benefit"></p>
+          <div class="pr-detalle-etiquetas">
+            <span id="exclusive" class="exclusive-label" hidden>Exclusiva Black</span>
+            <span id="category" class="promo-category"></span>
+          </div>
           <p id="description" class="detail-description"></p>
-          <p id="payment" class="promo-applicability"></p>
-          <p id="validity" class="promo-validity"></p>
-          <p id="today" class="promo-today" hidden></p>
-          <ul id="conditions" class="promo-conditions"></ul>
-          <button id="guardar-promo" class="secondary" type="button" hidden>Guardar</button>
+          <section class="pr-bloque" aria-labelledby="bloque-cuando">
+            <h2 id="bloque-cuando">Cuándo</h2>
+            <ol id="days" class="promo-dias" aria-label="Días válidos" hidden></ol>
+            <p id="validity" class="promo-validity"></p>
+            <p id="ending" class="promo-ending" hidden></p>
+            <p id="today" class="promo-today" hidden></p>
+          </section>
+          <section class="pr-bloque" aria-labelledby="bloque-tarjeta">
+            <h2 id="bloque-tarjeta">Con tu tarjeta</h2>
+            <p id="payment" class="promo-applicability"></p>
+          </section>
+          <section class="pr-bloque" aria-labelledby="bloque-condiciones">
+            <h2 id="bloque-condiciones">Condiciones</h2>
+            <ul id="conditions" class="promo-conditions"></ul>
+          </section>
           <p id="guardar-error" class="error" role="alert"></p>
         </div>
       </div>
-      <div class="actions"><a id="back-to-list" class="button secondary" href="/promociones.html">Volver al listado</a></div>
     </main>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>
   </body>

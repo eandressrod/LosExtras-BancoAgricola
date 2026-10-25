@@ -7,7 +7,8 @@ import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
 import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
-import { textoDisponibleHoy } from '../../public/js/promocion-vista.js';
+import { textoDisponibleHoy, textoVencePronto, hoyEnElSalvador } from '../../public/js/promocion-vista.js';
+import { diapositivasFranja } from '../../public/js/franja.js';
 import * as instantanea from '../../public/js/instantanea.js';
 
 export const CATEGORIAS = ['Restaurantes', 'Compras', 'Entretenimiento'].map((id, orden) => ({ id, nombre: id, orden }));
@@ -27,7 +28,10 @@ export const PROMOS = {
 export const parametro = (url, nombre) => new URL(url, 'http://localhost').searchParams.get(nombre);
 
 const fuente = async archivo => (await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8')).replace(/^import[^\n]+\n/gm, '');
-const vista = { textoVigencia: () => '', textoDisponibleHoy, mostrarImagen: () => {}, mostrarCondiciones: () => {} };
+const vista = {
+  textoVigencia: () => '', textoDisponibleHoy, textoVencePronto, hoyEnElSalvador,
+  mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarDias: () => {}
+};
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 
 export function elemento(extra = {}) {
@@ -111,13 +115,20 @@ export async function abrirListado(opciones = {}) {
     return { querySelector(selector) { if (!partes.has(selector)) partes.set(selector, elemento()); return partes.get(selector); } };
   } } });
   const consultas = [];
+  // Sistema visual: se registran los avisos y los carruseles que pide la página; sus componentes tienen pruebas unitarias.
+  const aviso = { mostrados: [], mostrar(datos) { this.mostrados.push(datos); }, cerrar() {} };
+  const franja = { montajes: [], paradas: 0 };
   const pedidas = { categorias: 0, tarjetas: 0, aperturas: 0 };
   const categorias = opciones.categorias ?? (() => CATEGORIAS);
   const tarjetas = opciones.tarjetas ?? (() => TARJETAS[perfil] ?? []);
   const responder = opciones.responder ?? (url => PROMOS[parametro(url, 'categoria') ?? 'todas']);
   Object.assign(nav.contexto, {
     registrarAperturaPromociones: async () => { pedidas.aperturas++; },
+    crearAviso: () => aviso,
+    diapositivasFranja,
+    montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },
     document: {
+      body: { dataset: {} },
       querySelector: nav.obtener,
       querySelectorAll: selector => selector === '.filter-chip' ? [todas] : [],
       getElementById: () => null,
@@ -148,7 +159,7 @@ export async function abrirListado(opciones = {}) {
     return el;
   };
   return {
-    ...nav, cards, consultas, pedidas, chips,
+    ...nav, cards, consultas, pedidas, chips, aviso, franja,
     obtener: obtenerConFlush,
     activo: () => pulsados(chips()),
     chip: nombre => chips().find(chip => chip.textContent === nombre),
@@ -164,7 +175,7 @@ export async function abrirDetalle(opciones = {}) {
   const consultas = [];
   Object.assign(nav.contexto, {
     fetch: opciones.fetch,
-    document: { querySelector: nav.obtener, title: '' },
+    document: { querySelector: nav.obtener, title: '', body: { dataset: {} } },
     getJSON: async url => {
       consultas.push(url);
       if (opciones.falla) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');
@@ -203,7 +214,7 @@ export async function abrirGuardadas(opciones = {}) {
     return { promociones: termino ? promos.filter(p => p.merchant.includes(termino)) : promos, sinCoincidencias: false };
   });
   Object.assign(nav.contexto, {
-    document: { querySelector: nav.obtener },
+    document: { querySelector: nav.obtener, body: { dataset: {} } },
     getJSON: async url => {
       if (url === '/api/tarjetas') return tarjetas();
       consultas.push(url);
@@ -218,6 +229,7 @@ export async function abrirGuardadas(opciones = {}) {
     textoVigencia: () => '',
     mostrarImagen: () => {},
     mostrarCondiciones: () => {},
+    mostrarDias: () => {},
     leerTarjetaElegida: (storage, perfilId) => storage.getItem('los-extras-tarjeta:' + perfilId),
     tarjetaActiva: (lista, id) => lista.find(t => t.id === id) ?? lista.find(t => t.predeterminada) ?? lista[0] ?? null,
     cardName

@@ -1,5 +1,8 @@
 import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
-import { textoVigencia, textoDisponibleHoy, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
+import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { crearAviso } from './aviso-deshacer.js';
+import { diapositivasFranja } from './franja.js';
+import { montarCarrusel } from './carrusel.js';
 import { destinoEntradaPromociones } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
 import { conIndicador } from './transiciones.js';
@@ -10,6 +13,38 @@ import { leerCategoria, leerHoy, leerBusqueda, normalizarBusqueda, categoriaVige
 import { leerTarjetaElegida, guardarTarjetaElegida, tarjetaActiva, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
 
 let idsGuardados = [];
+let avisoGuardar = null;
+
+function marcarGuardada(boton, guardada) {
+  boton.dataset.guardada = guardada ? 'si' : 'no';
+  boton.textContent = guardada ? 'Quitar' : 'Guardar';
+}
+
+// Guardar o quitar. Con aviso, el cambio se puede deshacer una vez; deshacer no abre otro aviso.
+async function alternarGuardada(boton, error, id, conAviso) {
+  error.textContent = '';
+  const quitar = boton.dataset.guardada === 'si';
+  try {
+    const response = await fetch('/api/guardadas', {
+      method: quitar ? 'DELETE' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ promocionId: id })
+    });
+    if (response.status === 401) { location.replace('/index.html'); return; }
+    if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
+    marcarGuardada(boton, !quitar);
+    idsGuardados = quitar ? idsGuardados.filter(guardado => guardado !== id) : [...idsGuardados, id];
+    if (conAviso) avisoGuardar.mostrar({
+      texto: quitar ? 'Promoción quitada de Guardadas.' : 'Promoción guardada.',
+      alDeshacer: async () => {
+        await alternarGuardada(boton, error, id, false);
+        boton.focus?.();
+      }
+    });
+  } catch (fallo) {
+    error.textContent = fallo.message;
+  }
+}
 
 function crearOferta(promotion, categoria, hoy, busqueda) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
@@ -17,11 +52,18 @@ function crearOferta(promotion, categoria, hoy, busqueda) {
   link.id = 'promo-' + promotion.id;
   link.href = urlDetalle(promotion.id, categoria, hoy, busqueda);
   link.setAttribute('aria-label', `${promotion.merchant}: ${promotion.benefit}. Ver promoción`);
+  // Sistema visual: el acento de la tarjeta sale de su categoría y las exclusivas Black van en oscuro.
+  const articulo = card.querySelector('article');
+  articulo.dataset.categoria = promotion.category ?? '';
+  if (promotion.exclusive) articulo.dataset.exclusiva = 'si';
   card.querySelector('h2').textContent = promotion.merchant;
   card.querySelector('.promo-benefit').textContent = promotion.benefit;
   card.querySelector('.promo-description').textContent = promotion.description;
   card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
   card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
+  const vence = card.querySelector('.promo-ending');
+  vence.textContent = textoVencePronto(promotion, hoyEnElSalvador());
+  vence.hidden = !vence.textContent;
   const disponible = card.querySelector('.promo-today');
   disponible.textContent = textoDisponibleHoy(promotion);
   disponible.hidden = !disponible.textContent;
@@ -35,40 +77,26 @@ function crearOferta(promotion, categoria, hoy, busqueda) {
   const vencida = card.querySelector('.promo-expired');
   vencida.textContent = 'Vencida';
   vencida.hidden = !promotion.vencida;
-  card.querySelector('.promo-applicability').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+  const aplica = card.querySelector('.promo-applicability');
+  aplica.textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+  aplica.dataset.tarjeta = promotion.applicableCard === 'black' ? 'black' : 'basica';
   const badge = card.querySelector('.promo-exclusive');
   badge.hidden = !promotion.exclusive;
   badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
   if (promotion.expired || promotion.upcoming || promotion.vencida) link.classList.add('promo-card--inactive');
   mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
-  mostrarCondiciones(card.querySelector('.promo-conditions'), promotion);
+  // La tira muestra los días fijos; las condiciones no los repiten.
+  mostrarDias(card.querySelector('.promo-dias'), promotion);
+  mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
   const boton = card.querySelector('.guardar-promo');
-  const aviso = card.querySelector('.guardar-error');
-  if (boton) {
-    const guardada = idsGuardados.includes(promotion.id);
-    boton.dataset.guardada = guardada ? 'si' : 'no';
-    boton.textContent = guardada ? 'Quitar' : 'Guardar';
-    boton.onclick = async event => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (aviso) aviso.textContent = '';
-      const quitar = boton.dataset.guardada === 'si';
-      try {
-        const response = await fetch('/api/guardadas', {
-          method: quitar ? 'DELETE' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ promocionId: promotion.id })
-        });
-        if (response.status === 401) { location.replace('/index.html'); return; }
-        if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
-        boton.dataset.guardada = quitar ? 'no' : 'si';
-        boton.textContent = quitar ? 'Guardar' : 'Quitar';
-      } catch (error) {
-        if (aviso) aviso.textContent = error.message;
-      }
-    };
-  }
+  const error = card.querySelector('.guardar-error');
+  marcarGuardada(boton, idsGuardados.includes(promotion.id));
+  boton.onclick = event => {
+    event.preventDefault();
+    event.stopPropagation();
+    return alternarGuardada(boton, error, promotion.id, true);
+  };
   return card;
 }
 
@@ -91,6 +119,11 @@ if (profile) {
   const cardOptions = document.querySelector('#card-options');
   const cardSingle = document.querySelector('#card-single');
   const sessionBadge = document.querySelector('#session-profile');
+  const franja = document.querySelector('#franja');
+  const conteo = document.querySelector('#pr-conteo');
+  avisoGuardar = crearAviso(document.querySelector('#pr-aviso'));
+  let carrusel = null;
+  let preferencias = null;
   const sesion = almacenSesion();
   const pedida = leerCategoria(location.search, history.state, profile.id);
   const opcionesTarjeta = [];
@@ -140,6 +173,8 @@ if (profile) {
   // H16: la tarjeta activa se marca en el selector y en la cabecera.
   function mostrarTarjeta() {
     for (const opcion of opcionesTarjeta) opcion.setAttribute('aria-pressed', String(opcion.dataset.card === tarjeta.id));
+    // Sistema visual: la cabecera toma el color de la tarjeta elegida.
+    if (document.body) document.body.dataset.tarjeta = tarjeta.tipoTarjeta === 'black' ? 'black' : 'basica';
     cardSingle.textContent = 'Tus beneficios con ' + textoTarjeta(tarjeta);
     if (sessionBadge) sessionBadge.textContent = `${profile.nombre} · ${cardName(tarjeta)}`;
   }
@@ -149,6 +184,7 @@ if (profile) {
     opcion.type = 'button';
     opcion.className = 'card-option';
     opcion.dataset.card = item.id;
+    opcion.dataset.tipo = item.tipoTarjeta;
     opcion.textContent = etiquetaTarjeta(item);
     opcion.addEventListener('click', () => cambiarTarjeta(item));
     cardOptions.append(opcion);
@@ -188,7 +224,7 @@ if (profile) {
     try {
       if (!aperturaRegistrada) { await registrarAperturaPromociones(); aperturaRegistrada = true; }
       if (new URLSearchParams(location.search).get('entrada') === 'menu') {
-        const preferencias = await getJSON('/api/preferencias');
+        preferencias = await getJSON('/api/preferencias');
         const destino = destinoEntradaPromociones(location.search, preferencias);
         if (destino) { location.replace(destino); return false; }
       }
@@ -221,8 +257,34 @@ if (profile) {
     return true;
   }
 
+  // Franja de avisos: se recalcula con cada lista; un aviso de promoción desplaza la lista hasta ella.
+  function enlaceAviso(accion) {
+    if (accion.tipo === 'ir') return accion.destino;
+    return accion.tipo === 'detalle' ? urlDetalle(accion.id, categoria, hoy, busqueda) : null;
+  }
+
+  function irAPromocion(accion) {
+    const elegida = document.getElementById('promo-' + accion.id)?.closest('.promo-item');
+    if (!elegida) { location.assign(urlDetalle(accion.id, categoria, hoy, busqueda)); return; }
+    elegida.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+    elegida.classList.remove('pr-resaltada');
+    requestAnimationFrame(() => elegida.classList.add('pr-resaltada'));
+    elegida.querySelector('a').focus({ preventScroll: true });
+  }
+
+  function pintarFranja(promociones, estrategia) {
+    carrusel?.parar();
+    carrusel = null;
+    const diapositivas = promociones.length ? diapositivasFranja({
+      promociones, hoy: hoyEnElSalvador(), estrategia, guardadas: idsGuardados, encuestaPendiente: preferencias?.completed === false
+    }) : [];
+    franja.hidden = diapositivas.length === 0;
+    if (diapositivas.length) carrusel = montarCarrusel(franja, diapositivas, { enlace: enlaceAviso, alPulsar: irAPromocion });
+  }
+
   async function loadPromotions() {
     const turno = ++consultaActual;
+    conteo.textContent = '';
     status.textContent = '';
     status.className = 'note';
     retry.hidden = true;
@@ -246,6 +308,8 @@ if (profile) {
       if (turno !== consultaActual) return;
       for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda));
       const vacio = promotions.length === 0;
+      conteo.textContent = vacio ? '' : promotions.length === 1 ? '1 promoción' : `${promotions.length} promociones`;
+      pintarFranja(promotions, respuesta.estrategia);
       const sinCatalogo = respuesta.vacio === 'sin-catalogo';
       status.textContent = !vacio ? '' : sinCatalogo ? 'No hay promociones para tu tarjeta.' : textoVacio();
       clearSearchEmpty.hidden = !vacio || sinCatalogo || !busqueda;
@@ -256,6 +320,7 @@ if (profile) {
       if (seleccionado?.classList.contains('promo-card')) seleccionado.scrollIntoView({ block: 'center' });
     } catch (error) {
       if (turno !== consultaActual) return;
+      pintarFranja([]);
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;
