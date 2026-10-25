@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { textoVigencia, condicionesVisibles, textoVencePronto, hoyEnElSalvador, tiraDias } from '../../public/js/promocion-vista.js';
+import { textoVigencia, condicionesVisibles, textoVencePronto, hoyEnElSalvador, tiraDias, textoOtrasTarjetas } from '../../public/js/promocion-vista.js';
 
 test('vigencia viene de la promoción y conserva el día de fecha sin depender de zona horaria del navegador', () => {
   assert.equal(textoVigencia({ validUntil: '2026-11-06' }), 'Válida hasta el 6 nov 2026');
@@ -51,4 +51,14 @@ test('las condiciones pueden omitir los días cuando la tarjeta ya muestra la ti
   const promo = { usageDays: [2], minimumPurchase: 10 };
   assert.deepEqual(condicionesVisibles(promo, { dias: false }), ['Compra mínima: $10.00']);
   assert.deepEqual(condicionesVisibles(promo), ['Martes', 'Compra mínima: $10.00']);
+});
+
+test('con todas las tarjetas, la otra tarjeta solo se menciona si cambia el beneficio', () => {
+  const mejor = { tarjetaId: 'n', tipoTarjeta: 'black', texto: '20 % de descuento' };
+  assert.equal(textoOtrasTarjetas({ mejorBeneficio: mejor, otrosBeneficios: [{ tarjetaId: 'b', tipoTarjeta: 'basica', texto: '10 % de descuento' }] }),
+    'También 10 % de descuento con tu Básica');
+  // Dos Básicas con el mismo beneficio no se repiten, ni se repite la misma tarjeta del mejor beneficio.
+  const dosBasicas = { mejorBeneficio: { tarjetaId: 'b1', tipoTarjeta: 'basica', texto: '10 %' }, otrosBeneficios: [{ tarjetaId: 'b2', tipoTarjeta: 'basica', texto: '10 %' }] };
+  assert.equal(textoOtrasTarjetas(dosBasicas), '');
+  assert.equal(textoOtrasTarjetas({}), '', 'con una tarjeta elegida no hay otros beneficios');
 });
