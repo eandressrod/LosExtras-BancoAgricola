@@ -6,7 +6,7 @@ import { enlaceWaze, enlaceGoogleMaps } from './enlaces.js';
 import { recorridoAproximado } from './recorrido.js';
 import { leerUbicacion, guardarEleccion, leerEleccion, origenDeZona, permisoConcedido } from './origen.js';
 import { cargarZonas, leerZonaGuardada, guardarZona } from './zona.js';
-import { crearMapa, crearMarcador, dibujarRecorrido, encuadrar } from './mapa.js';
+import { crearMapa, crearMarcador, dibujarRecorrido, encuadrar, precargarMotor } from './mapa.js';
 
 const MOTIVOS = {
   denegada: 'No diste permiso para usar tu ubicación. Elige una zona.',
@@ -32,6 +32,7 @@ export function mostrarDonde(promocion, perfil) {
   let marcadores = [];
 
   if (!promocion.branches?.length) return;
+  precargarMotor(); // El motor se descarga mientras llegan las zonas y el origen.
 
   function pintar(origen) {
     const cercana = sucursalMasCercana(promocion, origen);

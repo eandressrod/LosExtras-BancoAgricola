@@ -6,7 +6,7 @@ import {
   leerUbicacion, seguirUbicacion, guardarEleccion, leerEleccion, origenDeZona, permisoConcedido, botonesOrigen, CLAVE_VISTA
 } from './origen.js';
 import { cargarZonas, leerZonaGuardada, guardarZona } from './zona.js';
-import { crearMapa, crearMarcador, encuadrar, colocacionGlobo, SEPARACION_GLOBO } from './mapa.js';
+import { crearMapa, crearMarcador, encuadrar, precargarMotor, colocacionGlobo, SEPARACION_GLOBO } from './mapa.js';
 import { controlarAtras } from './atras.js';
 
 const CENTRO_INICIAL = { latitud: 13.6989, longitud: -89.2190 }; // Área metropolitana de San Salvador.
@@ -290,22 +290,26 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
   }
 
   // Origen al abrir: la elección de esta visita o la zona guardada. Nunca se pide la ubicación sin que la persona la elija.
-  async function resolverOrigen() {
-    const eleccion = leerEleccion(sesion, perfil.id);
+  // zonaGuardada: la lectura de la zona guardada, ya en curso si no hay elección de esta visita.
+  async function resolverOrigen(eleccion, zonaGuardada) {
     if (eleccion?.tipo === 'zona') return origenDeZona(zonas, eleccion.zonaId);
     if (eleccion?.tipo === 'ubicacion' && await permisoConcedido(navigator.permissions)) {
       const lectura = await leerUbicacion(navigator.geolocation);
       if (lectura.ok) return { tipo: 'ubicacion', latitud: lectura.latitud, longitud: lectura.longitud };
     }
-    const guardada = await leerZonaGuardada();
+    const guardada = await (zonaGuardada ?? leerZonaGuardada());
     return guardada ? origenDeZona(zonas, guardada) : null;
   }
 
   async function preparar() {
     try {
+      // La zona guardada se pide junto con zonas y promociones, no después.
+      const eleccion = leerEleccion(sesion, perfil.id);
+      const zonaGuardada = eleccion ? null : leerZonaGuardada();
+      zonaGuardada?.catch(() => { /* El error se atiende al esperarla. */ });
       [zonas] = await Promise.all([cargarZonas(), cargarPromociones()]);
       pintarZonas();
-      origen = await resolverOrigen();
+      origen = await resolverOrigen(eleccion, zonaGuardada);
       pintarOrigen();
       calcular();
     } catch (error) {
@@ -413,6 +417,7 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
 
   function mostrar() {
     visible = true;
+    precargarMotor();
     preparacion ??= preparar();
     return preparacion.then(async () => {
       if (!visible || !zonas.length) return;
