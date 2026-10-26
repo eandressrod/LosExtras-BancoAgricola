@@ -19,7 +19,16 @@ test('apertura en mock es persistente, idempotente y no cambia otro perfil', asy
   await repo.marcarApertura('A'); await repo.marcarApertura('A');
   assert.equal((await repo.listar()).find(p=>p.id==='A').promocionesAbiertas,true);
   assert.equal((await repo.listar()).find(p=>p.id==='B').promocionesAbiertas,false);
-  assert.equal(await repo.marcarApertura('otro'),false);
+  assert.equal(await repo.marcarApertura('otro'),null);
+});
+
+test('H21 apertura en mock devuelve las marcas de la encuesta y guarda solo la pedida en ese perfil', async () => {
+  const { crearRepositorioUsuariosPruebaMock } = await import('../../backend/repositorios/usuarios-prueba.mock.js');
+  const repo=crearRepositorioUsuariosPruebaMock([{id:'A',promocionesAbiertas:false},{id:'B',promocionesAbiertas:false}]);
+  assert.deepEqual(await repo.marcarApertura('A'),{promocionesAbiertas:true,hojaMostrada:false,avisoCerrado:false});
+  assert.deepEqual(await repo.marcarApertura('A','hoja-mostrada'),{promocionesAbiertas:true,hojaMostrada:true,avisoCerrado:false});
+  assert.deepEqual(await repo.marcarApertura('A','aviso-cerrado'),{promocionesAbiertas:true,hojaMostrada:true,avisoCerrado:true});
+  assert.deepEqual(await repo.marcarApertura('B'),{promocionesAbiertas:true,hojaMostrada:false,avisoCerrado:false});
 });
 
 test('registrar apertura usa POST sin un propietario enviado desde el cliente y propaga fallos', async () => {
