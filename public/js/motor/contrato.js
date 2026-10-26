@@ -26,9 +26,18 @@
  * @typedef {{ tipo: 'comercio'|'categoria'|'intencion', texto: string }} Razon Término dominante de R.
  * @typedef {{ tipo: 'canal'|'beneficio', valor: string, texto: string }} Insignia Criterio declarado que la oferta cumple.
  *
+ * @typedef {Object} BeneficioPropio SCRUM-133: beneficio de la oferta con una tarjeta propia del dueño de la sesión.
+ * @property {string} tarjetaId
+ * @property {'basica'|'black'} tipoTarjeta
+ * @property {string} texto
+ *
  * @typedef {import('../../../backend/repositorios/contrato.js').Promocion & {
- *   componentes: Componentes, razon: Razon | null, insignias: Insignia[], vencida?: boolean
+ *   componentes: Componentes, razon: Razon | null, insignias: Insignia[], vencida?: boolean,
+ *   mejorBeneficio?: BeneficioPropio, otrosBeneficios?: BeneficioPropio[]
  * }} OfertaOrdenada `vencida` la marca el cliente cuando la oferta vence durante la visita (instantánea).
+ *   Sin ?tarjeta= (todas las tarjetas propias) la oferta suma `mejorBeneficio` y `otrosBeneficios`, del mejor al peor
+ *   (regla en elegibilidad.js); `applicableCard`, `benefit`, `payment`, `restrictions`, `minimumPurchase` y `discountCap`
+ *   son los del mejor. Con ?tarjeta= ninguno de los dos campos aparece.
  *
  * @typedef {Object} RespuestaParaTi
  * @property {string} version Versión de config.js.

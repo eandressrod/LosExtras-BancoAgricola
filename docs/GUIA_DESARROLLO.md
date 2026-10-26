@@ -327,7 +327,7 @@ Subtareas 2 y 3 de H22 ([SCRUM-128](https://somos-agilistas.atlassian.net/browse
 
 **Motor.** Es un paquete ESM puro en `public/js/motor/`, sin dependencias: el backend lo importa y el navegador puede cargarlo tal cual (vista previa de H21). Entrada de `ordenarParaTi`:
 
-- `ofertas`: las de la tarjeta elegida, aplanadas por `filtrarPromociones` sin filtrar por intereses.
+- `ofertas`: las de la tarjeta elegida o, sin `?tarjeta=`, las de todas las tarjetas propias, aplanadas por `filtrarPromociones` sin filtrar por intereses.
 - `senales`: las activas del usuario.
 - `filtros`: `{categoria, hoy, comercio}`.
 - `reglas` (opcional): `excluir` y `multiplicador` para H23, `intencion` para H25.
@@ -336,12 +336,21 @@ Los parámetros y su versión están en `config.js`; cambiar un valor exige camb
 
 | Endpoint | Método | Contrato |
 | --- | --- | --- |
-| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`). Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
+| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`); `tarjeta` es opcional (ver «Todas las tarjetas»). Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
 | `/api/senales` | GET | `{senales}`: las activas del dueño de la sesión. |
 | `/api/senales` | POST | `{clase, ambito, valor, origen}` crea la señal o reactiva la existente; responde `{senal}`. Valida el vocabulario y que el valor exista en el catálogo. |
 | `/api/senales` | PATCH | `{id, activa}` desactiva (quitar) o reactiva (deshacer); 404 si la señal no es del usuario. |
 
 Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (`backend/http.js`). `/api/promociones` conserva su contrato. Para ti ya no lo usa: consume `/api/para-ti` y conserva el orden de la visita en `sessionStorage` (`public/js/instantanea.js`).
+
+**Todas las tarjetas** ([SCRUM-133](https://somos-agilistas.atlassian.net/browse/SCRUM-133), decisión del 24 de octubre de 2026 en el comentario 10031 de SCRUM-116). Para ti muestra las mejores promociones considerando todas las tarjetas del usuario; filtrar por tarjeta es opcional.
+
+- **Sin `?tarjeta=`** se evalúan todas las tarjetas propias de la sesión, leídas del repositorio de tarjetas y nunca del cliente. Una oferta es elegible si aplica con al menos una. Cada oferta suma `mejorBeneficio {tarjetaId, tipoTarjeta, texto}` y `otrosBeneficios` (las demás tarjetas propias que aplican, del mejor al peor). `applicableCard`, `benefit`, `payment`, `restrictions`, `minimumPurchase` y `discountCap` son los del mejor beneficio, así la UI actual sigue funcionando; `exclusive` sigue indicando si la oferta solo existe para un tipo de tarjeta. Un perfil sin tarjetas recibe `vacio: 'sin-catalogo'`.
+- **Con `?tarjeta=`** el resultado es idéntico al anterior y no aparecen `mejorBeneficio` ni `otrosBeneficios`.
+- **Regla del mejor beneficio** (`ordenarBeneficios` en `public/js/motor/elegibilidad.js`), en este orden: (1) solo compiten las tarjetas propias con beneficio en la oferta, de modo que una exclusiva Black exige una Black propia; (2) mayor valor: porcentaje de descuento o reintegro, o número de cuotas (`valorBeneficio`; un texto sin número, como «2×1» o «Puntos BA dobles», vale 0); (3) a igual valor, Black antes que Básica, porque en el catálogo su beneficio es el de Básica con algo más; (4) entre tarjetas del mismo tipo, la predeterminada del perfil; (5) el id de tarjeta menor.
+- **Detalle.** `/api/promocion` sin `?tarjeta=` aplica la misma elegibilidad y regla y agrega `beneficiosPropios` (`[mejorBeneficio, ...otrosBeneficios]`); una exclusiva Black se abre sin tarjeta si el perfil tiene una Black. Con `?tarjeta=` no cambia.
+- **Motor e instantánea.** El puntaje, el reordenamiento, la razón y la instantánea no cambian. La clave de la instantánea incluye el alcance (`los-extras-instantanea:<perfil>:todas` o `:tarjeta:<id>`), así «todas» y cada tarjeta conservan su propio orden durante la visita.
+- La pantalla todavía consulta siempre con la tarjeta elegida; mostrar «todas» y los beneficios alternativos corresponde a la UI de SCRUM-127. `/api/promociones` y `/api/guardadas` no cambian. Un cambio de este contrato se avisa en H20, H21, H23 y H25.
 
 **Datos.**
 

@@ -13,25 +13,34 @@ export const DURACION_VISITA_MS = 30 * 60 * 1000;
 
 // Día calendario en El Salvador (AAAA-MM-DD), comparable con validUntil del catálogo.
 const fechaLocal = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/El_Salvador', year: 'numeric', month: '2-digit', day: '2-digit' });
-const clave = perfilId => PREFIJO_INSTANTANEA + perfilId;
 
-function escribir(almacen, perfilId, datos) {
-  try { almacen?.setItem(clave(perfilId), JSON.stringify(datos)); } catch { /* Sin almacenamiento se vuelve a ordenar. */ }
+/**
+ * SCRUM-133: sin ?tarjeta= Para ti evalúa todas las tarjetas propias. Cada alcance ('todas' o una tarjeta) tiene su propia
+ * instantánea, de modo que cambiar entre ellos no mezcla ni pisa sus órdenes.
+ */
+export function alcanceDeConsulta(consulta) {
+  const tarjeta = new URL(consulta, 'http://local').searchParams.get('tarjeta');
+  return tarjeta ? 'tarjeta:' + tarjeta : 'todas';
+}
+const clave = (perfilId, consulta) => PREFIJO_INSTANTANEA + perfilId + ':' + alcanceDeConsulta(consulta);
+
+function escribir(almacen, perfilId, consulta, datos) {
+  try { almacen?.setItem(clave(perfilId, consulta), JSON.stringify(datos)); } catch { /* Sin almacenamiento se vuelve a ordenar. */ }
 }
 
 /** Guarda la respuesta de una consulta como orden de la visita actual. */
 export function guardarInstantanea(almacen, perfilId, consulta, respuesta, ahora = new Date()) {
-  escribir(almacen, perfilId, { consulta, respuesta, usadaEn: ahora.getTime(), dia: fechaLocal.format(ahora) });
+  escribir(almacen, perfilId, consulta, { consulta, respuesta, usadaEn: ahora.getTime(), dia: fechaLocal.format(ahora) });
 }
 
 /** Respuesta guardada para la misma consulta en la visita actual, o null. Usarla renueva la visita. */
 export function leerInstantanea(almacen, perfilId, consulta, ahora = new Date()) {
   let guardada;
-  try { guardada = JSON.parse(almacen?.getItem(clave(perfilId)) ?? 'null'); } catch { return null; }
+  try { guardada = JSON.parse(almacen?.getItem(clave(perfilId, consulta)) ?? 'null'); } catch { return null; }
   const vigente = guardada?.consulta === consulta && guardada.dia === fechaLocal.format(ahora)
     && ahora.getTime() - guardada.usadaEn < DURACION_VISITA_MS;
   if (!vigente) return null;
-  escribir(almacen, perfilId, { ...guardada, usadaEn: ahora.getTime() });
+  escribir(almacen, perfilId, consulta, { ...guardada, usadaEn: ahora.getTime() });
   return guardada.respuesta;
 }
 

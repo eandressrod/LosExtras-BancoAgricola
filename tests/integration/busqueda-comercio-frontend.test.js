@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { abrirListado, abrirDetalle, abrirGuardadas, parametro, almacen } from './pagina-promociones.js';
 
-const BASICA_A = 'tarjeta=cta-a-3';
 const OFERTAS = [
   { id: 'restaurante', merchant: "McDonald's", category: 'Restaurantes', benefit: '10 %' },
   { id: 'tienda', merchant: 'Siman', category: 'Compras', benefit: '15 %' },
@@ -21,7 +20,7 @@ test('H10 escribir nombre filtra ignorando mayúsculas/espacios y borrar restabl
   assert.equal(p.enlaces().length, 4);
 
   await p.obtener('#merchant-search').input('  sImAn  ');
-  assert.equal(p.consultas.at(-1), `/api/para-ti?comercio=sImAn&${BASICA_A}`);
+  assert.equal(p.consultas.at(-1), `/api/para-ti?comercio=sImAn`);
   assert.equal(p.history.url, '/promociones.html?comercio=sImAn');
   assert.deepEqual(p.enlaces().map(e => e.id), ['promo-tienda']);
   assert.equal(p.obtener('#clear-search').hidden, false);
@@ -29,7 +28,7 @@ test('H10 escribir nombre filtra ignorando mayúsculas/espacios y borrar restabl
   await p.obtener('#clear-search').click();
   assert.equal(p.obtener('#merchant-search').value, '');
   assert.equal(p.obtener('#clear-search').hidden, true);
-  assert.equal(p.consultas.at(-1), `/api/para-ti?${BASICA_A}`);
+  assert.equal(p.consultas.at(-1), `/api/para-ti`);
   assert.equal(p.enlaces().length, 4);
 });
 
@@ -81,7 +80,7 @@ test('H10 cambiar de usuario limpia el texto y contexto del perfil anterior', as
   });
   assert.equal(p.obtener('#merchant-search').value, '');
   assert.equal(p.history.url, '/promociones.html');
-  assert.deepEqual(p.consultas, ['/api/para-ti?tarjeta=cta-b-2']);
+  assert.deepEqual(p.consultas, ['/api/para-ti']);
 });
 
 test('H10 un fallo de consulta ofrece reintento conservando el texto escrito', async () => {
