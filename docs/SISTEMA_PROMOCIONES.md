@@ -2,7 +2,7 @@
 
 Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRUM-127)). Es la capa visual propia de la sección Promociones: Para ti, Detalle, Guardadas y Mis preferencias. La decisión de tenerla está en [ADR-011](<../ADR/0011-Decision de usar un sistema visual propio en Promociones.md>). Por decisión del PO operativo del 23 de octubre de 2026, la sección no sigue las medidas de las demás interfaces de la [guía de UI](GUIA_UI_BANCOAGRICOLA.md), como el tamaño de los botones. Sí conserva la marca: amarillo y oscuro, tipografía CIB Sans y fotos reales del catálogo.
 
-**Estado:** versión 3 (24 de octubre de 2026) en la rama `hu/SCRUM-127-promociones-ui`, integrada con main y con Para ti con todas las tarjetas (SCRUM-133). Falta la aprobación del PO (David). Las decisiones de esta versión están en los comentarios 10031 y 10034 de SCRUM-116, 10032 de SCRUM-11, 10033 de SCRUM-67, 10035 de SCRUM-118 y 10036 de SCRUM-119.
+**Estado:** versión 3 (24 de octubre de 2026), con Para ti con todas las tarjetas (SCRUM-133), fusionada en main con el PR 29 el 25 de octubre de 2026. Las decisiones de esta versión están en los comentarios 10031 y 10034 de SCRUM-116, 10032 de SCRUM-11, 10033 de SCRUM-67, 10035 de SCRUM-118 y 10036 de SCRUM-119.
 
 | Archivo | Contenido |
 | --- | --- |
