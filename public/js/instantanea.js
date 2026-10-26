@@ -67,12 +67,30 @@ export function marcarVencidas(promociones, ahora = new Date()) {
   return promociones.map(promo => ({ ...promo, vencida: Boolean(promo.validUntil && promo.validUntil < hoy) }));
 }
 
-/** Al iniciar o cerrar sesión se olvidan las instantáneas de cualquier perfil. */
+// H23: la pregunta en contexto aparece como máximo una vez por visita, con la misma regla de visita que la instantánea.
+export const PREFIJO_PREGUNTA = 'los-extras-pregunta:';
+
+/** Indica si la pregunta ya se mostró en la visita actual del perfil; consultarla renueva la visita. */
+export function preguntaMostradaEnVisita(almacen, perfilId, ahora = new Date()) {
+  let marca;
+  try { marca = JSON.parse(almacen?.getItem(PREFIJO_PREGUNTA + perfilId) ?? 'null'); } catch { return false; }
+  const vigente = marca?.dia === fechaLocal.format(ahora) && ahora.getTime() - marca.usadaEn < DURACION_VISITA_MS;
+  if (vigente) marcarPreguntaMostrada(almacen, perfilId, ahora);
+  return vigente;
+}
+
+export function marcarPreguntaMostrada(almacen, perfilId, ahora = new Date()) {
+  try {
+    almacen?.setItem(PREFIJO_PREGUNTA + perfilId, JSON.stringify({ usadaEn: ahora.getTime(), dia: fechaLocal.format(ahora) }));
+  } catch { /* Sin almacenamiento la pregunta puede volver en la misma visita. */ }
+}
+
+/** Al iniciar o cerrar sesión se olvidan las instantáneas (y la pregunta mostrada) de cualquier perfil. */
 export function olvidarInstantaneas(almacen) {
   try {
     for (let indice = almacen.length - 1; indice >= 0; indice -= 1) {
       const nombre = almacen.key(indice);
-      if (nombre?.startsWith(PREFIJO_INSTANTANEA)) almacen.removeItem(nombre);
+      if (nombre?.startsWith(PREFIJO_INSTANTANEA) || nombre?.startsWith(PREFIJO_PREGUNTA)) almacen.removeItem(nombre);
     }
   } catch { /* Sin almacenamiento no hay instantáneas que borrar. */ }
 }

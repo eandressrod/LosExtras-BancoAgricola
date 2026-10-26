@@ -100,6 +100,7 @@
                 <p class="promo-category"></p>
               </div>
               <p class="promo-reason" hidden></p>
+              <p class="promo-marca" hidden></p>
               <p class="promo-description"></p>
               <ol class="promo-dias" hidden></ol>
               <p class="promo-validity"></p>
@@ -118,9 +119,32 @@
             </div>
           </a>
           <button type="button" class="guardar-promo" data-guardada="no">Guardar</button>
+          <button type="button" class="promo-opciones" aria-haspopup="dialog" aria-controls="acciones">Opciones</button>
           <p class="error guardar-error" role="alert"></p>
         </article>
       </template>
+      <!-- H23: pregunta en contexto, dentro de la lista y nunca como ventana emergente. -->
+      <template id="pregunta-card">
+        <article class="pr-pregunta" aria-labelledby="pregunta-texto">
+          <p id="pregunta-texto" class="pr-pregunta__texto"></p>
+          <div class="pr-pregunta__acciones">
+            <button type="button" data-respuesta="si">Sí, dejar de mostrar</button>
+            <button type="button" data-respuesta="no">No, seguir viendo</button>
+            <button type="button" data-respuesta="ahora-no">Ahora no</button>
+          </div>
+          <p class="error pr-pregunta__error" role="alert"></p>
+        </article>
+      </template>
+      <!-- H23: hoja «Opciones» de una tarjeta. Una corrección marcada se deshace volviendo a pulsarla. -->
+      <dialog id="acciones" class="pr-hoja" aria-labelledby="acciones-titulo">
+        <div class="pr-hoja__asa" aria-hidden="true"></div>
+        <h2 id="acciones-titulo" class="pr-hoja__titulo"></h2>
+        <div class="pr-hoja__cuerpo">
+          <div id="acciones-lista" class="pr-acciones" role="group" aria-labelledby="acciones-titulo"></div>
+          <p id="acciones-error" class="error" role="alert"></p>
+        </div>
+        <div class="pr-hoja__acciones"><button id="cerrar-acciones" type="button">Cerrar</button></div>
+      </dialog>
       <!-- Hoja Filtros: tarjeta (H16), categoría (H5) y aplica hoy (H17). Los cambios se aplican al tocarlos. -->
       <dialog id="filtros" class="pr-hoja" aria-labelledby="filtros-titulo">
         <div class="pr-hoja__asa" aria-hidden="true"></div>

@@ -59,6 +59,7 @@
   --pr-i-pausa: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Crect x='6.5' y='5' width='3.6' height='14' rx='1.2'/%3E%3Crect x='13.9' y='5' width='3.6' height='14' rx='1.2'/%3E%3C/svg%3E");
   --pr-i-reproducir: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5.2v13.6a1 1 0 0 0 1.5.9l10.6-6.8a1 1 0 0 0 0-1.7L9.5 4.3A1 1 0 0 0 8 5.2z'/%3E%3C/svg%3E");
   --pr-i-todas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2'%3E%3Crect x='4' y='4' width='6.5' height='6.5' rx='1.8'/%3E%3Crect x='13.5' y='4' width='6.5' height='6.5' rx='1.8'/%3E%3Crect x='4' y='13.5' width='6.5' height='6.5' rx='1.8'/%3E%3Crect x='13.5' y='13.5' width='6.5' height='6.5' rx='1.8'/%3E%3C/svg%3E");
+  --pr-i-mas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Ccircle cx='5.5' cy='12' r='2'/%3E%3Ccircle cx='12' cy='12' r='2'/%3E%3Ccircle cx='18.5' cy='12' r='2'/%3E%3C/svg%3E");
   --pr-i-alerta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 3 19.5h18z'/%3E%3Cpath d='M12 10v4.5M12 17.2v.1'/%3E%3C/svg%3E");
   background: var(--pr-fondo);
   color: var(--pr-tinta);
@@ -434,6 +435,56 @@
 .pr .promo-item > .guardar-promo[data-guardada="si"], .pr .pr-guardar-detalle[data-guardada="si"] { --ico: var(--pr-i-guardada); background: var(--pr-amarillo); animation: pr-latido 420ms var(--pr-curva); }
 .pr .promo-item > .guardar-promo:disabled, .pr .promo-item > .guardar-promo:disabled:hover { opacity: .7; background: rgb(255 255 255 / .9); }
 .pr .promo-item > .guardar-error { margin: 8px 6px 0; font-size: .82rem; font-weight: 700; }
+
+/* H23: «Opciones» junto a Guardar (hermano del enlace) abre la hoja de correcciones. Área táctil de 48 px con ::after. */
+.pr .promo-item > .promo-opciones {
+  position: absolute; z-index: 2; top: 10px; right: 58px; display: grid; place-items: center; width: 40px; height: 40px; min-height: 0; padding: 0;
+  border: 0; border-radius: 50%; background: rgb(255 255 255 / .9); color: var(--pr-tinta); font-size: 0;
+  box-shadow: 0 3px 10px rgb(0 0 0 / .22); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  transition: background-color var(--pr-rapido), transform var(--pr-rapido) var(--pr-curva);
+}
+.pr .promo-item > .promo-opciones::before {
+  content: ""; width: 19px; height: 19px; background: currentColor; -webkit-mask: var(--pr-i-mas) center / contain no-repeat; mask: var(--pr-i-mas) center / contain no-repeat;
+}
+.pr .promo-item > .promo-opciones::after { content: ""; position: absolute; inset: -4px; }
+.pr .promo-item > .promo-opciones:hover { background: #fff; }
+.pr .promo-item > .promo-opciones:active { transform: scale(.88); }
+
+/* H23: oferta que no te interesa, visible solo por filtro o búsqueda: píldora gris y foto atenuada. */
+.pr .promo-marca {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 8px; border-radius: 999px;
+  background: var(--pr-hundido); color: var(--pr-tinta); font-size: .76rem; font-weight: 700; line-height: 1.3;
+}
+.pr .promo-marca::before { content: ""; width: 12px; height: 12px; background: currentColor; -webkit-mask: var(--pr-i-cerrar) center / contain no-repeat; mask: var(--pr-i-cerrar) center / contain no-repeat; }
+.pr .promo-marca[hidden] { display: none; }
+.pr .promo-item[data-descartada] .promo-photo { filter: grayscale(.85); }
+
+/* H23: correcciones en la hoja «Opciones». Marcada = fondo amarillo suave y ✓, además de aria-pressed. */
+.pr-acciones { display: grid; gap: 8px; }
+.pr .pr-accion {
+  display: flex; align-items: center; width: 100%; min-height: 48px; padding: 0 16px; border: 1px solid var(--pr-linea); border-radius: 14px;
+  background: var(--pr-superficie); color: var(--pr-tinta); font-size: .95rem; font-weight: 700; text-align: left;
+}
+.pr .pr-accion:hover { background: #fafafa; }
+.pr .pr-accion[aria-pressed="true"], .pr .pr-accion[aria-pressed="true"]:hover { border-color: var(--pr-tinta); background: var(--pr-amarillo-suave); }
+.pr .pr-accion[aria-pressed="true"]::after { content: "✓"; content: "✓" / ""; margin-left: auto; font-weight: 800; }
+.pr .pr-accion:disabled { opacity: .6; }
+
+/* H23: pregunta en contexto, una tarjeta más de la lista. «Sí» es la acción amarilla; las demás, contorno. */
+.pr-pregunta {
+  display: grid; gap: 12px; padding: 18px; border-radius: var(--pr-radio-tarjeta); background: var(--pr-amarillo-suave); box-shadow: var(--pr-sombra-tarjeta);
+}
+.pr-pregunta[hidden] { display: none; }
+.pr-pregunta__texto { margin: 0; font-size: 1.05rem; font-weight: 800; line-height: 1.3; }
+.pr-pregunta__acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.pr .pr-pregunta__acciones button {
+  min-height: 48px; padding: 0 16px; border: 1px solid var(--pr-tinta); border-radius: 999px; background: var(--pr-superficie); color: var(--pr-tinta);
+  font-size: .88rem; font-weight: 700;
+}
+.pr .pr-pregunta__acciones button[data-respuesta="si"] { border-color: var(--pr-amarillo); background: var(--pr-amarillo); }
+.pr .pr-pregunta__acciones button[data-respuesta="ahora-no"] { border-color: transparent; background: transparent; }
+.pr-pregunta__error { margin: 0; font-size: .82rem; font-weight: 700; }
+.pr-pregunta__error:empty { display: none; }
 
 /* Exclusiva Black: cuerpo oscuro con filo dorado. */
 .pr .promo-item[data-exclusiva] .promo-card { background: var(--pr-noche); color: #fff; box-shadow: inset 0 0 0 1px rgb(253 218 36 / .28), var(--pr-sombra-tarjeta); }

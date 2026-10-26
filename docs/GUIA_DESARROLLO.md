@@ -361,3 +361,28 @@ Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfi
 - Abre una transición de regreso en `supabase/versiones.json`, porque las pruebas de PR 21 cuentan las tablas de forma fija. El PR del motor se registra como destino al fusionarse.
 
 **Aplicar en la base compartida** (solo con autorización): sacar la foto de datos (`npm run respaldo -- crear`), aplicar la migración y comprobar con `npm run test:remote`.
+
+## 12. H23: corregir lo que me recomiendan y deshacerlo — 26 de octubre de 2026
+
+Historia [SCRUM-117](https://somos-agilistas.atlassian.net/browse/SCRUM-117). Usa el registro de señales y el motor de H22, y los componentes de [SISTEMA_PROMOCIONES.md](SISTEMA_PROMOCIONES.md).
+
+**Reglas** (`public/js/motor/correcciones.js`, funciones puras conectadas al motor como `reglas`). Sus parámetros están en `config.js` (`correcciones`, versión `2026-10-26.1`):
+
+| Acción en la tarjeta | Señal | Efecto |
+| --- | --- | --- |
+| «No me interesa esta promo» | rechazo·oferta | Sale de Para ti. Con filtros o búsqueda sigue apareciendo, marcada. No retira otras ofertas. |
+| «Más de este comercio» | interés·comercio | M = 1 y su categoría entra en el alcance. Desactiva un «Menos» activo del comercio. |
+| «Menos de este comercio» | rechazo·comercio | Si el comercio estaba elegido, desactiva su interés y solo pierde M (`quitoEleccion`). Si no, R × 0.3. |
+| «No mostrar {categoría}» | rechazo·categoría | Sale de Para ti. Un filtro explícito por esa categoría la muestra en esa consulta. |
+
+**API.**
+
+- `POST /api/senales` aplica esos efectos en el servidor y responde `{senal, deshacer}`. `deshacer` es la lista de `PATCH {id, activa}` que devuelve todo al estado anterior. Repetir una señal activa no cambia nada y responde `deshacer: []`.
+- `GET /api/para-ti` agrega `pregunta`: `{tipo: 'excluir-categoria', categoria, nombre}` tras «Menos» activos en 3 comercios distintos de una categoría no excluida, o `null`.
+- `POST /api/preguntas` (`recurso=preguntas` de `api/recursos.js`) recibe `{pregunta: 'excluir-categoria', valor, respuesta: 'si'|'no'}`. «Sí» guarda un rechazo·categoría con origen pregunta y responde su `deshacer`. «No» solo guarda la fecha: no se vuelve a preguntar en 30 días. «Ahora no» no llega al servidor.
+
+**Pantalla.** Cada tarjeta de Para ti tiene «Opciones» junto a Guardar. La hoja ofrece las cuatro correcciones. Una corrección activa aparece marcada y se deshace pulsándola de nuevo. Cada acción recalcula la instantánea con los mismos filtros, búsqueda y tarjeta, y muestra el aviso con «Deshacer». Si falla, la hoja sigue abierta con el error. La pregunta en contexto va dentro de la lista, después de la segunda tarjeta, una vez por visita (`preguntaMostradaEnVisita` en `instantanea.js`).
+
+**Datos.** La migración `20261026180000_h23_correcciones.sql` es aditiva. Añade `senales_usuario.quito_eleccion` y la tabla `respuestas_pregunta` (RLS, solo backend), que está en el respaldo. La transición de regreso abierta por H22 sigue vigente: el manifiesto no cambia. No se registran aperturas ni impresiones.
+
+**Aplicar en la base compartida** (solo con autorización): sacar la foto de datos (`npm run respaldo -- crear`), aplicar la migración y comprobar con `npm run test:remote`. Hasta entonces, Vercel con Supabase no tiene la columna ni la tabla nuevas.

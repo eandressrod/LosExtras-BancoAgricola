@@ -95,9 +95,10 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 ```html
 <article class="promo-item" data-categoria="Compras" data-exclusiva="si">
   <a class="promo-card">…foto, logo, insignia, beneficio sobre la foto…
-    <div class="promo-content">comercio · categoría · razón · descripción · tira de días · vigencia · avisos · condiciones · pie</div>
+    <div class="promo-content">comercio · categoría · razón · marca · descripción · tira de días · vigencia · avisos · condiciones · pie</div>
   </a>
   <button class="guardar-promo" data-guardada="no">Guardar</button>   <!-- hermano del enlace (SCRUM-110) -->
+  <button class="promo-opciones" aria-haspopup="dialog">Opciones</button>   <!-- H23: abre la hoja de correcciones -->
   <p class="error guardar-error" role="alert"></p>
 </article>
 ```
@@ -117,6 +118,8 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 | Sin foto | Fondo oscuro con un halo del acento de la categoría. |
 | Guardada | Botón amarillo con icono lleno y un latido breve. Para ti confirma con el aviso «Deshacer». |
 | Error al guardar | Mensaje rojo bajo la tarjeta. |
+| Opciones (H23) | Botón redondo con tres puntos a la izquierda de Guardar; área táctil de 48 px. |
+| No te interesa (H23) | Solo con filtros o búsqueda: píldora gris «Marcaste que no te interesa» y foto atenuada (`data-descartada`). |
 
 La tarjeta conserva lo que exige H4: comercio, beneficio, descripción, vigencia, tarjeta aplicable, días, compra mínima, tope y «Ver promoción».
 
@@ -145,6 +148,19 @@ aviso.mostrar({ texto: 'Promoción guardada.', alDeshacer: () => … });
 
 - **Uso:** `<dialog class="pr-hoja">` abierto con `showModal()`, con asa, título, cuerpo desplazable y acciones.
 - **Variante sin velo:** `.pr-hoja--sin-velo` no oscurece la lista (ADR-010). Queda lista para H21; en esta rama ninguna pantalla la usa todavía.
+
+### Correcciones de la tarjeta (H23, `.pr-acciones`)
+
+- **Uso:** la hoja `#acciones` (`.pr-hoja`) lleva el comercio como título y una fila `.pr-accion` por corrección: «No me interesa esta promo», «Más de este comercio», «Menos de este comercio» y «No mostrar {categoría}».
+- **Marcada:** fondo amarillo suave y ✓, además de `aria-pressed`. Volver a pulsarla la deshace.
+- **Confirmación:** cada corrección cierra la hoja y abre el aviso con «Deshacer». Si falla, la hoja sigue abierta con el error y las filas se pueden volver a pulsar.
+- **Tamaño:** filas de 48 px de alto.
+
+### Pregunta en contexto (H23, `.pr-pregunta`)
+
+- **Uso:** una tarjeta más de la lista, después de la segunda promoción, nunca una ventana emergente. Aparece como máximo una vez por visita.
+- **Contenido:** «¿Dejamos de mostrarte {categoría}?» y tres respuestas de 48 px: «Sí, dejar de mostrar» (amarillo), «No, seguir viendo» (contorno) y «Ahora no» (texto).
+- **Error:** mensaje rojo dentro de la tarjeta; la pregunta sigue visible.
 
 ## Pantallas
 

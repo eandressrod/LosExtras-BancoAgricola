@@ -1,7 +1,8 @@
 // H22: la instantánea de Para ti conserva el orden durante la visita, solo en esta pestaña y por perfil.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { guardarInstantanea, leerInstantanea, marcarVencidas, olvidarInstantaneas, alcanceDeConsulta, visitaVigente, DURACION_VISITA_MS } from '../../public/js/instantanea.js';
+import { guardarInstantanea, leerInstantanea, marcarVencidas, olvidarInstantaneas, alcanceDeConsulta, visitaVigente, DURACION_VISITA_MS,
+  preguntaMostradaEnVisita, marcarPreguntaMostrada } from '../../public/js/instantanea.js';
 
 function almacen() {
   const datos = new Map();
@@ -87,4 +88,31 @@ test('H25 (CDA 6) hay visita vigente solo si el perfil tiene una instantánea de
   assert.equal(visitaVigente(sesion, 'A', despues(DURACION_VISITA_MS)), false, 'tras 30 minutos empieza otra visita');
   assert.equal(visitaVigente(sesion, 'A', new Date('2026-10-22T07:00:00Z')), false, 'al cambiar de día en El Salvador empieza otra visita');
   assert.equal(visitaVigente(null, 'A', MEDIODIA), false, 'sin almacenamiento no hay visita que conservar');
+});
+
+test('H23 la pregunta en contexto aparece como máximo una vez por visita y por perfil', () => {
+  const sesion = almacen();
+  assert.equal(preguntaMostradaEnVisita(sesion, 'B', MEDIODIA), false);
+  marcarPreguntaMostrada(sesion, 'B', MEDIODIA);
+  assert.equal(preguntaMostradaEnVisita(sesion, 'B', despues(DURACION_VISITA_MS - 1)), true);
+  assert.equal(preguntaMostradaEnVisita(sesion, 'A', despues(1)), false);
+  // Consultarla renueva la visita, como la instantánea: seguir usando Para ti no la hace volver.
+  assert.equal(preguntaMostradaEnVisita(sesion, 'B', despues(2 * DURACION_VISITA_MS - 2)), true);
+});
+
+test('H23 tras 30 minutos sin usar Para ti o al cambiar de día empieza otra visita y puede volver a aparecer', () => {
+  const sesion = almacen();
+  marcarPreguntaMostrada(sesion, 'B', MEDIODIA);
+  assert.equal(preguntaMostradaEnVisita(sesion, 'B', despues(DURACION_VISITA_MS)), false);
+  marcarPreguntaMostrada(sesion, 'B', new Date('2026-10-22T05:50:00Z'));
+  assert.equal(preguntaMostradaEnVisita(sesion, 'B', new Date('2026-10-22T06:10:00Z')), false);
+});
+
+test('H23 iniciar o cerrar sesión también olvida la pregunta mostrada; sin almacenamiento no falla', () => {
+  const sesion = almacen();
+  marcarPreguntaMostrada(sesion, 'B', MEDIODIA);
+  olvidarInstantaneas(sesion);
+  assert.equal(sesion.datos.size, 0);
+  assert.equal(preguntaMostradaEnVisita(null, 'B', MEDIODIA), false);
+  assert.doesNotThrow(() => marcarPreguntaMostrada(null, 'B', MEDIODIA));
 });

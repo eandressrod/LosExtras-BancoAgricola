@@ -8,7 +8,8 @@ import { destinoEntradaPromociones } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
 import { conIndicador } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
-import { guardarInstantanea, leerInstantanea, marcarVencidas, visitaVigente } from './instantanea.js';
+import { guardarInstantanea, leerInstantanea, marcarVencidas, visitaVigente, preguntaMostradaEnVisita, marcarPreguntaMostrada } from './instantanea.js';
+import { accionesDeOferta, textoConfirmacion } from './correcciones-vista.js';
 
 import {
   leerCategoria, leerHoy, leerBusqueda, leerIntencion, normalizarBusqueda, categoriaVigente,
@@ -18,6 +19,11 @@ import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjet
 
 let idsGuardados = [];
 let avisoGuardar = null;
+// H23: señales activas del dueño de la sesión (marcan las correcciones) y apertura de la hoja «Opciones».
+let senalesActivas = [];
+let abrirCorrecciones = () => {};
+// La pregunta en contexto va dentro de la lista, después de las primeras tarjetas.
+const POSICION_PREGUNTA = 2;
 
 // Cabecera: el icono de Guardadas cuenta las guardadas de la sesión.
 function pintarContadorGuardadas() {
@@ -113,6 +119,15 @@ function crearOferta(promotion, categoria, hoy, busqueda, intencion) {
     event.stopPropagation();
     return alternarGuardada(boton, error, promotion.id, true);
   };
+  // H23: una oferta que dijiste que no te interesa solo aparece con filtros o búsqueda, y marcada.
+  const [noMeInteresa] = accionesDeOferta(promotion, senalesActivas);
+  const marca = card.querySelector('.promo-marca');
+  marca.textContent = noMeInteresa.activa ? 'Marcaste que no te interesa' : '';
+  marca.hidden = !noMeInteresa.activa;
+  if (noMeInteresa.activa) articulo.dataset.descartada = 'si';
+  const opciones = card.querySelector('.promo-opciones');
+  opciones.setAttribute('aria-label', `Opciones de ${promotion.merchant}`);
+  opciones.onclick = () => abrirCorrecciones(promotion);
   return card;
 }
 
@@ -300,6 +315,109 @@ if (profile) {
     }
   }
 
+  // H23: sin señales legibles las tarjetas se muestran sin marcas; las acciones siguen disponibles.
+  async function leerSenales() {
+    if (typeof fetch !== 'function') return [];
+    try {
+      const response = await fetch('/api/senales', { cache: 'no-store' });
+      if (!response.ok) return [];
+      return (await response.json()).senales ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  async function escribir(url, method, cuerpo, error) {
+    const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) });
+    if (response.status === 401) { location.replace('/index.html'); return null; }
+    if (!response.ok) throw new Error(error);
+    return response.json();
+  }
+  const enviarSenal = (method, cuerpo) => escribir('/api/senales', method, cuerpo, 'No se pudo guardar tu cambio. Intenta de nuevo.');
+
+  // Deshacer desde el aviso: un PATCH por cambio y el orden se recalcula; el foco vuelve a la tarjeta y no abre otro aviso.
+  function ofrecerDeshacer(texto, cambios, oferta) {
+    avisoGuardar.mostrar({ texto, alDeshacer: cambios.length ? async () => {
+      try {
+        for (const cambio of cambios) if (!await enviarSenal('PATCH', cambio)) return;
+        await loadPromotions();
+        document.getElementById('promo-' + oferta?.id)?.focus?.();
+      } catch (fallo) {
+        status.textContent = fallo.message;
+        status.className = 'error';
+      }
+    } : null });
+  }
+
+  // Hoja «Opciones»: aplicar una corrección o, si ya está activa, deshacerla en la misma tarjeta.
+  const hojaAcciones = document.querySelector('#acciones');
+  const tituloAcciones = document.querySelector('#acciones-titulo');
+  const listaAcciones = document.querySelector('#acciones-lista');
+  const errorAcciones = document.querySelector('#acciones-error');
+
+  async function corregir(oferta, accion) {
+    errorAcciones.textContent = '';
+    const botones = [...listaAcciones.children];
+    for (const boton of botones) boton.disabled = true;
+    try {
+      const datos = accion.activa
+        ? await enviarSenal('PATCH', { id: accion.senalId, activa: false })
+        : await enviarSenal('POST', accion.senal);
+      if (!datos) return;
+      hojaAcciones.close();
+      // Cada corrección recalcula la instantánea con los mismos filtros, búsqueda y tarjeta.
+      await loadPromotions();
+      ofrecerDeshacer(textoConfirmacion(accion.activa ? 'deshacer' : accion.tipo, oferta),
+        accion.activa ? [{ id: accion.senalId, activa: true }] : datos.deshacer, oferta);
+    } catch (fallo) {
+      errorAcciones.textContent = fallo.message;
+    } finally {
+      for (const boton of botones) boton.disabled = false;
+    }
+  }
+
+  abrirCorrecciones = oferta => {
+    tituloAcciones.textContent = oferta.merchant;
+    errorAcciones.textContent = '';
+    listaAcciones.replaceChildren(...accionesDeOferta(oferta, senalesActivas).map(accion => {
+      const boton = document.createElement('button');
+      boton.type = 'button';
+      boton.className = 'pr-accion';
+      boton.dataset.tipo = accion.tipo;
+      boton.textContent = accion.texto;
+      boton.setAttribute('aria-pressed', String(accion.activa));
+      boton.addEventListener('click', () => corregir(oferta, accion));
+      return boton;
+    }));
+    hojaAcciones.showModal();
+  };
+
+  // Pregunta en contexto: «Sí» excluye la categoría, «No» no la repite en 30 días y «Ahora no» solo la retira de la visita.
+  function crearPregunta(pregunta) {
+    const nodo = document.querySelector('#pregunta-card').content.cloneNode(true);
+    const tarjeta = nodo.querySelector('article');
+    const error = nodo.querySelector('.pr-pregunta__error');
+    nodo.querySelector('.pr-pregunta__texto').textContent = `¿Dejamos de mostrarte ${pregunta.nombre}?`;
+    async function responder(respuesta) {
+      error.textContent = '';
+      try {
+        const datos = await escribir('/api/preguntas', 'POST', { pregunta: pregunta.tipo, valor: pregunta.categoria, respuesta },
+          'No se pudo guardar tu respuesta. Intenta de nuevo.');
+        if (!datos) return;
+        tarjeta.hidden = true;
+        if (respuesta !== 'si') return;
+        await loadPromotions();
+        ofrecerDeshacer(`No verás ${pregunta.nombre} en Para ti.`, datos.deshacer, null);
+      } catch (fallo) {
+        error.textContent = fallo.message;
+      }
+    }
+    nodo.querySelector('[data-respuesta="si"]').addEventListener('click', () => responder('si'));
+    nodo.querySelector('[data-respuesta="no"]').addEventListener('click', () => responder('no'));
+    nodo.querySelector('[data-respuesta="ahora-no"]').addEventListener('click', () => { tarjeta.hidden = true; });
+    return nodo;
+  }
+
   // Categorías vigentes (H5) y tarjetas propias (H16) se cargan juntas; si algo falla, Reintentar.
   async function prepararPagina() {
     status.textContent = '';
@@ -396,10 +514,19 @@ if (profile) {
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
       if (!guardada) guardarInstantanea(sesion, profile.id, consulta, respuesta);
       const promotions = marcarVencidas(respuesta.promociones);
-      idsGuardados = await leerIdsGuardados();
+      [idsGuardados, senalesActivas] = await Promise.all([leerIdsGuardados(), leerSenales()]);
       if (turno !== consultaActual) return;
       pintarContadorGuardadas();
-      for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda, intencion));
+      // H23: la pregunta en contexto aparece como máximo una vez por visita.
+      const pregunta = respuesta.pregunta && !preguntaMostradaEnVisita(sesion, profile.id) ? crearPregunta(respuesta.pregunta) : null;
+      promotions.forEach((promotion, indice) => {
+        if (pregunta && indice === POSICION_PREGUNTA) cards.append(pregunta);
+        cards.append(crearOferta(promotion, categoria, hoy, busqueda, intencion));
+      });
+      if (pregunta) {
+        if (promotions.length <= POSICION_PREGUNTA) cards.append(pregunta);
+        marcarPreguntaMostrada(sesion, profile.id);
+      }
       const vacio = promotions.length === 0;
       conteo.textContent = vacio ? '' : promotions.length === 1 ? '1 promoción' : `${promotions.length} promociones`;
       pintarFranja(promotions, respuesta.estrategia);
@@ -485,5 +612,7 @@ if (profile) {
   abrirFiltros.addEventListener('click', () => hojaFiltros.showModal());
   document.querySelector('#cerrar-filtros').addEventListener('click', () => hojaFiltros.close());
   hojaFiltros.addEventListener('click', evento => { if (evento.target === hojaFiltros) hojaFiltros.close(); });
+  document.querySelector('#cerrar-acciones').addEventListener('click', () => hojaAcciones.close());
+  hojaAcciones.addEventListener('click', evento => { if (evento.target === hojaAcciones) hojaAcciones.close(); });
   await cargar();
 }

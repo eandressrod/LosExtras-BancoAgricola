@@ -11,6 +11,7 @@ import { textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjet
 import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
 import { diapositivasFranja } from '../../public/js/franja.js';
 import * as instantanea from '../../public/js/instantanea.js';
+import * as correccionesVista from '../../public/js/correcciones-vista.js';
 
 export const CATEGORIAS = ['Restaurantes', 'Compras', 'Entretenimiento'].map((id, orden) => ({ id, nombre: id, orden }));
 export const TARJETAS = {
@@ -100,7 +101,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     cardName,
     revelarPagina: alRevelar,
     conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
-    ...vista, ...filtro, ...tarjeta, ...instantanea
+    ...vista, ...filtro, ...tarjeta, ...instantanea, ...correccionesVista
   };
   return { obtener, history, contexto, elementos, sesion, timerFake };
 }
@@ -123,10 +124,17 @@ export async function abrirListado(opciones = {}) {
   nav.elementos.set('#card-single', elemento({ hidden: true }));
   nav.elementos.set('#cards', cards);
   nav.elementos.set('#filtros-activos', conHijos({ replaceChildren(...nodos) { this.hijos = nodos; } }));
-  nav.elementos.set('#promotion-card', { content: { cloneNode() {
+  const plantilla = { content: { cloneNode() {
     const partes = new Map();
     return { querySelector(selector) { if (!partes.has(selector)) partes.set(selector, elemento()); return partes.get(selector); } };
-  } } });
+  } } };
+  nav.elementos.set('#promotion-card', plantilla);
+  nav.elementos.set('#pregunta-card', plantilla);
+  // H23: hoja de correcciones. Las pruebas pueden sustituir cualquier elemento y responder a fetch (POST/PATCH).
+  nav.elementos.set('#acciones', elemento({ open: false, showModal() { this.open = true; }, close() { this.open = false; } }));
+  nav.elementos.set('#acciones-lista', elemento({ children: [], replaceChildren(...nodos) { this.children = nodos; } }));
+  for (const [selector, nodo] of Object.entries(opciones.elementos ?? {})) nav.elementos.set(selector, nodo);
+  if (opciones.fetch) nav.contexto.fetch = opciones.fetch;
   const consultas = [];
   // Sistema visual: se registran los avisos y los carruseles que pide la página; sus componentes tienen pruebas unitarias.
   const aviso = { mostrados: [], mostrar(datos) { this.mostrados.push(datos); }, cerrar() {} };
