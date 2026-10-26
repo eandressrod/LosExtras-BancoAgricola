@@ -23,7 +23,8 @@ export async function validarYGuardarPreferencias(usuarioId, categorias, repo, s
     throw new Error('Categoría inválida');
   }
 
-  await repo.guardarPreferencias(usuarioId, [...new Set(categorias)]);
-  await senales?.sincronizarCategorias(usuarioId, categorias, 'encuesta');
+  const unicas = [...new Set(categorias)];
+  await repo.guardarPreferencias(usuarioId, unicas);
+  await senales?.sincronizarCategorias(usuarioId, unicas, 'encuesta');
 }
 
