@@ -1,5 +1,5 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
-import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { conMinimoCarga } from './carga-tiempo.js';
@@ -58,9 +58,6 @@ if (profile) {
       vence.textContent = textoVencePronto(promotion, hoyEnElSalvador());
       vence.hidden = !vence.textContent;
       document.querySelector('#validity').textContent = textoVigencia(promotion);
-      const disponible = document.querySelector('#today');
-      disponible.textContent = textoDisponibleHoy(promotion);
-      disponible.hidden = !disponible.textContent;
       document.querySelector('#exclusive').hidden = !promotion.exclusive;
       mostrarImagen(document.querySelector('#promotion-image'), promotion.imageUrl, promotion.imageAlt);
       mostrarImagen(document.querySelector('#merchant-logo'), promotion.logoUrl);

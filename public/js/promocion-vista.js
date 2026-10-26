@@ -29,21 +29,57 @@ export function textoVencePronto(promo, hoy) {
   return dias === 1 ? 'Vence mañana' : `Vence en ${dias} días`;
 }
 
+// Lunes a domingo (domingo = 0), en singular y en plural: «de lunes a sábado», «los sábados».
 const SEMANA = [
-  ['L', 'lunes', 1], ['M', 'martes', 2], ['M', 'miércoles', 3], ['J', 'jueves', 4], ['V', 'viernes', 5], ['S', 'sábado', 6], ['D', 'domingo', 0]
+  [1, 'lunes', 'lunes'], [2, 'martes', 'martes'], [3, 'miércoles', 'miércoles'], [4, 'jueves', 'jueves'],
+  [5, 'viernes', 'viernes'], [6, 'sábado', 'sábados'], [0, 'domingo', 'domingos']
 ];
+const mayuscula = texto => texto.charAt(0).toUpperCase() + texto.slice(1);
+const unir = nombres => nombres.length === 1 ? nombres[0] : nombres.slice(0, -1).join(', ') + ' y ' + nombres.at(-1);
 
-/** Sistema visual: días de lunes a domingo; sin días fijos (null) vale toda la semana. `diaHoy` usa domingo = 0. */
-export function tiraDias(dias, diaHoy) {
-  return SEMANA.map(([letra, nombre, numero]) => ({ letra, nombre, valido: !dias?.length || dias.includes(numero), hoy: numero === diaHoy }));
+/**
+ * Forma de los días fijos, ordenados de lunes a domingo: un día, un rango (tres o más seguidos) o una lista.
+ * null si no hay días fijos o están los siete. La usan la tarjeta, el detalle y la franja de avisos.
+ * @returns {{ forma: 'uno' | 'rango' | 'lista', plurales: string[], desde: string, hasta: string } | null}
+ */
+export function formaDias(dias) {
+  if (!dias?.length) return null;
+  const elegidos = SEMANA.filter(([numero]) => dias.includes(numero));
+  if (elegidos.length === SEMANA.length) return null;
+  const posiciones = elegidos.map(dia => SEMANA.indexOf(dia));
+  const seguidos = posiciones.every((posicion, indice) => indice === 0 || posicion === posiciones[indice - 1] + 1);
+  const forma = elegidos.length === 1 ? 'uno' : seguidos && elegidos.length > 2 ? 'rango' : 'lista';
+  return { forma, plurales: elegidos.map(dia => dia[2]), desde: elegidos[0][1], hasta: elegidos.at(-1)[1] };
 }
 
-/** H17: por qué se puede usar hoy. No afirma que ya se cumpla una compra mínima. */
-export function textoDisponibleHoy(promo) {
-  if (!promo.availableToday) return '';
-  const motivo = promo.usageDays?.length ? 'es uno de sus días válidos' : 'aplica todos los días de su vigencia';
-  return `Disponible hoy: ${motivo}${promo.minimumPurchase != null ? ', con la compra mínima indicada' : ''}.`;
+/** Frase corta de los días válidos: «Todos los miércoles», «Sábados y domingos», «Lunes a jueves» o «Todos los días». */
+export function textoDias(dias) {
+  const partes = formaDias(dias);
+  if (!partes) return 'Todos los días';
+  if (partes.forma === 'uno') return 'Todos los ' + partes.plurales[0];
+  return mayuscula(partes.forma === 'rango' ? `${partes.desde} a ${partes.hasta}` : unir(partes.plurales));
 }
+
+/** Los días con artículo, para «Disponible los miércoles» o «Disponible de lunes a jueves». */
+function diasConArticulo(dias) {
+  const partes = formaDias(dias);
+  return partes.forma === 'rango' ? `de ${partes.desde} a ${partes.hasta}` : 'los ' + unir(partes.plurales);
+}
+
+/**
+ * Aviso de días de la tarjeta y del detalle (reloj). 'hoy' si aplica hoy; 'otro-dia' si está vigente pero hoy no
+ * es uno de sus días; 'neutro' fuera de vigencia o sin disponibilidad confirmada, donde solo se dicen los días.
+ */
+export function estadoDias(promo) {
+  const vigente = (promo.canUse ?? !(promo.expired || promo.upcoming)) && !promo.vencida;
+  if (vigente && promo.availableToday) {
+    const dias = textoDias(promo.usageDays);
+    return { estado: 'hoy', texto: 'Disponible hoy · ' + dias.charAt(0).toLowerCase() + dias.slice(1) };
+  }
+  if (vigente && formaDias(promo.usageDays)) return { estado: 'otro-dia', texto: 'Disponible ' + diasConArticulo(promo.usageDays) };
+  return { estado: 'neutro', texto: textoDias(promo.usageDays) };
+}
+
 
 export function condicionesVisibles(promo, { dias: conDias = true } = {}) {
   const condiciones = [];
@@ -82,20 +118,11 @@ export function diaDeLaSemana(fecha) {
   return new Date(fecha + 'T12:00:00Z').getUTCDay();
 }
 
-/** Sistema visual: dibuja la tira L M M J V S D; solo aparece con días fijos. */
-export function mostrarDias(lista, promo, diaHoy = diaDeLaSemana(hoyEnElSalvador())) {
-  lista.replaceChildren();
-  lista.hidden = !promo.usageDays?.length;
-  if (lista.hidden) return;
-  for (const dia of tiraDias(promo.usageDays, diaHoy)) {
-    const item = document.createElement('li');
-    item.className = 'promo-dia';
-    item.textContent = dia.letra;
-    if (dia.valido) item.dataset.valido = '';
-    if (dia.hoy) item.dataset.hoy = '';
-    item.setAttribute('aria-label', dia.nombre + (dia.valido ? ', válido' : ', no válido') + (dia.hoy ? ', hoy' : ''));
-    lista.append(item);
-  }
+/** Aviso de días con reloj: verde si aplica hoy, rojo si es otro día, neutro fuera de vigencia. */
+export function mostrarDias(elemento, promo) {
+  const { estado, texto } = estadoDias(promo);
+  elemento.textContent = texto;
+  elemento.dataset.estado = estado;
 }
 
 const NOMBRE_TARJETA = { basica: 'Básica', black: 'Black' };

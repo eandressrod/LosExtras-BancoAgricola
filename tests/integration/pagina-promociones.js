@@ -7,7 +7,7 @@ import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
 import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
-import { textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas } from '../../public/js/promocion-vista.js';
+import { textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarDias } from '../../public/js/promocion-vista.js';
 import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
 import { diapositivasFranja } from '../../public/js/franja.js';
 import * as instantanea from '../../public/js/instantanea.js';
@@ -37,8 +37,8 @@ const fuente = async archivo => {
   return sinMultilinea.replace(/^import[^\n]+\n/gm, '');
 };
 const vista = {
-  textoVigencia: () => '', textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas,
-  mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarDias: () => {}
+  textoVigencia: () => '', textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarDias,
+  mostrarImagen: () => {}, mostrarCondiciones: () => {}
 };
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 
