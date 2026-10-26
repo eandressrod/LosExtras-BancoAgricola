@@ -1,35 +1,9 @@
 // Filtro temporal de "Para ti" (H5, H17, H10) e intención del día (H25). Viven en la URL y en la entrada del historial
 // de esta pestaña, nunca en las preferencias guardadas. Cada entrada recuerda el perfil que la creó.
 
-const congelar = objeto => Object.freeze(objeto);
-
-export const CHIPS_HOY_BUSCO = congelar([
-  congelar({ id: 'dia-a-dia', nombre: 'Compras del día a día', tipo: 'ocasion' }),
-  congelar({ id: 'rapido-practico', nombre: 'Rápido y práctico', tipo: 'ocasion' }),
-  congelar({ id: 'darse-un-gusto', nombre: 'Darse un gusto', tipo: 'ocasion' }),
-  congelar({ id: 'salir', nombre: 'Salir con amigos o pareja', tipo: 'ocasion' }),
-  congelar({ id: 'familia', nombre: 'Planes en familia', tipo: 'ocasion' }),
-  congelar({ id: 'bienestar', nombre: 'Bienestar y vida activa', tipo: 'ocasion' }),
-  congelar({ id: 'entretenimiento', nombre: 'Entretenimiento', tipo: 'ocasion' }),
-  congelar({ id: 'estilo-personal', nombre: 'Estilo personal', tipo: 'ocasion' }),
-  congelar({ id: 'tecnologia', nombre: 'Tecnología', tipo: 'ocasion' }),
-  congelar({ id: 'hogar', nombre: 'Hogar', tipo: 'ocasion' }),
-  congelar({ id: 'viajes', nombre: 'Viajes y escapadas', tipo: 'ocasion' }),
-  congelar({ id: 'regalo', nombre: 'Regalo', tipo: 'etiqueta' })
-]);
-
-const POR_ID = new Map(CHIPS_HOY_BUSCO.map(chip => [chip.id, chip]));
-
-export function normalizarIntencion(valor) {
-  if (typeof valor !== 'string') return null;
-  const limpio = valor.trim();
-  return POR_ID.has(limpio) ? limpio : null;
-}
-
-export function textoPrimeroHoyBusco(intencionId) {
-  const chip = POR_ID.get(normalizarIntencion(intencionId));
-  return chip ? `Primero: ${chip.nombre.toLowerCase()}` : '';
-}
+// H25: los chips y su validación viven en el motor (motor/intencion.js); aquí solo se reexportan para la pantalla.
+import { normalizarIntencion } from './motor/intencion.js';
+export { CHIPS_HOY_BUSCO, normalizarIntencion, textoPrimeroHoyBusco } from './motor/intencion.js';
 
 /** Categoría pedida en la URL, o null para Todas. Se descarta si la entrada es de otro perfil. */
 export function leerCategoria(search, estado, perfilId) {
