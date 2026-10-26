@@ -1,5 +1,6 @@
 import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
 import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { SECCIONES, seccionVecina, seccionPorDeslizamiento, leerSeccion, guardarSeccion, urlSeccion } from './pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from './filtros-activos.js';
 import { crearAviso } from './aviso-deshacer.js';
 import { diapositivasFranja } from './franja.js';
@@ -141,6 +142,10 @@ if (profile) {
   const pildoras = document.querySelector('#filtros-activos');
   const franja = document.querySelector('#franja');
   const conteo = document.querySelector('#pr-conteo');
+  const pestanas = document.querySelector('.pr-pestanas');
+  const botonesSeccion = SECCIONES.map(id => document.querySelector('#tab-' + id));
+  const panelLista = document.querySelector('#panel-lista');
+  const panelCerca = document.querySelector('#panel-cerca');
   avisoGuardar = crearAviso(document.querySelector('#pr-aviso'));
   let carrusel = null;
   let preferencias = null;
@@ -161,6 +166,8 @@ if (profile) {
   let timerBusqueda = null;
   let aperturaRegistrada = false;
   let volverDelDetalle = location.hash.startsWith('#promo-');
+  // Sección elegida en esta visita; al volver del detalle se abre la misma.
+  let seccion = leerSeccion(sesion, profile.id);
   const indicador = document.querySelector('#promotions-loading');
 
   searchInput.value = busqueda ?? '';
@@ -209,7 +216,58 @@ if (profile) {
       return nombre ? `No hay promociones de ${nombre} para "${busqueda}".` : `No hay promociones para "${busqueda}".`;
     }
     if (hoy) return nombre ? `No hay promociones de ${nombre} disponibles hoy para tu perfil.` : 'No hay promociones disponibles hoy para tu perfil.';
-    return nombre ? `No hay promociones de ${nombre} para tu perfil.` : 'No hay promociones para tus intereses.';
+    if (nombre) return `No hay promociones de ${nombre} para tu perfil.`;
+    return seccion === 'explorar' ? 'No hay promociones para tus tarjetas.' : 'No hay promociones para tus intereses.';
+  }
+
+  // Pestañas: solo la elegida entra en la tabulación. Para ti y Explorar comparten la lista; Cerca de ti, el mapa.
+  // «Hoy busco» ordena Para ti, así que su tira solo se ve ahí.
+  function mostrarSeccion() {
+    botonesSeccion.forEach((boton, indice) => {
+      const elegida = SECCIONES[indice] === seccion;
+      boton.setAttribute('aria-selected', String(elegida));
+      boton.setAttribute('tabindex', elegida ? '0' : '-1');
+    });
+    pestanas.dataset.seccion = seccion;
+    panelCerca.hidden = seccion !== 'cerca';
+    panelLista.hidden = seccion === 'cerca';
+    panelLista.setAttribute('aria-labelledby', 'tab-' + (seccion === 'explorar' ? 'explorar' : 'para-ti'));
+    intentBox.hidden = !tarjetas.length || seccion !== 'para-ti';
+  }
+
+  function cambiarSeccion(nueva) {
+    if (nueva === seccion) return;
+    seccion = nueva;
+    guardarSeccion(sesion, profile.id, seccion);
+    mostrarSeccion();
+    if (seccion !== 'cerca' && tarjetas.length) return loadPromotions();
+  }
+
+  // Teclado de las pestañas: flechas, Inicio y Fin mueven el foco y eligen la sección.
+  function moverSeccion(evento) {
+    const actual = SECCIONES.indexOf(seccion);
+    const destino = { ArrowRight: actual + 1, ArrowLeft: actual - 1, Home: 0, End: SECCIONES.length - 1 }[evento.key];
+    if (destino === undefined) return;
+    evento.preventDefault();
+    const elegida = SECCIONES[Math.min(Math.max(destino, 0), SECCIONES.length - 1)];
+    botonesSeccion[SECCIONES.indexOf(elegida)].focus();
+    return cambiarSeccion(elegida);
+  }
+
+  // Deslizar a los lados sobre la lista o el mapa cambia a la sección vecina; un gesto vertical solo desplaza.
+  function escucharDeslizamiento(panel) {
+    let inicio = null;
+    panel.addEventListener('touchstart', evento => {
+      const toque = evento.touches[0];
+      inicio = evento.touches.length === 1 ? { x: toque.clientX, y: toque.clientY } : null;
+    }, { passive: true });
+    panel.addEventListener('touchend', evento => {
+      if (!inicio) return;
+      const toque = evento.changedTouches[0];
+      const paso = seccionPorDeslizamiento(toque.clientX - inicio.x, toque.clientY - inicio.y);
+      inicio = null;
+      if (paso) cambiarSeccion(seccionVecina(seccion, paso));
+    }, { passive: true });
   }
 
   function crearFiltro(item) {
@@ -341,7 +399,7 @@ if (profile) {
       cardSingle.hidden = false;
     }
     // H25: la tira «Hoy busco» aparece cuando hay tarjetas con las que consultar, no mientras carga.
-    intentBox.hidden = false;
+    mostrarSeccion();
     mostrarTarjeta();
     return true;
   }
@@ -372,6 +430,7 @@ if (profile) {
   }
 
   async function loadPromotions() {
+    if (seccion === 'cerca') return; // El mapa no usa la lista; se consulta al volver a Para ti o Explorar.
     const turno = ++consultaActual;
     conteo.textContent = '';
     status.textContent = '';
@@ -385,7 +444,8 @@ if (profile) {
     indicador.hidden = false;
     try {
       // La API valida la tarjeta y el motor ordena sus beneficios según tus intereses e intención del día, con filtros y búsqueda.
-      const consulta = conTarjeta(urlConsulta(categoria, hoy, busqueda, intencion), filtroTarjeta?.id);
+      // Explorar pide lo mismo sin personalizar.
+      const consulta = urlSeccion(conTarjeta(urlConsulta(categoria, hoy, busqueda, intencion), filtroTarjeta?.id), seccion);
       // H22 y H25: al volver del detalle se conserva el orden de la visita; entrar o cambiar un filtro o chip lo recalcula.
       const guardada = volverDelDetalle ? leerInstantanea(sesion, profile.id, consulta) : null;
       volverDelDetalle = false;
@@ -405,7 +465,7 @@ if (profile) {
       clearSearchEmpty.hidden = !vacio || sinCatalogo || !busqueda;
       showAll.hidden = !vacio || sinCatalogo || !categoria;
       exitToday.hidden = !vacio || sinCatalogo || !hoy;
-      emptyPreferences.hidden = !vacio || sinCatalogo || hoy || Boolean(busqueda);
+      emptyPreferences.hidden = !vacio || sinCatalogo || hoy || Boolean(busqueda) || seccion === 'explorar';
       const seleccionado = document.getElementById(decodeURIComponent(location.hash.slice(1)));
       if (seleccionado?.classList.contains('promo-card')) seleccionado.scrollIntoView({ block: 'center' });
     } catch (error) {
@@ -482,5 +542,12 @@ if (profile) {
   abrirFiltros.addEventListener('click', () => hojaFiltros.showModal());
   document.querySelector('#cerrar-filtros').addEventListener('click', () => hojaFiltros.close());
   hojaFiltros.addEventListener('click', evento => { if (evento.target === hojaFiltros) hojaFiltros.close(); });
+  botonesSeccion.forEach((boton, indice) => {
+    boton.addEventListener('click', () => cambiarSeccion(SECCIONES[indice]));
+    boton.addEventListener('keydown', moverSeccion);
+  });
+  escucharDeslizamiento(panelLista);
+  escucharDeslizamiento(panelCerca);
+  mostrarSeccion();
   await cargar();
 }
