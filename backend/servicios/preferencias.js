@@ -8,9 +8,11 @@ export const CATEGORIAS_PERMITIDAS = new Set(['Restaurantes', 'Compras', 'Entret
  * @param {string} usuarioId - ID del propietario de la sesión (viene siempre del token, nunca del cliente).
  * @param {string[]} categorias - Categorías seleccionadas por el usuario.
  * @param {{ guardarPreferencias(usuarioId: string, categorias: string[]): Promise<void> }} repo
+ * @param {Pick<import('../repositorios/contrato.js').RepositorioSenales, 'sincronizarCategorias'>} [senales]
+ *   H22: el motor lee las categorías del registro de señales; preferencias_usuario se sigue escribiendo para la versión de regreso.
  * @throws {Error} Si la selección está vacía, es nula o contiene categorías inválidas.
  */
-export async function validarYGuardarPreferencias(usuarioId, categorias, repo) {
+export async function validarYGuardarPreferencias(usuarioId, categorias, repo, senales) {
   if (!Array.isArray(categorias) || categorias.length === 0) {
     throw new Error('Selecciona al menos una categoría');
   }
@@ -22,5 +24,6 @@ export async function validarYGuardarPreferencias(usuarioId, categorias, repo) {
   }
 
   await repo.guardarPreferencias(usuarioId, [...new Set(categorias)]);
+  await senales?.sincronizarCategorias(usuarioId, categorias, 'encuesta');
 }
 

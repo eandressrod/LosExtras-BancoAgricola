@@ -83,7 +83,7 @@ test('H10 conserva texto, categoría y hoy en las URLs de consulta, detalle y re
   assert.equal(leerBusqueda('?comercio=%20Siman%20', estadoNavegacion('A', 'Compras'), 'A'), 'Siman');
   assert.equal(leerBusqueda('?comercio=Siman', estadoNavegacion('A', 'Compras'), 'B'), null);
 
-  assert.equal(urlConsulta('Compras', true, '  Siman '), '/api/promociones?categoria=Compras&hoy=1&comercio=Siman');
+  assert.equal(urlConsulta('Compras', true, '  Siman '), '/api/para-ti?categoria=Compras&hoy=1&comercio=Siman');
   assert.equal(urlDetalle('tienda', 'Compras', true, 'Siman'), '/detalle.html?id=tienda&categoria=Compras&hoy=1&comercio=Siman');
   assert.equal(urlListado('Compras', 'tienda', true, 'Siman'), '/promociones.html?categoria=Compras&hoy=1&comercio=Siman#promo-tienda');
 });

@@ -87,3 +87,14 @@ export {};
  * @property {(perfilId: string, id: string, datos: Omit<MetaUsuario,'id'>) => Promise<MetaUsuario|null>} editarMeta
  * @property {(perfilId: string, id: string) => Promise<boolean>} eliminarMeta
  */
+
+/** H22: registro de señales declaradas; la forma de cada señal está en public/js/motor/contrato.js.
+ * @typedef {import('../../public/js/motor/contrato.js').Senal} Senal
+ * @typedef {Pick<Senal, 'clase'|'ambito'|'valor'|'origen'>} SenalNueva
+ * @typedef {Object} RepositorioSenales
+ * @property {(usuarioId: string) => Promise<Senal[]>} listarActivas
+ * @property {(usuarioId: string, senal: SenalNueva) => Promise<Senal>} activar Crea la señal o reactiva la existente con su nuevo origen.
+ * @property {(usuarioId: string, id: number, activa: boolean) => Promise<Senal|null>} cambiarEstado null si la señal no es del usuario.
+ * @property {(usuarioId: string, categorias: string[], origen: Senal['origen']) => Promise<void>} sincronizarCategorias
+ *   Espejo de /api/preferencias: activa las categorías elegidas y desactiva las quitadas.
+ */
