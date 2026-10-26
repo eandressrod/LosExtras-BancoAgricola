@@ -1,25 +1,22 @@
 // Sistema visual de Promociones: diapositivas de la franja de avisos de Para ti (docs/SISTEMA_PROMOCIONES.md).
 // Cuenta lo que la lista no dice por sí sola y nunca repite una tarjeta. Solo usa el catálogo, la tarjeta elegida
 // y las señales declaradas: no hay clics, vistas ni analítica. Función pura: la misma entrada da la misma franja.
-import { textoVencePronto, diaDeLaSemana } from './promocion-vista.js';
+import { textoVencePronto, diaDeLaSemana, formaDias } from './promocion-vista.js';
 
 export { diaDeLaSemana };
 
 const MAXIMO = 5;
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-const PLURAL = ['domingos', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábados'];
 const dinero = valor => '$' + (Number.isInteger(valor) ? valor : valor.toFixed(2));
 const mayuscula = texto => texto.charAt(0).toUpperCase() + texto.slice(1);
 const minuscula = texto => texto.charAt(0).toLowerCase() + texto.slice(1);
 
 /** «Los martes», «De lunes a jueves», «Sábados y domingos». */
 export function textoDias(dias) {
-  const orden = [...new Set(dias)].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)); // de lunes a domingo
-  if (orden.length === 1) return 'Los ' + PLURAL[orden[0]];
-  const seguidos = orden.every((dia, i) => i === 0 || dia === (orden[i - 1] + 1) % 7);
-  if (seguidos && orden.length > 2) return `De ${DIAS[orden[0]]} a ${DIAS[orden.at(-1)]}`;
-  const nombres = orden.map(dia => PLURAL[dia]);
-  return mayuscula(nombres.slice(0, -1).join(', ') + ' y ' + nombres.at(-1));
+  const { forma, plurales, desde, hasta } = formaDias(dias);
+  if (forma === 'uno') return 'Los ' + plurales[0];
+  if (forma === 'rango') return `De ${desde} a ${hasta}`;
+  return mayuscula(plurales.slice(0, -1).join(', ') + ' y ' + plurales.at(-1));
 }
 
 // Con orden personalizado, lo que corresponde a los intereses declarados va primero; si nada corresponde, compite todo.

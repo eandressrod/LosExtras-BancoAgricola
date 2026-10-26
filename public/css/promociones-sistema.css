@@ -16,6 +16,7 @@
   --pr-verde: #1e6b4a;
   --pr-rojo: #c8102e;
   --pr-rojo-suave: #fdecee;
+  --pr-verde-suave: #e5f4ec;
   --pr-naranja: #ff7e41;
   --pr-naranja-suave: #fff0e8;
   --pr-noche: #141414;
@@ -374,27 +375,22 @@
 /* Criterios declarados (canal, beneficio): insignia, nunca razón. */
 .pr .promo-badges { color: var(--pr-texto-2); font-size: .76rem; font-weight: 700; }
 
-/* Tira de días: válido = relleno oscuro; hoy = aro amarillo. */
-.pr .promo-dias { display: flex; gap: 4px; padding: 0; list-style: none; }
-.pr .promo-dia {
-  display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; background: #f1efea; color: #8d887f;
-  font-size: .68rem; font-weight: 700; text-decoration: line-through; text-decoration-color: rgb(141 136 127 / .5);
-}
-.pr .promo-dia[data-valido] { background: var(--pr-tinta); color: #fff; text-decoration: none; }
-.pr .promo-dia[data-hoy] { box-shadow: 0 0 0 2px var(--pr-superficie), 0 0 0 4px var(--pr-amarillo-hondo); }
-
 .pr .promo-validity { display: inline-flex; align-items: center; gap: 6px; color: var(--pr-texto-2); font-size: .8rem; }
 .pr .promo-validity::before { content: ""; width: 15px; height: 15px; background: currentColor; -webkit-mask: var(--pr-i-calendario) center / contain no-repeat; mask: var(--pr-i-calendario) center / contain no-repeat; }
 .pr .promo-validity:empty { display: none; }
-.pr .promo-ending, .pr .promo-expired, .pr .promo-today {
+.pr .promo-ending, .pr .promo-expired, .pr .promo-cuando {
   display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: 999px; font-size: .76rem; font-weight: 700; line-height: 1.3;
 }
-.pr .promo-ending::before, .pr .promo-today::before, .pr .promo-expired::before {
+.pr .promo-ending::before, .pr .promo-cuando::before, .pr .promo-expired::before {
   content: ""; flex: none; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat;
 }
 .pr .promo-ending { --ico: var(--pr-i-reloj); background: var(--pr-naranja-suave); color: #8a3a12; }
 .pr .promo-expired { --ico: var(--pr-i-alerta); background: var(--pr-rojo-suave); color: var(--pr-rojo); }
-.pr .promo-today { --ico: var(--pr-i-check); padding: 0; border: 0; background: none; color: var(--pr-verde); font-size: .78rem; }
+/* Días con reloj (H17): verde si aplica hoy, rojo si es otro día, gris fuera de vigencia. */
+.pr .promo-cuando { --ico: var(--pr-i-reloj); padding-left: 7px; background: #f4f2ed; color: var(--pr-texto-2); }
+.pr .promo-cuando:empty { display: none; }
+.pr .promo-cuando[data-estado="hoy"] { background: var(--pr-verde-suave); color: var(--pr-verde); }
+.pr .promo-cuando[data-estado="otro-dia"] { background: var(--pr-rojo-suave); color: var(--pr-rojo); }
 .pr .promo-conditions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; list-style: none; }
 .pr .promo-conditions li { margin: 0; padding: 4px 9px; border-radius: 8px; background: #f4f2ed; color: #4a4743; font-size: .75rem; font-weight: 700; }
 
@@ -442,10 +438,9 @@
 .pr .promo-item[data-exclusiva] .promo-conditions li { background: #262524; color: #ece8e0; }
 .pr .promo-item[data-exclusiva] .promo-pie { border-top-color: #2b2a28; }
 .pr .promo-item[data-exclusiva] .promo-reason { background: rgb(253 218 36 / .14); color: var(--pr-amarillo); }
-.pr .promo-item[data-exclusiva] .promo-today { color: #7ed3a6; }
-.pr .promo-item[data-exclusiva] .promo-dia { background: #262524; color: #8d887f; }
-.pr .promo-item[data-exclusiva] .promo-dia[data-valido] { background: var(--pr-amarillo); color: var(--pr-tinta); }
-.pr .promo-item[data-exclusiva] .promo-dia[data-hoy] { box-shadow: 0 0 0 2px var(--pr-noche), 0 0 0 4px #fff; }
+.pr .promo-item[data-exclusiva] .promo-cuando { background: #262524; color: #c9c5bd; }
+.pr .promo-item[data-exclusiva] .promo-cuando[data-estado="hoy"] { background: rgb(126 211 166 / .14); color: #7ed3a6; }
+.pr .promo-item[data-exclusiva] .promo-cuando[data-estado="otro-dia"] { background: rgb(255 138 149 / .14); color: #ff9aa4; }
 
 /* Vencida durante la visita (CDA 7) */
 .pr .promo-card--inactive .promo-photo { filter: grayscale(1) contrast(.9); }

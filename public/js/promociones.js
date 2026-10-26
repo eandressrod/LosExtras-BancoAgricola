@@ -1,5 +1,5 @@
 import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
-import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { filtrosActivos, textoBotonFiltros } from './filtros-activos.js';
 import { crearAviso } from './aviso-deshacer.js';
 import { diapositivasFranja } from './franja.js';
@@ -76,9 +76,6 @@ function crearOferta(promotion, categoria, hoy, busqueda, intencion) {
   const vence = card.querySelector('.promo-ending');
   vence.textContent = textoVencePronto(promotion, hoyEnElSalvador());
   vence.hidden = !vence.textContent;
-  const disponible = card.querySelector('.promo-today');
-  disponible.textContent = textoDisponibleHoy(promotion);
-  disponible.hidden = !disponible.textContent;
   // H22: una sola razón del motor; los criterios declarados solo como insignias.
   const razon = card.querySelector('.promo-reason');
   razon.textContent = promotion.razon?.texto ?? '';
@@ -102,8 +99,8 @@ function crearOferta(promotion, categoria, hoy, busqueda, intencion) {
   if (promotion.expired || promotion.upcoming || promotion.vencida) link.classList.add('promo-card--inactive');
   mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
-  // La tira muestra los días fijos; las condiciones no los repiten.
-  mostrarDias(card.querySelector('.promo-dias'), promotion);
+  // H17 y sistema visual: el reloj dice si aplica hoy o qué días; las condiciones no repiten los días.
+  mostrarDias(card.querySelector('.promo-cuando'), promotion);
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
   const boton = card.querySelector('.guardar-promo');
   const error = card.querySelector('.guardar-error');

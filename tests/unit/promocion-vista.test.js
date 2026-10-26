@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { textoVigencia, condicionesVisibles, textoVencePronto, hoyEnElSalvador, tiraDias, textoOtrasTarjetas } from '../../public/js/promocion-vista.js';
+import { textoVigencia, condicionesVisibles, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoDias, estadoDias } from '../../public/js/promocion-vista.js';
 
 test('vigencia viene de la promoción y conserva el día de fecha sin depender de zona horaria del navegador', () => {
   assert.equal(textoVigencia({ validUntil: '2026-11-06' }), 'Válida hasta el 6 nov 2026');
@@ -38,13 +38,33 @@ test('la fecha de hoy es la fecha civil de El Salvador, no la del navegador', ()
   assert.equal(hoyEnElSalvador(new Date('2026-11-01T06:00:00Z')), '2026-11-01');
 });
 
-test('la tira de días va de lunes a domingo, marca los días válidos y el de hoy', () => {
-  const tira = tiraDias([1, 2, 3, 4], 5);
-  assert.deepEqual(tira.map(dia => dia.letra), ['L', 'M', 'M', 'J', 'V', 'S', 'D']);
-  assert.deepEqual(tira.map(dia => dia.valido), [true, true, true, true, false, false, false]);
-  assert.deepEqual(tira.map(dia => dia.hoy), [false, false, false, false, true, false, false]);
-  assert.equal(tira[0].nombre, 'lunes');
-  assert.equal(tiraDias(null, 0).every(dia => dia.valido), true, 'sin días fijos vale toda la semana');
+test('los días válidos se dicen en una frase, de lunes a domingo', () => {
+  assert.equal(textoDias(null), 'Todos los días');
+  assert.equal(textoDias([0, 1, 2, 3, 4, 5, 6]), 'Todos los días');
+  assert.equal(textoDias([3]), 'Todos los miércoles');
+  assert.equal(textoDias([0]), 'Todos los domingos');
+  assert.equal(textoDias([0, 6]), 'Sábados y domingos');
+  assert.equal(textoDias([4, 1, 2, 3]), 'Lunes a jueves');
+  assert.equal(textoDias([5, 6, 0]), 'Viernes a domingo');
+  assert.equal(textoDias([1, 3, 5]), 'Lunes, miércoles y viernes');
+  assert.equal(textoDias([2, 2]), 'Todos los martes', 'los días repetidos no cambian la frase');
+});
+
+test('el aviso de días dice si se puede usar hoy o qué días se puede usar', () => {
+  assert.deepEqual(estadoDias({ usageDays: [0, 6], availableToday: true, canUse: true }), { estado: 'hoy', texto: 'Disponible hoy · sábados y domingos' });
+  assert.deepEqual(estadoDias({ usageDays: null, availableToday: true, canUse: true }), { estado: 'hoy', texto: 'Disponible hoy · todos los días' });
+  assert.deepEqual(estadoDias({ usageDays: [3], availableToday: false, canUse: true }), { estado: 'otro-dia', texto: 'Disponible los miércoles' });
+  assert.deepEqual(estadoDias({ usageDays: [0, 6], availableToday: false, canUse: true }), { estado: 'otro-dia', texto: 'Disponible los sábados y domingos' });
+  assert.deepEqual(estadoDias({ usageDays: [1, 2, 3, 4], availableToday: false, canUse: true }), { estado: 'otro-dia', texto: 'Disponible de lunes a jueves' });
+  assert.deepEqual(estadoDias({ usageDays: [1, 3, 5], availableToday: false, canUse: true }), { estado: 'otro-dia', texto: 'Disponible los lunes, miércoles y viernes' });
+});
+
+test('fuera de vigencia el aviso de días es neutro: ni hoy ni otro día', () => {
+  assert.deepEqual(estadoDias({ usageDays: [3], availableToday: false, expired: true }), { estado: 'neutro', texto: 'Todos los miércoles' });
+  assert.deepEqual(estadoDias({ usageDays: [3], availableToday: false, upcoming: true }), { estado: 'neutro', texto: 'Todos los miércoles' });
+  assert.deepEqual(estadoDias({ usageDays: [3], availableToday: true, canUse: true, vencida: true }), { estado: 'neutro', texto: 'Todos los miércoles' });
+  assert.deepEqual(estadoDias({ usageDays: null, availableToday: false, canUse: true }), { estado: 'neutro', texto: 'Todos los días' },
+    'sin días fijos y sin disponibilidad confirmada no se afirma ningún día');
 });
 
 test('las condiciones pueden omitir los días cuando la tarjeta ya muestra la tira', () => {
