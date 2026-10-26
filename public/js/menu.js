@@ -1,4 +1,5 @@
-import { requireSession, volverAlLogin, logout, cardName, getJSON, revelarPagina } from './comun.js';
+import { requireSession, volverAlLogin, logout, getJSON, revelarPagina, almacenSesion } from './comun.js';
+import { descripcionTarjetas, leerTarjetaElegida } from './tarjeta-elegida.js';
 import { compartirCuenta, partesSaldo, referenciaCuenta, fechaMensaje } from './menu-modelo.js';
 import { animarEntradaMenu, animarPantalla, regresarEnVentana } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
@@ -245,7 +246,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   function abrirPerfil() {
     if (!perfil) return; modal('Perfil', false, 'perfil');
     dialogBody.appendChild(imagen('perfil','profile-avatar'));
-    dialogBody.appendChild(elemento('p','profile-name',perfil.nombre)); dialogBody.appendChild(elemento('p','profile-card',cardName(perfil)));
+    dialogBody.appendChild(elemento('p','profile-name',perfil.nombre));
+    // SCRUM-109: la tarjeta sale de las propias (la elegida en Para ti), no del tipo heredado del perfil.
+    const tarjeta = descripcionTarjetas(datos?.tarjetas, leerTarjetaElegida(almacenSesion(), perfil.id));
+    if (tarjeta) dialogBody.appendChild(elemento('p','profile-card',tarjeta));
     get('btn-logout').hidden = false;
   }
   function abrirDisponibles() {
