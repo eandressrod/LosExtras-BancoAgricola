@@ -8,6 +8,7 @@ import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
 import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
 import { textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarDias } from '../../public/js/promocion-vista.js';
+import * as pestanas from '../../public/js/pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
 import { diapositivasFranja } from '../../public/js/franja.js';
 import * as instantanea from '../../public/js/instantanea.js';
@@ -100,7 +101,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     cardName,
     revelarPagina: alRevelar,
     conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
-    ...vista, ...filtro, ...tarjeta, ...instantanea
+    ...vista, ...filtro, ...tarjeta, ...instantanea, ...pestanas
   };
   return { obtener, history, contexto, elementos, sesion, timerFake };
 }

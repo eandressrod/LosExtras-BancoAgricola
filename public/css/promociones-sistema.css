@@ -60,6 +60,7 @@
   --pr-i-pausa: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Crect x='6.5' y='5' width='3.6' height='14' rx='1.2'/%3E%3Crect x='13.9' y='5' width='3.6' height='14' rx='1.2'/%3E%3C/svg%3E");
   --pr-i-reproducir: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5.2v13.6a1 1 0 0 0 1.5.9l10.6-6.8a1 1 0 0 0 0-1.7L9.5 4.3A1 1 0 0 0 8 5.2z'/%3E%3C/svg%3E");
   --pr-i-todas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2'%3E%3Crect x='4' y='4' width='6.5' height='6.5' rx='1.8'/%3E%3Crect x='13.5' y='4' width='6.5' height='6.5' rx='1.8'/%3E%3Crect x='4' y='13.5' width='6.5' height='6.5' rx='1.8'/%3E%3Crect x='13.5' y='13.5' width='6.5' height='6.5' rx='1.8'/%3E%3C/svg%3E");
+  --pr-i-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
   --pr-i-alerta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 3 19.5h18z'/%3E%3Cpath d='M12 10v4.5M12 17.2v.1'/%3E%3C/svg%3E");
   background: var(--pr-fondo);
   color: var(--pr-tinta);
@@ -120,11 +121,6 @@
   position: absolute; top: -3px; right: -3px; z-index: 1; display: grid; place-items: center; min-width: 19px; height: 19px; padding: 0 5px;
   border: 2px solid var(--pr-amarillo); border-radius: 999px; background: var(--pr-sandia); color: #fff; font-size: .66rem; font-weight: 700; line-height: 1;
 }
-/* Secciones (Para ti | Cerca de ti). Con una sola sección visible no se dibuja. */
-.pr-secciones { display: flex; gap: 2px; width: fit-content; margin: 0 0 12px; padding: 3px; border-radius: 999px; background: var(--pr-hero-velo); }
-.pr-secciones:not(:has(a:nth-child(2):not([hidden]))) { display: none; }
-.pr-secciones a { padding: 7px 16px; border-radius: 999px; color: var(--pr-hero-tinta); font-size: .84rem; font-weight: 700; text-decoration: none; opacity: .8; }
-.pr-secciones a[aria-current] { background: #fff; opacity: 1; box-shadow: 0 1px 3px rgb(0 0 0 / .14); }
 .pr-buscador { display: flex; gap: 8px; }
 .pr-buscador .search-box { flex: 1; min-width: 0; }
 .pr-boton-filtros {
@@ -302,7 +298,57 @@
 .pr-pildora:hover { background: #000; }
 .pr-pildora::after { content: ""; width: 10px; height: 10px; background: currentColor; -webkit-mask: var(--pr-i-cerrar) center / contain no-repeat; mask: var(--pr-i-cerrar) center / contain no-repeat; }
 
-.pr-conteo { margin: 16px 2px 10px; color: var(--pr-texto-2); font-size: .8rem; font-weight: 700; }
+/* ── Pestañas Para ti · Cerca de ti · Explorar ────────────────────────
+   Barra fija arriba al desplazar; el indicador amarillo se desliza a la pestaña elegida (data-seccion). */
+.pr-pestanas {
+  --i: 0;
+  position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, 1fr); margin: 14px -16px 0; padding: 0 8px;
+  background: rgb(255 255 255 / .94); border-bottom: 1px solid var(--pr-linea); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.pr-pestanas[data-seccion="cerca"] { --i: 1; }
+.pr-pestanas[data-seccion="explorar"] { --i: 2; }
+.pr-pestanas::after {
+  content: ""; position: absolute; bottom: -1px; left: calc(8px + (100% - 16px) * (2 * var(--i) + 1) / 6 - 28px); width: 56px; height: 4px;
+  border-radius: 4px 4px 0 0; background: var(--pr-amarillo-hondo); transition: left var(--pr-medio) var(--pr-curva);
+}
+.pr-pestana {
+  height: 52px; min-height: 0; margin: 0; padding: 0 4px; border: 0; border-radius: 0; background: none; color: var(--pr-texto-3);
+  font: inherit; font-size: .95rem; font-weight: 700; letter-spacing: -.01em; transition: color var(--pr-rapido);
+}
+.pr-pestana:hover { background: rgb(29 27 26 / .04); color: var(--pr-tinta); }
+.pr-pestana[aria-selected="true"] { color: var(--pr-tinta); }
+.pr-pestana:focus-visible { outline-offset: -3px; }
+.pr-panel:not([hidden]) { animation: pr-panel-entra var(--pr-medio) var(--pr-curva); }
+
+/* Espacio del mapa (H8 lo llena): cuadrícula de calles suave y un pin al centro. */
+.pr-cerca { padding-top: 16px; }
+.pr-mapa {
+  position: relative; display: grid; place-content: center; justify-items: center; gap: 12px; min-height: 340px; padding: 24px; overflow: hidden;
+  border-radius: var(--pr-radio-tarjeta); box-shadow: var(--pr-sombra-tarjeta); text-align: center;
+  background:
+    radial-gradient(circle at 70% 30%, rgb(31 191 133 / .16), transparent 34%),
+    radial-gradient(circle at 22% 78%, rgb(59 155 255 / .14), transparent 30%),
+    linear-gradient(28deg, transparent 47%, #fff 47% 51%, transparent 51%),
+    linear-gradient(-62deg, transparent 63%, #fff 63% 66%, transparent 66%),
+    repeating-linear-gradient(0deg, transparent 0 46px, rgb(255 255 255 / .8) 46px 49px),
+    repeating-linear-gradient(90deg, transparent 0 58px, rgb(255 255 255 / .8) 58px 61px),
+    #eaf0ea;
+}
+.pr-mapa::before {
+  content: ""; width: 54px; height: 54px; border-radius: 50% 50% 50% 0; rotate: -45deg; background: var(--pr-amarillo);
+  box-shadow: 0 8px 18px -6px rgb(0 0 0 / .4);
+}
+.pr-mapa::after {
+  content: ""; position: absolute; left: 50%; top: calc(50% - 39px); width: 20px; height: 20px; translate: -50% 0; background: var(--pr-tinta);
+  -webkit-mask: var(--pr-i-pin) center / contain no-repeat; mask: var(--pr-i-pin) center / contain no-repeat;
+}
+.pr-mapa__rotulo {
+  margin: 0; padding: 7px 14px; border-radius: 999px; background: #fff; color: var(--pr-tinta); font-size: .86rem; font-weight: 700;
+  box-shadow: 0 2px 8px rgb(0 0 0 / .1);
+}
+.pr-mapa--detalle { width: 100%; min-height: 200px; box-shadow: none; }
+
+.pr-conteo { margin: 14px 2px 10px; color: var(--pr-texto-3); font-size: .76rem; font-weight: 700; }
 .pr-conteo:empty { display: none; }
 
 /* ── Tarjeta de promoción ─────────────────────────────────────────────
@@ -544,9 +590,10 @@
 @keyframes pr-resaltar { 0%, 100% { box-shadow: var(--pr-sombra-tarjeta); } 25%, 60% { box-shadow: 0 0 0 4px var(--pr-amarillo), var(--pr-sombra-tarjeta); } }
 @keyframes pr-hoja-entra { from { transform: translateY(100%); } }
 @keyframes pr-aviso-entra { from { opacity: 0; transform: translate(-50%, 14px); } }
+@keyframes pr-panel-entra { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) {
   .pr .promo-item, .pr-esqueleto__tarjeta::after, .pr-franja__relleno, .pr-diapo__icono::before, .pr-hoja, .pr-aviso,
-  .pr .promo-item.pr-resaltada .promo-card, .pr .guardar-promo[data-guardada="si"] { animation: none; }
+  .pr .promo-item.pr-resaltada .promo-card, .pr .guardar-promo[data-guardada="si"], .pr-panel:not([hidden]) { animation: none; }
   .pr .promo-card:hover, .pr .promo-card:hover .promo-photo { transform: none; }
 }
 @media (max-width: 359px) {
