@@ -16,6 +16,7 @@
  * @property {OrigenSenal} origen
  * @property {string} creadaEn Fecha ISO 8601.
  * @property {boolean} activa
+ * @property {true} [quitoEleccion] H23: solo en un rechazo·comercio que desactivó la elección del comercio (pierde M, sin × 0.3).
  *
  * @typedef {Object} Componentes Términos del puntaje de la fase 2: R = 20·C + 45·M + 15·T.
  * @property {0|1} C 1 si la categoría está declarada o si M = 1.
@@ -45,6 +46,8 @@
  * @property {null|'sin-catalogo'|'filtros'|'intereses'} vacio Motivo cuando no hay promociones.
  * @property {OfertaOrdenada[]} promociones
  * @property {Array<{id: string, motivo: 'sin-beneficio'|'fuera-de-vigencia'|'sin-dias'|'sin-canal'}>} descartadas
+ * @property {{tipo: 'excluir-categoria', categoria: string, nombre: string} | null} pregunta H23: la agrega /api/para-ti
+ *   tras 3 «Menos» en comercios de una categoría; ordenarParaTi no la calcula.
  *
  * @typedef {Object} FiltrosExplicitos Restringen y nunca se alteran. La categoría abre su alcance en esa consulta.
  * @property {string | null} [categoria] H5

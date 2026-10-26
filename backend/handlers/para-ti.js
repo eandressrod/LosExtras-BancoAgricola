@@ -3,10 +3,20 @@
 // La instantánea vive en el navegador: el servidor no guarda órdenes, puntajes ni impresiones.
 import { filtrarPromociones } from '../promociones.js';
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioPreferencias, obtenerRepositorioProductosMenu,
-  obtenerRepositorioSenales } from '../repositorios/index.js';
+  obtenerRepositorioSenales, obtenerRepositorioRespuestasPregunta } from '../repositorios/index.js';
 import { leerConsultaPromociones } from '../servicios/consulta-promociones.js';
 import { ordenarParaTi, leerIntencionTemporal, reglaIntencion } from '../../public/js/motor/index.js';
+import { reglasCorrecciones, preguntaPendiente, PREGUNTA_EXCLUIR_CATEGORIA } from '../../public/js/motor/correcciones.js';
 import { exigirPerfil, responderJson, metodoNoPermitido } from '../http.js';
+
+/** H23: «¿Dejamos de mostrarte {categoría}?» tras 3 «Menos» en sus comercios, o null. Una vez por visita lo decide la pantalla. */
+function preguntaDeContexto(senales, catalogo, categorias, respuestas, ahora) {
+  const categoriaDeComercio = new Map(catalogo.filter(promo => promo.comercio?.id).map(promo => [promo.comercio.id, promo.category]));
+  const categoria = preguntaPendiente(senales, categoriaDeComercio, respuestas, ahora);
+  if (!categoria) return null;
+  const nombre = categorias.find(item => item.id === categoria)?.nombre ?? categoria;
+  return { tipo: PREGUNTA_EXCLUIR_CATEGORIA, categoria, nombre };
+}
 
 /**
  * Fábrica del handler; las pruebas inyectan repositorios y reloj.
@@ -17,7 +27,8 @@ export function crearHandlerParaTi(repositorios = {
   tarjetas: obtenerRepositorioProductosMenu,
   preferencias: obtenerRepositorioPreferencias,
   catalogo: obtenerRepositorio,
-  senales: obtenerRepositorioSenales
+  senales: obtenerRepositorioSenales,
+  respuestas: obtenerRepositorioRespuestasPregunta
 }, reloj = () => new Date()) {
   return { async fetch(request) {
     if (request.method !== 'GET') return metodoNoPermitido('GET');
@@ -34,10 +45,11 @@ export function crearHandlerParaTi(repositorios = {
       const consulta = leerConsultaPromociones(parametros, categorias, propias, perfil);
       if (!consulta.ok) return responderJson(consulta.cuerpo, consulta.estado);
       // Perfil sin tarjeta: el motor responde su sobre vacío ('sin-catalogo') sin consultar más.
-      if (!consulta.tarjeta) return responderJson(ordenarParaTi());
-      const [senales, catalogo] = await Promise.all([
+      if (!consulta.tarjeta) return responderJson({ ...ordenarParaTi(), pregunta: null });
+      const [senales, catalogo, respuestas] = await Promise.all([
         repositorios.senales().listarActivas(perfil.id),
-        repositorios.catalogo().listarPromocionesConBeneficios()
+        repositorios.catalogo().listarPromocionesConBeneficios(),
+        repositorios.respuestas().listar(perfil.id)
       ]);
       const ahora = reloj();
       // SCRUM-133: sin ?tarjeta= compiten todas las tarjetas propias (del repositorio, nunca del cliente);
@@ -45,8 +57,10 @@ export function crearHandlerParaTi(repositorios = {
       const alcance = consulta.todas ? { tarjetas: consulta.tarjetas, predeterminadaId: consulta.tarjeta.id } : consulta.tarjeta.tipoTarjeta;
       // Las preferencias no filtran aquí: el motor decide el alcance y el orden a partir de las señales y la intención del día.
       const ofertas = filtrarPromociones(catalogo, alcance, [], ahora);
-      const reglas = intencion.intencion ? { intencion: reglaIntencion(intencion.intencion) } : {};
-      return responderJson(ordenarParaTi({ ofertas, senales, filtros: consulta.filtros, reglas }));
+      // H23: los rechazos se aplican según los filtros de esta consulta; H25 aporta la intención del día.
+      const reglas = { ...reglasCorrecciones(consulta.filtros), ...(intencion.intencion && { intencion: reglaIntencion(intencion.intencion) }) };
+      return responderJson({ ...ordenarParaTi({ ofertas, senales, filtros: consulta.filtros, reglas }),
+        pregunta: preguntaDeContexto(senales, catalogo, categorias, respuestas, ahora) });
     } catch {
       return responderJson({ error: 'No se pudieron cargar las promociones.' }, 503);
     }

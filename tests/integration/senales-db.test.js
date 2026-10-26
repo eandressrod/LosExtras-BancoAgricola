@@ -31,7 +31,7 @@ test('H22 una señal guarda clase, ámbito, valor, origen, fecha y activa, sin p
   assert.ok(fila.creada_en instanceof Date && fila.actualizada_en instanceof Date);
   assert.ok(Number(fila.id) > 0);
   const { rows: columnas } = await db.query(`select column_name from information_schema.columns where table_name = 'senales_usuario' order by ordinal_position`);
-  assert.deepEqual(columnas.map(c => c.column_name), ['id', 'usuario_id', 'clase', 'ambito', 'valor', 'origen', 'activa', 'creada_en', 'actualizada_en']);
+  assert.deepEqual(columnas.map(c => c.column_name), ['id', 'usuario_id', 'clase', 'ambito', 'valor', 'origen', 'activa', 'creada_en', 'actualizada_en', 'quito_eleccion']);
 });
 
 test('H22 la base rechaza combinaciones, orígenes y valores inválidos, y señales repetidas', async () => {

@@ -22,6 +22,7 @@ export const TABLAS_RESPALDO = [
   { tabla: 'preferencias_usuario', clave: ['usuario_id'] },
   { tabla: 'promociones_guardadas', clave: ['usuario_id', 'promocion_id'] },
   { tabla: 'senales_usuario', clave: ['id'] },
+  { tabla: 'respuestas_pregunta', clave: ['usuario_id', 'pregunta', 'valor'] },
   { tabla: 'puntos_usuario', clave: ['perfil_id'] },
   { tabla: 'mensajes_usuario', clave: ['id'] },
   { tabla: 'metas_usuario', clave: ['id'] }

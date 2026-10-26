@@ -1,12 +1,14 @@
 // H22: registro de señales en Supabase (tabla senales_usuario). El propietario viene siempre de la sesión.
 const TABLA = 'senales_usuario';
-const COLUMNAS = 'id, clase, ambito, valor, origen, creada_en, activa';
+const COLUMNAS = 'id, clase, ambito, valor, origen, creada_en, activa, quito_eleccion';
 // Columnas de la restricción única: declarar dos veces lo mismo actualiza la fila existente (upsert).
 const UNICA = 'usuario_id,clase,ambito,valor';
 
 const aSenal = fila => ({
   id: Number(fila.id), clase: fila.clase, ambito: fila.ambito, valor: fila.valor, origen: fila.origen,
-  creadaEn: fila.creada_en, activa: fila.activa
+  creadaEn: fila.creada_en, activa: fila.activa,
+  // H23: solo un «Menos» que quitó la elección de su comercio lleva el campo.
+  ...(fila.quito_eleccion && { quitoEleccion: true })
 });
 
 // El error de Supabase no sale de aquí: se reemplaza por un mensaje para la persona y el handler responde 503.
@@ -20,8 +22,8 @@ function comprobar({ data, error }, mensaje) {
  * @returns {import('./contrato.js').RepositorioSenales}
  */
 export function crearRepositorioSenalesSupabase(cliente, reloj = () => new Date()) {
-  const fila = (usuarioId, { clase, ambito, valor, origen }) =>
-    ({ usuario_id: usuarioId, clase, ambito, valor, origen, activa: true, actualizada_en: reloj().toISOString() });
+  const fila = (usuarioId, { clase, ambito, valor, origen, quitoEleccion = false }) =>
+    ({ usuario_id: usuarioId, clase, ambito, valor, origen, quito_eleccion: quitoEleccion, activa: true, actualizada_en: reloj().toISOString() });
   return {
     async listarActivas(usuarioId) {
       const data = comprobar(await cliente.from(TABLA).select(COLUMNAS).eq('usuario_id', usuarioId).eq('activa', true).order('id'),

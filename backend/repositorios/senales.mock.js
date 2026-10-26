@@ -15,8 +15,8 @@ function sembrar() {
   }
 }
 
-function agregar(usuarioId, { clase, ambito, valor, origen }, creadaEn = new Date().toISOString()) {
-  const fila = { id: memoria.siguiente++, usuarioId, clase, ambito, valor, origen, creadaEn, activa: true };
+function agregar(usuarioId, { clase, ambito, valor, origen, quitoEleccion }, creadaEn = new Date().toISOString()) {
+  const fila = { id: memoria.siguiente++, usuarioId, clase, ambito, valor, origen, creadaEn, activa: true, ...(quitoEleccion && { quitoEleccion: true }) };
   memoria.filas.push(fila);
   return fila;
 }
@@ -40,6 +40,9 @@ export function crearRepositorioSenalesMock() {
       const existente = memoria.filas.find(misma(usuarioId, senal));
       if (!existente) return aSenal(agregar(usuarioId, senal));
       Object.assign(existente, { activa: true, origen: senal.origen });
+      // H23: como la columna quito_eleccion, cada declaración fija de nuevo si quitó la elección.
+      if (senal.quitoEleccion) existente.quitoEleccion = true;
+      else delete existente.quitoEleccion;
       return aSenal(existente);
     },
     async cambiarEstado(usuarioId, id, activa) {

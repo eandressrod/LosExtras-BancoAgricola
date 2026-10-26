@@ -23,7 +23,11 @@ export function perfilDeSenales(senales = []) {
     beneficios: declarados('beneficio'),
     descubrir: [...valores('criterio', 'descubrir')][0] ?? null,
     indiferencias: new Set(activas.filter(s => s.clase === 'criterio' && s.valor === INDIFERENTE).map(s => s.ambito)),
-    rechazos: { ofertas: valores('rechazo', 'oferta'), comercios: valores('rechazo', 'comercio'), categorias: valores('rechazo', 'categoria') },
+    rechazos: {
+      ofertas: valores('rechazo', 'oferta'), comercios: valores('rechazo', 'comercio'), categorias: valores('rechazo', 'categoria'),
+      // H23: «Menos» de un comercio que estaba elegido; solo quitó su interés (M), sin el multiplicador.
+      eleccionesQuitadas: new Set(activas.filter(s => s.clase === 'rechazo' && s.ambito === 'comercio' && s.quitoEleccion).map(s => s.valor))
+    },
     // Sin intereses declarados se usa la estrategia base; los criterios solos no definen alcance.
     sinIntereses: categorias.size === 0 && comercios.size === 0
   };

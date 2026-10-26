@@ -24,7 +24,7 @@ test('existen las tablas persistentes de catálogo y revocación de sesiones', a
   const { rows } = await db.query("select tablename from pg_tables where schemaname = 'public' order by tablename");
   assert.deepEqual(rows.map(fila => fila.tablename), [
     'beneficios_tarjeta', 'categoria_comercios', 'categorias', 'cobertura', 'comercios', 'cuentas', 'mensajes_usuario', 'metas_usuario', 'ocasiones', 'perfiles',
-    'preferencias_usuario', 'productos_tarjeta', 'promocion_sucursales', 'promociones', 'promociones_guardadas', 'puntos_usuario', 'relaciones_intereses',
+    'preferencias_usuario', 'productos_tarjeta', 'promocion_sucursales', 'promociones', 'promociones_guardadas', 'puntos_usuario', 'relaciones_intereses', 'respuestas_pregunta',
     'senales_usuario', 'sesiones_actividad', 'sesiones_revocadas', 'subcategorias', 'sucursales', 'tarjetas_usuario', 'zonas'
   ]);
 });
@@ -103,7 +103,7 @@ test('sucursales necesitan un comercio existente y coordenadas válidas', async 
 
 test('tablas protegidas: RLS activo y sin privilegios directos de navegador', async () => {
   const { rows } = await db.query("select relname, relrowsecurity from pg_class join pg_namespace on pg_namespace.oid = relnamespace where nspname = 'public' and relkind = 'r'");
-  assert.equal(rows.length, 24);
+  assert.equal(rows.length, 25);
   assert.ok(rows.every(fila => fila.relrowsecurity));
   for (const rol of ['anon', 'authenticated']) {
     await db.exec(`set role ${rol}`);

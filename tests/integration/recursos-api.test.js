@@ -30,7 +30,7 @@ test('empaquetado Hobby: doce entradas como máximo y rewrites de los tres recur
   };
   assert.ok(await contar(new URL('api/', raiz)) <= 12);
   const config = JSON.parse(await readFile(new URL('vercel.json', raiz), 'utf8'));
-  for (const recurso of ['mensajes', 'metas', 'promociones-apertura']) {
+  for (const recurso of ['mensajes', 'metas', 'promociones-apertura', 'preguntas']) {
     assert.ok(config.rewrites.some(ruta => ruta.source === '/api/' + recurso && ruta.destination === '/api/recursos?recurso=' + recurso));
   }
 });

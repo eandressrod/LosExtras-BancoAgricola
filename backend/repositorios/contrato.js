@@ -98,3 +98,11 @@ export {};
  * @property {(usuarioId: string, categorias: string[], origen: Senal['origen']) => Promise<void>} sincronizarCategorias
  *   Espejo de /api/preferencias: activa las categorías elegidas y desactiva las quitadas.
  */
+
+/**
+ * H23: última respuesta a cada pregunta en contexto («Ahora no» no se guarda).
+ * @typedef {{ pregunta: 'excluir-categoria', valor: string, respuesta: 'si'|'no', respondidaEn: string }} RespuestaPregunta
+ * @typedef {Object} RepositorioRespuestasPregunta
+ * @property {(usuarioId: string) => Promise<RespuestaPregunta[]>} listar
+ * @property {(usuarioId: string, respuesta: Omit<RespuestaPregunta, 'respondidaEn'>) => Promise<void>} guardar Reemplaza la anterior.
+ */

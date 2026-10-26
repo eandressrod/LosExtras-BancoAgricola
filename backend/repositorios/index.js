@@ -15,6 +15,8 @@ import { crearRepositorioUsuariosPruebaMock } from './usuarios-prueba.mock.js';
 import { crearRepositorioUsuariosPruebaSupabase } from './usuarios-prueba.supabase.js';
 import { crearRepositorioSenalesMock } from './senales.mock.js';
 import { crearRepositorioSenalesSupabase } from './senales.supabase.js';
+import { crearRepositorioRespuestasMock } from './respuestas-pregunta.mock.js';
+import { crearRepositorioRespuestasSupabase } from './respuestas-pregunta.supabase.js';
 
 
 let repositorioSupabase;
@@ -86,4 +88,13 @@ export function obtenerRepositorioPreferencias() {
 export function obtenerRepositorioSenales() {
   if (fuenteDeDatos() === 'mock') return senalesMock ??= crearRepositorioSenalesMock();
   return senalesSupabase ??= crearRepositorioSenalesSupabase(obtenerClienteSupabase());
+}
+
+let respuestasMock;
+let respuestasSupabase;
+
+/** H23: respuestas a la pregunta en contexto. @returns {import('./contrato.js').RepositorioRespuestasPregunta} */
+export function obtenerRepositorioRespuestasPregunta() {
+  if (fuenteDeDatos() === 'mock') return respuestasMock ??= crearRepositorioRespuestasMock();
+  return respuestasSupabase ??= crearRepositorioRespuestasSupabase(obtenerClienteSupabase());
 }

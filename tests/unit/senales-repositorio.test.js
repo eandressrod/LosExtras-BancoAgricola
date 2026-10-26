@@ -112,3 +112,27 @@ test('H22 un error de Supabase se convierte en un error controlado', async () =>
   const repo = crearRepositorioSenalesSupabase(clienteFalso([{ data: null, error: { message: 'detalle interno' } }], []));
   await assert.rejects(repo.listarActivas('A'), error => error.message === 'No se pudieron consultar tus intereses.');
 });
+
+test('H23 un «Menos» que quitó la elección conserva quitoEleccion; las demás señales no llevan el campo', async () => {
+  reiniciarSenalesMock();
+  const repo = crearRepositorioSenalesMock();
+  const menos = await repo.activar('A', { clase: 'rechazo', ambito: 'comercio', valor: 'pizza-hut', origen: 'tarjeta', quitoEleccion: true });
+  assert.equal(menos.quitoEleccion, true);
+  const otra = await repo.activar('A', interes('categoria', 'Compras'));
+  assert.equal(Object.hasOwn(otra, 'quitoEleccion'), false);
+  await repo.cambiarEstado('A', menos.id, false);
+  const reactivada = await repo.activar('A', { clase: 'rechazo', ambito: 'comercio', valor: 'pizza-hut', origen: 'tarjeta' });
+  assert.equal(Object.hasOwn(reactivada, 'quitoEleccion'), false);
+});
+
+test('H23 Supabase guarda y traduce quito_eleccion', async () => {
+  const consultas = [];
+  const conQuito = { ...fila, clase: 'rechazo', ambito: 'comercio', valor: 'pizza-hut', origen: 'tarjeta', quito_eleccion: true };
+  const repo = crearRepositorioSenalesSupabase(clienteFalso([{ data: conQuito, error: null }, { data: fila, error: null }], consultas));
+  const menos = await repo.activar('A', { clase: 'rechazo', ambito: 'comercio', valor: 'pizza-hut', origen: 'tarjeta', quitoEleccion: true });
+  assert.equal(consultas[0].upsert.quito_eleccion, true);
+  assert.equal(menos.quitoEleccion, true);
+  await repo.activar('A', interes('categoria', 'Compras'));
+  assert.equal(consultas[1].upsert.quito_eleccion, false);
+  assert.match(consultas[0].campos, /quito_eleccion/);
+});
