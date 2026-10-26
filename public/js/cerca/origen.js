@@ -66,6 +66,19 @@ export function limpiarEleccion(almacen) {
   } catch { /* Nada que limpiar. */ }
 }
 
+/**
+ * Controles visibles según el origen. Sin origen, las zonas ya están a la vista en la pregunta; con la ubicación activa,
+ * «Seguir mi ubicación» la mantiene al día y «Usar mi ubicación» sobra.
+ */
+export function botonesOrigen(origen, hayZonas) {
+  return {
+    zona: Boolean(origen) || !hayZonas,
+    ubicacion: origen?.tipo !== 'ubicacion',
+    seguir: origen?.tipo === 'ubicacion',
+    pregunta: !origen && hayZonas
+  };
+}
+
 /** Origen a partir de la lista de zonas: el centro de la zona elegida. */
 export function origenDeZona(zonas, zonaId) {
   const zona = zonas.find(z => z.id === zonaId);

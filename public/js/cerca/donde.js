@@ -54,6 +54,7 @@ export function mostrarDonde(promocion, perfil) {
       if (!mapa) {
         ({ ml, mapa } = await crearMapa(contenedorMapa, { centro: destino, zoom: 14, interactivo: false }));
         contenedorMapa.classList.add('pr-mapa--activo');
+        mapa.resize(); // El contenedor cambia de alto al activarse.
       }
       for (const marcador of marcadores) marcador.remove();
       marcadores = [
