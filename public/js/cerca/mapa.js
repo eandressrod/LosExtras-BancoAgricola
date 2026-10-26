@@ -35,6 +35,11 @@ function cargarMotor() {
   return motor;
 }
 
+/** Empieza a descargar el motor mientras llegan los datos de la pantalla. */
+export function precargarMotor() {
+  cargarMotor().catch(() => { /* crearMapa lo reintenta y muestra el error. */ });
+}
+
 /**
  * Dónde dejar la sucursal elegida para que su globo se vea completo: el pin baja hasta quedar sobre la atribución y
  * el globo, encima, recibe el alto que queda (con desplazamiento interno si no alcanza).
