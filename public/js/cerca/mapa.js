@@ -5,7 +5,23 @@ const BASE = '/vendor/maplibre-gl@6.16.0/';
 const ESTILO = 'https://tiles.openfreemap.org/styles/liberty';
 const ESPERA_MAXIMA_MS = 15000;
 export const COLOR_RECORRIDO = '#1f5fd6';
+/** Separación del globo sobre el punto del pin (40 px de alto). */
+export const SEPARACION_GLOBO = 44;
+// Textos propios de MapLibre que lee un lector de pantalla.
+const TEXTOS = {
+  'AttributionControl.MapFeedback': 'Comentarios sobre el mapa',
+  'AttributionControl.ToggleAttribution': 'Mostrar u ocultar créditos del mapa',
+  'Map.Title': 'Mapa',
+  'Marker.Title': 'Marcador',
+  'Popup.Close': 'Cerrar'
+};
 let motor = null;
+let intentos = 0;
+
+/** El navegador recuerda una importación fallida: cada reintento pide el motor con otra URL. */
+export function urlMotor(intento) {
+  return BASE + 'maplibre-gl.mjs' + (intento ? `?intento=${intento}` : '');
+}
 
 function cargarMotor() {
   if (!document.querySelector('link[data-maplibre]')) {
@@ -15,8 +31,25 @@ function cargarMotor() {
     hoja.dataset.maplibre = '';
     document.head.append(hoja);
   }
-  motor ??= import(BASE + 'maplibre-gl.mjs').catch(error => { motor = null; throw error; });
+  motor ??= import(urlMotor(intentos)).catch(error => { motor = null; intentos += 1; throw error; });
   return motor;
+}
+
+/**
+ * Dónde dejar la sucursal elegida para que su globo se vea completo: el pin baja hasta quedar sobre la atribución y
+ * el globo, encima, recibe el alto que queda (con desplazamiento interno si no alcanza).
+ */
+export function colocacionGlobo(altoMapa) {
+  const MARGEN_INFERIOR = 56; // Atribución y aire bajo el pin.
+  const MARGEN_SUPERIOR = 12;
+  const PUNTA = 10;
+  const RELLENO = 24; // .maplibregl-popup-content: 12 px arriba y abajo.
+  const y = Math.max(0, Math.floor(altoMapa / 2 - MARGEN_INFERIOR));
+  const pin = altoMapa / 2 + y;
+  return {
+    desplazamiento: [0, y],
+    altoMaximo: Math.max(120, Math.floor(pin - SEPARACION_GLOBO - PUNTA - RELLENO - MARGEN_SUPERIOR))
+  };
 }
 
 /** Crea el mapa y espera a que cargue el estilo. Rechaza si el motor o las teselas no responden. */
@@ -24,7 +57,7 @@ export async function crearMapa(contenedor, { centro, zoom = 13, interactivo = t
   const ml = await cargarMotor();
   const mapa = new ml.Map({
     container: contenedor, style: ESTILO, center: [centro.longitud, centro.latitud], zoom,
-    interactive: interactivo, attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false
+    interactive: interactivo, attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, locale: TEXTOS
   });
   mapa.touchZoomRotate?.disableRotation();
   await new Promise((resolver, rechazar) => {

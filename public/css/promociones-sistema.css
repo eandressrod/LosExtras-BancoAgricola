@@ -396,10 +396,13 @@ body.pr-mapa-abierto { overflow: hidden; }
 .pr-mapa__enlace:focus-visible { outline: 3px solid var(--pr-tinta); outline-offset: -3px; }
 .pr .pr-mapa__reintentar { min-height: 44px; }
 .pr-mapa .maplibregl-ctrl-attrib { font-size: 11px; }
+/* MapLibre fija Helvetica en todo el mapa; dentro se usa la tipografía de la app. */
+.pr .pr-mapa.maplibregl-map { font: inherit; }
 
-/* Marcadores: el pin de la sucursal es un botón con su nombre; el origen es un punto azul. */
+/* Marcadores: el pin de la sucursal es un botón con su nombre; el origen es un punto azul.
+   :hover repite el pin porque button:hover (styles.css) cambia el fondo, y al tocar en móvil el hover se queda. */
 .pr-marcador { display: block; padding: 0; border: 0; background: none; cursor: pointer; }
-.pr-marcador--sucursal {
+.pr-marcador--sucursal, .pr-marcador--sucursal:hover {
   width: 30px; height: 40px;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 40'%3E%3Cpath d='M15 39S2 25.5 2 15a13 13 0 0 1 26 0c0 10.5-13 24-13 24z' fill='%23fdda24' stroke='%231d1b1a' stroke-width='2.2'/%3E%3Ccircle cx='15' cy='15' r='4.6' fill='%231d1b1a'/%3E%3C/svg%3E") center / contain no-repeat;
   filter: drop-shadow(0 3px 4px rgb(0 0 0 / .3));
@@ -408,7 +411,7 @@ button.pr-marcador--sucursal::after { content: ""; position: absolute; inset: -7
 button.pr-marcador--sucursal:focus-visible { outline: 3px solid var(--pr-tinta); outline-offset: 2px; border-radius: 8px; }
 .pr-marcador--origen { width: 18px; height: 18px; border: 3px solid #fff; border-radius: 50%; background: #1f5fd6; box-shadow: 0 0 0 6px rgb(31 95 214 / .22), 0 2px 6px rgb(0 0 0 / .3); cursor: default; }
 
-.pr-globo { display: grid; gap: 6px; color: var(--pr-tinta); }
+.pr-globo { display: grid; align-content: start; gap: 6px; overflow-y: auto; overscroll-behavior: contain; color: var(--pr-tinta); text-align: left; }
 .pr-globo__titulo { margin: 0; padding-right: 18px; font-size: .95rem; }
 .pr-globo__direccion { margin: 0; color: var(--pr-texto-3); font-size: .76rem; }
 .pr-globo__ofertas { display: grid; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
@@ -416,6 +419,8 @@ button.pr-marcador--sucursal:focus-visible { outline: 3px solid var(--pr-tinta);
 .pr-globo__beneficio { font-size: .84rem; font-weight: 700; }
 .pr-globo__ver { justify-self: start; padding: 6px 0; color: var(--pr-tinta); font-size: .8rem; font-weight: 700; }
 .pr .maplibregl-popup-content { padding: 12px 14px; border-radius: 16px; box-shadow: var(--pr-sombra-flotante); }
+/* El globo abierto va sobre «Ampliar mapa»; al cerrarlo, el botón vuelve a quedar libre. */
+.pr .pr-mapa .maplibregl-popup { z-index: 3; }
 .pr .maplibregl-popup-close-button { width: 32px; height: 32px; font-size: 20px; }
 
 .pr-cerca__lista { display: grid; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
@@ -442,7 +447,7 @@ button.pr-marcador--sucursal:focus-visible { outline: 3px solid var(--pr-tinta);
 .pr-donde__distancia { margin: 0; font-size: 1rem; font-weight: 700; }
 .pr-donde__sucursal { margin: 0; color: var(--pr-texto-3); font-size: .8rem; }
 .pr-donde__nota { margin: 0; color: var(--pr-texto-3); font-size: .74rem; }
-.pr-donde__acciones:not([hidden]) { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pr-donde__acciones:not([hidden]) { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; justify-self: stretch; }
 .pr-donde__enlace[data-app="mapas"] { background: var(--pr-tinta); color: #fff; }
 .pr-donde__acciones .pr-donde__enlace { width: 100%; }
 .pr .pr-donde #ver-distancia { justify-self: start; }

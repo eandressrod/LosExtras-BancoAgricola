@@ -196,3 +196,69 @@ test('permisoConcedido solo confirma un permiso ya concedido; ante la duda no pi
   assert.equal(await permisoConcedido({ query: async () => { throw new Error('no soportado'); } }), false);
   assert.equal(await permisoConcedido(undefined), false);
 });
+
+test('botonesOrigen: con la ubicación activa se ofrece seguirla en vez de volver a pedirla', async () => {
+  const { botonesOrigen } = await import('../../public/js/cerca/origen.js');
+  assert.deepEqual(botonesOrigen(null, true), { zona: false, ubicacion: true, seguir: false, pregunta: true });
+  assert.deepEqual(botonesOrigen(null, false), { zona: true, ubicacion: true, seguir: false, pregunta: false });
+  assert.deepEqual(botonesOrigen({ tipo: 'zona', zonaId: 'escalon' }, true), { zona: true, ubicacion: true, seguir: false, pregunta: false });
+  assert.deepEqual(botonesOrigen({ tipo: 'ubicacion' }, true), { zona: true, ubicacion: false, seguir: true, pregunta: false });
+});
+
+test('urlMotor vuelve a pedir el motor con otra URL al reintentar: el navegador recuerda una importación fallida', async () => {
+  const { urlMotor } = await import('../../public/js/cerca/mapa.js');
+  assert.equal(urlMotor(0), '/vendor/maplibre-gl@6.16.0/maplibre-gl.mjs');
+  assert.equal(urlMotor(2), '/vendor/maplibre-gl@6.16.0/maplibre-gl.mjs?intento=2');
+  assert.notEqual(urlMotor(1), urlMotor(2));
+});
+
+test('colocacionGlobo deja el pin sobre la atribución y el globo completo dentro del mapa', async () => {
+  const { colocacionGlobo } = await import('../../public/js/cerca/mapa.js');
+  // Sobre el pin: separación (44) y punta (10); el globo suma su relleno (12 arriba y 12 abajo) al alto del contenido.
+  for (const alto of [220, 304, 313, 380, 813]) {
+    const { desplazamiento: [x, y], altoMaximo } = colocacionGlobo(alto);
+    const pin = alto / 2 + y;
+    assert.equal(x, 0);
+    assert.ok(pin <= alto - 56, `${alto}: el pin queda sobre la atribución`);
+    assert.ok(altoMaximo >= 120, `${alto}: el globo conserva un alto útil`);
+    if (alto >= 300) assert.ok(pin - 44 - 10 - 24 - altoMaximo >= 12, `${alto}: el globo cabe arriba del pin`);
+  }
+  assert.deepEqual(colocacionGlobo(0).desplazamiento, [0, 0]);
+});
+
+test('encuadrar acepta márgenes por lado para no esconder puntos bajo los controles del mapa', async () => {
+  const { encuadrar } = await import('../../public/js/cerca/mapa.js');
+  const llamadas = [];
+  const mapa = { fitBounds: (limites, opciones) => llamadas.push({ limites, opciones }) };
+  const anterior = globalThis.matchMedia;
+  globalThis.matchMedia = () => ({ matches: false });
+  try {
+    const margen = { top: 80, right: 56, bottom: 56, left: 56 };
+    encuadrar(mapa, [ORIGEN, alNorte(1000)], { margen, zoom: 15, animar: false });
+    assert.deepEqual(llamadas[0].opciones.padding, margen);
+    encuadrar(mapa, [ORIGEN, alNorte(1000)], { margen: 40 });
+    assert.equal(llamadas[1].opciones.padding, 40);
+  } finally { globalThis.matchMedia = anterior; }
+});
+
+test('controlarAtras: el «atrás» del sistema cierra el mapa ampliado sin salir de la página', async () => {
+  const { controlarAtras } = await import('../../public/js/cerca/atras.js');
+  const historial = { state: { perfil: 'A' }, entradas: 0, atras: 0, pushState(estado) { this.state = estado; this.entradas += 1; }, back() { this.atras += 1; } };
+  let cerrado = 0;
+  const atras = controlarAtras(historial, () => { cerrado += 1; });
+  assert.equal(atras.alNavegar(), false, 'sin mapa ampliado, «atrás» sigue su curso');
+  atras.abrir();
+  atras.abrir();
+  assert.equal(historial.entradas, 1, 'una sola entrada por apertura');
+  assert.deepEqual(historial.state, { perfil: 'A', mapaAmpliado: true }, 'conserva el estado de la página');
+  assert.equal(atras.alNavegar(), true);
+  assert.equal(cerrado, 1, '«atrás» cierra el mapa');
+  assert.equal(historial.atras, 0, 'el sistema ya retrocedió');
+  atras.abrir();
+  atras.cerrar();
+  assert.equal(historial.atras, 1, 'cerrar con el botón deshace la entrada añadida');
+  assert.equal(atras.alNavegar(), false, 'el retroceso propio no vuelve a cerrar');
+  assert.equal(cerrado, 1);
+  atras.cerrar();
+  assert.equal(historial.atras, 1, 'cerrar sin mapa ampliado no retrocede');
+});

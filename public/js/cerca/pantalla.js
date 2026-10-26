@@ -2,12 +2,17 @@
 // El mapa es un complemento: si no carga, la lista sigue funcionando (CDA 10).
 import { getJSON, almacenSesion, readStorage, saveStorage } from '../comun.js';
 import { resultadosCerca, textoDistancia, distanciaMetros } from './cercania.js';
-import { leerUbicacion, seguirUbicacion, guardarEleccion, leerEleccion, origenDeZona, permisoConcedido, CLAVE_VISTA } from './origen.js';
+import {
+  leerUbicacion, seguirUbicacion, guardarEleccion, leerEleccion, origenDeZona, permisoConcedido, botonesOrigen, CLAVE_VISTA
+} from './origen.js';
 import { cargarZonas, leerZonaGuardada, guardarZona } from './zona.js';
-import { crearMapa, crearMarcador, encuadrar } from './mapa.js';
+import { crearMapa, crearMarcador, encuadrar, colocacionGlobo, SEPARACION_GLOBO } from './mapa.js';
+import { controlarAtras } from './atras.js';
 
 const CENTRO_INICIAL = { latitud: 13.6989, longitud: -89.2190 }; // Área metropolitana de San Salvador.
 const MOVIMIENTO_MINIMO_METROS = 30;
+// Arriba se reserva el botón «Ampliar mapa» para que no tape el origen ni las sucursales.
+const MARGEN_ENCUADRE = { top: 84, right: 56, bottom: 56, left: 56 };
 const MOTIVOS = {
   denegada: 'No diste permiso para usar tu ubicación. Elige una zona.',
   'no-disponible': 'No se pudo obtener tu ubicación. Elige una zona.',
@@ -81,11 +86,12 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
   function pintarOrigen() {
     textoOrigen.textContent = !origen ? 'Elige una zona o usa tu ubicación para ver lo que hay cerca.'
       : origen.tipo === 'ubicacion' ? 'Cerca de tu ubicación' : `Cerca de ${origen.nombre}`;
-    // Sin origen, las zonas ya están a la vista en la pregunta; el botón solo sirve para cambiarla.
-    botonZona.hidden = !origen && zonas.length > 0;
+    const visibles = botonesOrigen(origen, zonas.length > 0);
+    botonZona.hidden = !visibles.zona;
     botonZona.textContent = 'Cambiar zona';
-    botonSeguir.hidden = origen?.tipo !== 'ubicacion';
-    pregunta.hidden = Boolean(origen) || !zonas.length;
+    botonUbicacion.hidden = !visibles.ubicacion;
+    botonSeguir.hidden = !visibles.seguir;
+    pregunta.hidden = !visibles.pregunta;
     for (const chip of document.querySelectorAll('.pr-zonas .filter-chip')) {
       chip.setAttribute('aria-pressed', String(origen?.tipo === 'zona' && chip.dataset.zona === origen.zonaId));
     }
@@ -207,22 +213,35 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
       const fila = elemento('li');
       const ver = elemento('a', 'pr-globo__ver', 'Ver promoción');
       ver.href = urlDetalle(promocion.id);
-      ver.addEventListener('click', guardarVista);
+      ver.addEventListener('click', evento => {
+        guardarVista();
+        // Desde el mapa ampliado, el detalle ocupa la entrada que añadió el mapa: «atrás» vuelve directo a la lista.
+        if (ampliado()) {
+          evento.preventDefault();
+          location.replace(ver.href);
+        }
+      });
       fila.append(elemento('span', 'pr-globo__beneficio', promocion.benefit), ver);
       ofertas.append(fila);
     }
     contenido.append(ofertas);
-    globo = new ml.Popup({ offset: 30, maxWidth: '280px', focusAfterOpen: false })
+    // El globo siempre va sobre el pin, y el pin baja lo necesario para que el globo quepa completo.
+    const { desplazamiento, altoMaximo } = colocacionGlobo(contenedorMapa.clientHeight);
+    contenido.style.maxHeight = `${altoMaximo}px`;
+    globo = new ml.Popup({ anchor: 'bottom', offset: SEPARACION_GLOBO, maxWidth: '280px', focusAfterOpen: false })
       .setLngLat([sucursal.longitude, sucursal.latitude]).setDOMContent(contenido).addTo(mapa);
     globo.on('close', () => { if (seleccion === sucursalId) seleccion = null; });
-    mapa.easeTo({ center: [sucursal.longitude, sucursal.latitude], duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 400 });
+    mapa.easeTo({
+      center: [sucursal.longitude, sucursal.latitude], offset: desplazamiento,
+      duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 400
+    });
     guardarVista();
   }
 
   function encuadrarOrigen(animar = true) {
     if (!mapa || !origen) return;
     const cercanas = resultado.resultados.slice(0, 5).map(r => posicionDe(r.sucursal));
-    encuadrar(mapa, [origen, ...cercanas], { margen: 56, zoom: 15, animar });
+    encuadrar(mapa, [origen, ...cercanas], { margen: MARGEN_ENCUADRE, zoom: 15, animar });
   }
 
   async function montarMapa() {
@@ -235,6 +254,7 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
       .then(creado => {
         ({ ml, mapa } = creado);
         contenedorMapa.classList.add('pr-mapa--activo');
+        mapa.resize(); // El contenedor cambia de alto al activarse; sin esto el encuadre usa el alto anterior.
         botonAmpliar.hidden = false;
         mapa.on('moveend', guardarVista);
         pintarMarcadores();
@@ -360,7 +380,9 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
     botonSeguir.setAttribute('aria-pressed', 'false');
   }
 
-  // Mapa a pantalla completa con un botón para volver; Esc también vuelve.
+  // Mapa a pantalla completa con un botón para volver; Esc y el «atrás» del sistema también vuelven.
+  const atras = controlarAtras(history, () => ampliar(false));
+  const ampliado = () => contenedorMapa.classList.contains('pr-mapa--ampliado');
   function ampliar(activar) {
     contenedorMapa.classList.toggle('pr-mapa--ampliado', activar);
     document.body.classList.toggle('pr-mapa-abierto', activar);
@@ -368,15 +390,23 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
     botonAmpliar.textContent = activar ? 'Cerrar mapa' : 'Ampliar mapa';
     mapa?.resize();
   }
+  function cerrarAmpliado() {
+    if (!ampliado()) return;
+    ampliar(false);
+    atras.cerrar();
+  }
 
   botonZona.addEventListener('click', () => hojaZonas.showModal());
   $('#cerrar-zonas').addEventListener('click', () => hojaZonas.close());
   botonUbicacion.addEventListener('click', usarUbicacion);
   botonSeguir.addEventListener('click', alternarSeguimiento);
-  botonAmpliar.addEventListener('click', () => ampliar(!contenedorMapa.classList.contains('pr-mapa--ampliado')));
-  document.addEventListener('keydown', evento => {
-    if (evento.key === 'Escape' && contenedorMapa.classList.contains('pr-mapa--ampliado')) ampliar(false);
+  botonAmpliar.addEventListener('click', () => {
+    if (ampliado()) return cerrarAmpliado();
+    ampliar(true);
+    atras.abrir();
   });
+  document.addEventListener('keydown', evento => { if (evento.key === 'Escape') cerrarAmpliado(); });
+  addEventListener('popstate', () => atras.alNavegar());
   reintentar.addEventListener('click', () => mostrar());
   document.addEventListener('visibilitychange', () => { if (document.hidden) detener(); });
   addEventListener('pagehide', detener);
@@ -398,7 +428,7 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
   function ocultar() {
     visible = false;
     detener();
-    if (contenedorMapa.classList.contains('pr-mapa--ampliado')) ampliar(false);
+    cerrarAmpliado();
   }
 
   return { mostrar, ocultar };
