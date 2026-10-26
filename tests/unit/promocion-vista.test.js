@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { textoVigencia, condicionesVisibles, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoDias, estadoDias } from '../../public/js/promocion-vista.js';
+import { textoVigencia, condicionesVisibles, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoDias, estadoDias, pasosDeUso } from '../../public/js/promocion-vista.js';
 
 test('vigencia viene de la promoción y conserva el día de fecha sin depender de zona horaria del navegador', () => {
   assert.equal(textoVigencia({ validUntil: '2026-11-06' }), 'Válida hasta el 6 nov 2026');
@@ -65,6 +65,31 @@ test('fuera de vigencia el aviso de días es neutro: ni hoy ni otro día', () =>
   assert.deepEqual(estadoDias({ usageDays: [3], availableToday: true, canUse: true, vencida: true }), { estado: 'neutro', texto: 'Todos los miércoles' });
   assert.deepEqual(estadoDias({ usageDays: null, availableToday: false, canUse: true }), { estado: 'neutro', texto: 'Todos los días' },
     'sin días fijos y sin disponibilidad confirmada no se afirma ningún día');
+});
+
+test('los pasos de uso salen de los datos de la promoción, sin inventar condiciones', () => {
+  const pasos = pasosDeUso({
+    merchant: 'Walmart', channels: ['presencial', 'delivery'], usageDays: [0, 6], validUntil: '2026-12-31',
+    applicableCard: 'basica', minimumPurchase: 50, discountCap: 10,
+    instructions: 'Paga con tu tarjeta en caja el sábado o el domingo.'
+  });
+  assert.deepEqual(pasos, [
+    { tipo: 'comercio', texto: 'Compra en Walmart, en tienda o a domicilio' },
+    { tipo: 'dias', texto: 'Úsala los sábados y domingos, hasta el 31 dic 2026' },
+    { tipo: 'tarjeta', texto: 'Paga con tu tarjeta Básica' },
+    { tipo: 'monto', texto: 'Compra mínima de $50.00 · descuento hasta $10.00' },
+    { tipo: 'nota', texto: 'Paga con tu tarjeta en caja el sábado o el domingo.' }
+  ]);
+});
+
+test('los pasos de uso omiten lo que la promoción no trae', () => {
+  assert.deepEqual(pasosDeUso({ merchant: 'Amazon', channels: ['en-linea'], usageDays: null, applicableCard: 'black' }), [
+    { tipo: 'comercio', texto: 'Compra en Amazon, en línea' },
+    { tipo: 'dias', texto: 'Úsala cualquier día' },
+    { tipo: 'tarjeta', texto: 'Paga con tu tarjeta Black' }
+  ]);
+  assert.deepEqual(pasosDeUso({ merchant: 'Cine', usageDays: [2], applicableCard: 'basica', minimumPurchase: 15 }).map(paso => paso.texto),
+    ['Compra en Cine', 'Úsala los martes', 'Paga con tu tarjeta Básica', 'Compra mínima de $15.00']);
 });
 
 test('las condiciones pueden omitir los días cuando la tarjeta ya muestra la tira', () => {
