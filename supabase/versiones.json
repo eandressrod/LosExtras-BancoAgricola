@@ -1,8 +1,4 @@
 {
-  "transicion": {
-    "motivo": "H22 (SCRUM-133) agrega la tabla senales_usuario; las pruebas de PR 21 cuentan de forma fija las tablas del esquema y las que cubre el respaldo. El PR del motor se registra como nuevo destino de regreso al fusionarse.",
-    "desde": "2026-10-22"
-  },
   "versiones": [
     { "pr": 1, "commit": "41bafac6695db3d39743fed0139da105b48592c7", "migracion": "20261008231036", "regreso": false },
     { "pr": 2, "commit": "02a3d77b5181d092ec22ba217468e7e4d45cee00", "migracion": "20261009042850", "regreso": false },
@@ -19,6 +15,10 @@
     { "pr": 13, "commit": "451dbea1becb019e379b1adbcb4c275699fb8333", "migracion": "20261016015547", "regreso": false },
     { "pr": 15, "commit": "313b9f8bd9ed7a5edab34046030751ac7f1e3f3d", "migracion": "20261016015547", "regreso": false },
     { "pr": 18, "commit": "035bf0c80d8eedd4bf72c4aa1338e0a8fcc2cc8f", "migracion": "20261016015547", "regreso": false },
-    { "pr": 21, "commit": "b3dfe8114f0b5de3aab3827fd3f985c65b2a4124", "migracion": "20261020203100", "regreso": false }
+    { "pr": 21, "commit": "b3dfe8114f0b5de3aab3827fd3f985c65b2a4124", "migracion": "20261020203100", "regreso": false },
+    { "pr": 24, "commit": "701d5399faae8d65f1fafd769ef4aa6d7a0441b2", "migracion": "20261023013727", "regreso": true },
+    { "pr": 25, "commit": "0ddab0edadba28ca9289b07ddb496285fff37851", "migracion": "20261023013727", "regreso": true },
+    { "pr": 29, "commit": "e774ee210d814728e2ae5abc4acb5818d87a433e", "migracion": "20261023013727", "regreso": true },
+    { "pr": 30, "commit": "60ad74af72d3a16d489a156470939b84119699d2", "migracion": "20261023013727", "regreso": true }
   ]
 }
