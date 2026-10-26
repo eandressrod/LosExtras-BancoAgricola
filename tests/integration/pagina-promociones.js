@@ -113,7 +113,7 @@ export async function abrirListado(opciones = {}) {
   const filtros = conHijos();
   const intenciones = conHijos({ attributes: { role: 'radiogroup' } });
   nav.elementos.set('#intent-filter', intenciones);
-  nav.elementos.set('#intent-box', elemento());
+  nav.elementos.set('#intent-box', elemento({ hidden: true }));
   nav.elementos.set('#intent-status', elemento({ hidden: true }));
   const opcionesTarjeta = conHijos();
   const cards = conHijos({ replaceChildren() { this.hijos = []; } });
@@ -178,8 +178,8 @@ export async function abrirListado(opciones = {}) {
     activo: () => pulsados(chips()),
     chip: nombre => chips().find(chip => chip.textContent === nombre),
     chipsIntencion: () => intenciones.hijos,
-    chipIntencion: nombre => intenciones.hijos.find(chip => chip.textContent === nombre),
-    intencionActiva: () => marcados(intenciones.hijos),
+    chipIntencion: nombre => intenciones.hijos.find(chip => chip.attributes['aria-label'] === nombre),
+    intencionActiva: () => intenciones.hijos.filter(chip => chip.attributes['aria-checked'] === 'true').map(chip => chip.attributes['aria-label']),
     enlaces: () => cards.hijos.map(oferta => oferta.querySelector('a')),
     opciones: () => opcionesTarjeta.hijos,
     tarjetaActiva: () => pulsados(opcionesTarjeta.hijos),

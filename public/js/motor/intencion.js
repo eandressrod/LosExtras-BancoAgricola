@@ -4,19 +4,20 @@ import { CONFIGURACION } from './config.js';
 
 const congelar = objeto => Object.freeze(objeto);
 
+// `corto` es la palabra visible del chip (comentario 10035 de SCRUM-118); `nombre` es su nombre accesible y la contiene.
 export const CHIPS_HOY_BUSCO = congelar([
-  congelar({ id: 'dia-a-dia', nombre: 'Compras del día a día', tipo: 'ocasion' }),
-  congelar({ id: 'rapido-practico', nombre: 'Rápido y práctico', tipo: 'ocasion' }),
-  congelar({ id: 'darse-un-gusto', nombre: 'Darse un gusto', tipo: 'ocasion' }),
-  congelar({ id: 'salir', nombre: 'Salir con amigos o pareja', tipo: 'ocasion' }),
-  congelar({ id: 'familia', nombre: 'Planes en familia', tipo: 'ocasion' }),
-  congelar({ id: 'bienestar', nombre: 'Bienestar y vida activa', tipo: 'ocasion' }),
-  congelar({ id: 'entretenimiento', nombre: 'Entretenimiento', tipo: 'ocasion' }),
-  congelar({ id: 'estilo-personal', nombre: 'Estilo personal', tipo: 'ocasion' }),
-  congelar({ id: 'tecnologia', nombre: 'Tecnología', tipo: 'ocasion' }),
-  congelar({ id: 'hogar', nombre: 'Hogar', tipo: 'ocasion' }),
-  congelar({ id: 'viajes', nombre: 'Viajes y escapadas', tipo: 'ocasion' }),
-  congelar({ id: 'regalo', nombre: 'Regalo', tipo: 'etiqueta' })
+  congelar({ id: 'dia-a-dia', nombre: 'Compras del día a día', corto: 'Día a día', tipo: 'ocasion' }),
+  congelar({ id: 'rapido-practico', nombre: 'Rápido y práctico', corto: 'Rápido', tipo: 'ocasion' }),
+  congelar({ id: 'darse-un-gusto', nombre: 'Darse un gusto', corto: 'Gusto', tipo: 'ocasion' }),
+  congelar({ id: 'salir', nombre: 'Salir con amigos o pareja', corto: 'Salir', tipo: 'ocasion' }),
+  congelar({ id: 'familia', nombre: 'Planes en familia', corto: 'Familia', tipo: 'ocasion' }),
+  congelar({ id: 'bienestar', nombre: 'Bienestar y vida activa', corto: 'Bienestar', tipo: 'ocasion' }),
+  congelar({ id: 'entretenimiento', nombre: 'Entretenimiento', corto: 'Entretenimiento', tipo: 'ocasion' }),
+  congelar({ id: 'estilo-personal', nombre: 'Estilo personal', corto: 'Estilo', tipo: 'ocasion' }),
+  congelar({ id: 'tecnologia', nombre: 'Tecnología', corto: 'Tecnología', tipo: 'ocasion' }),
+  congelar({ id: 'hogar', nombre: 'Hogar', corto: 'Hogar', tipo: 'ocasion' }),
+  congelar({ id: 'viajes', nombre: 'Viajes y escapadas', corto: 'Viajes', tipo: 'ocasion' }),
+  congelar({ id: 'regalo', nombre: 'Regalo', corto: 'Regalo', tipo: 'etiqueta' })
 ]);
 
 const POR_ID = new Map(CHIPS_HOY_BUSCO.map(chip => [chip.id, chip]));

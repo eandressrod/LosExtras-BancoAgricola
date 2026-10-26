@@ -1,6 +1,7 @@
 // H25 (SCRUM-17 / SCRUM-118): recorrido en Para ti de los chips «Hoy busco».
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { abrirListado, abrirDetalle, parametro } from './pagina-promociones.js';
 import { CHIPS_HOY_BUSCO } from '../../public/js/motor/index.js';
 
@@ -41,12 +42,12 @@ test('H25 muestra los 12 chips accesibles (11 ocasiones + Regalo) con role="radi
   assert.equal(grupo.attributes.role, 'radiogroup');
   assert.equal(p.chipsIntencion().length, CHIPS_HOY_BUSCO.length);
   assert.equal(p.chipsIntencion().length, 12);
-  assert.equal(p.chipsIntencion().at(-1).textContent, 'Regalo');
+  assert.equal(p.chipsIntencion().at(-1).attributes['aria-label'], 'Regalo');
 
   for (const chip of p.chipsIntencion()) {
     assert.equal(chip.attributes.role, 'radio');
     assert.equal(chip.attributes['aria-checked'], 'false');
-    assert.ok(chip.className.includes('filter-chip'));
+    assert.ok(chip.className.includes('pr-hoy__chip'));
   }
   assert.equal(p.obtener('#intent-status').hidden, true);
 
@@ -72,6 +73,29 @@ test('H25 muestra los 12 chips accesibles (11 ocasiones + Regalo) con role="radi
   assert.deepEqual(p.intencionActiva(), []);
   assert.equal(p.obtener('#intent-status').hidden, true);
   assert.equal(p.consultas.at(-1), '/api/para-ti');
+});
+
+test('H25 (comentario 10035) cada chip muestra una palabra y anuncia su nombre completo, que la contiene', async () => {
+  const p = await abrirListado({ responder: responderParaTi });
+  assert.equal(p.obtener('#intent-box').hidden, false);
+  const visibles = Object.fromEntries(p.chipsIntencion().map(chip => [chip.attributes['aria-label'], chip.textContent]));
+  assert.equal(visibles['Salir con amigos o pareja'], 'Salir');
+  assert.equal(visibles['Planes en familia'], 'Familia');
+  assert.equal(visibles.Regalo, 'Regalo');
+  for (const chip of p.chipsIntencion()) {
+    assert.ok(chip.textContent, 'cada chip tiene texto visible');
+    assert.ok(chip.attributes['aria-label'].toLowerCase().includes(chip.textContent.toLowerCase()), 'el nombre accesible contiene la palabra visible');
+  }
+});
+
+test('H25 (comentario 10035) la tira y el mensaje «Primero» viven en la cabecera amarilla, bajo la búsqueda, y empiezan ocultos', async () => {
+  const html = (await readFile(new URL('../../public/promociones.html', import.meta.url), 'utf8')).replace(/\r\n/g, '\n');
+  const cabecera = html.slice(html.indexOf('<section class="pr-hero">'), html.indexOf('</section>', html.indexOf('id="abrir-filtros"')));
+  assert.ok(cabecera.indexOf('id="abrir-filtros"') < cabecera.indexOf('id="intent-box"'), 'los chips van bajo la búsqueda');
+  assert.match(cabecera, /id="intent-box"[^>]*hidden/);
+  assert.match(cabecera, /id="intent-status"/);
+  const css = await readFile(new URL('../../public/css/promociones-sistema.css', import.meta.url), 'utf8');
+  assert.match(css, /\.pr-hoy__chip\[aria-checked="true"\]/, 'el chip marcado tiene estilo propio del sistema');
 });
 
 test('H25 activar o quitar el chip conserva los filtros explícitos, la búsqueda y la tarjeta elegida', async () => {
