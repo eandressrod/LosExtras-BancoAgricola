@@ -78,3 +78,19 @@ test('sin guardadas no se presenta como falta de coincidencia', () => {
   assert.equal(visible.sinCoincidencias, false);
   assert.deepEqual(visible.promociones, []);
 });
+
+test('QA-AUD-03 distingue cuando las guardadas aplican a la tarjeta pero no coinciden con los intereses actuales', () => {
+  const porTarjeta = [
+    { id: 'tienda', category: 'Compras', canUse: true },
+    { id: 'cine', category: 'Entretenimiento', canUse: false }
+  ];
+  const porIntereses = seleccionarGuardadasVisibles([], ['tienda'], porTarjeta);
+  assert.deepEqual(porIntereses.ids, ['tienda']);
+  assert.deepEqual(porIntereses.promociones, []);
+  assert.equal(porIntereses.sinCoincidencias, true);
+  assert.equal(porIntereses.motivoSinCoincidencias, 'intereses');
+
+  const porTarjetaVencida = seleccionarGuardadasVisibles([], ['cine'], porTarjeta);
+  assert.equal(porTarjetaVencida.sinCoincidencias, true);
+  assert.equal(porTarjetaVencida.motivoSinCoincidencias, 'tarjeta');
+});
