@@ -18,13 +18,19 @@ function pintarVacio(datos, visibles) {
   const filtro = document.querySelector('#empty-filter');
   const sinBusqueda = document.querySelector('#empty-search');
   const limpiarVacio = document.querySelector('#clear-search-empty');
+  const cambiarPreferencias = document.querySelector('#empty-preferences');
   const accion = document.querySelector('#empty-action');
   const hayVisibles = visibles.length > 0;
   const vacioPorBusqueda = !hayVisibles && Boolean(busqueda) && datos.ids?.length > 0 && !datos.sinCoincidencias;
+  const porIntereses = Boolean(datos.sinCoincidencias && datos.motivoSinCoincidencias === 'intereses');
   ninguna.hidden = hayVisibles || datos.sinCoincidencias || vacioPorBusqueda;
   filtro.hidden = !datos.sinCoincidencias;
+  filtro.textContent = porIntereses
+    ? 'Ninguna promoción guardada coincide con tus intereses actuales.'
+    : 'Ninguna promoción guardada aplica ahora a tu tarjeta.';
   if (sinBusqueda) sinBusqueda.hidden = !vacioPorBusqueda;
   if (limpiarVacio) limpiarVacio.hidden = !vacioPorBusqueda;
+  if (cambiarPreferencias) cambiarPreferencias.hidden = !porIntereses;
   accion.hidden = hayVisibles || vacioPorBusqueda;
 }
 
@@ -82,8 +88,10 @@ async function loadSaved(tarjetaId) {
   document.querySelector('#empty-filter').hidden = true;
   const sinBusqueda = document.querySelector('#empty-search');
   const limpiarVacio = document.querySelector('#clear-search-empty');
+  const cambiarPreferencias = document.querySelector('#empty-preferences');
   if (sinBusqueda) sinBusqueda.hidden = true;
   if (limpiarVacio) limpiarVacio.hidden = true;
+  if (cambiarPreferencias) cambiarPreferencias.hidden = true;
   document.querySelector('#empty-action').hidden = true;
   try {
     // La búsqueda se delega a la API para que sea la única fuente de verdad.

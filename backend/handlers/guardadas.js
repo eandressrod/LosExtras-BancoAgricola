@@ -34,11 +34,14 @@ export default {
           return responderJson(cuerpo, estado);
         }
         const categorias = preferencias.completed ? preferencias.categories : [];
+        const porTarjeta = eleccion.tarjeta
+          ? filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, [])
+          : [];
         const filtradas = eleccion.tarjeta
           ? filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, categorias)
           : [];
-        // H10: sinCoincidencias describe la tarjeta; la búsqueda solo recorta la lista visible.
-        const visibles = seleccionarGuardadasVisibles(filtradas, ids);
+        // H10 y QA-AUD-03: sinCoincidencias distingue entre tarjeta e intereses; la búsqueda solo recorta la lista visible.
+        const visibles = seleccionarGuardadasVisibles(filtradas, ids, porTarjeta);
         return responderJson({ ...visibles, promociones: filtrarPorComercio(visibles.promociones, busqueda.comercio) });
       }
 
