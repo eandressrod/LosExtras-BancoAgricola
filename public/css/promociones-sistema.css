@@ -136,6 +136,26 @@
   content: attr(data-activos); position: absolute; top: -5px; right: -5px; display: grid; place-items: center; min-width: 19px; height: 19px; padding: 0 5px;
   border: 2px solid var(--pr-amarillo); border-radius: 999px; background: var(--pr-tinta); color: #fff; font-size: .66rem; font-weight: 700;
 }
+/* «Hoy busco» (H25): tira ligera y deslizable bajo la búsqueda. Pastilla translúcida con icono y una palabra;
+   marcada = relleno oscuro, icono ✓ y aria-checked. El área táctil llega a 44 px con un pseudoelemento. */
+.pr-hoy__tira {
+  display: flex; gap: 6px; margin: 12px -16px 0; padding: 6px 16px; overflow-x: auto; scroll-snap-type: x proximity;
+  scrollbar-width: none; overscroll-behavior-x: contain;
+}
+.pr-hoy__tira::-webkit-scrollbar { display: none; }
+.pr-hoy__chip {
+  --ico: var(--pr-i-chispa);
+  position: relative; display: inline-flex; flex: none; align-items: center; gap: 5px; height: 32px; min-width: 44px; min-height: 0; margin: 0; padding: 0 12px 0 9px;
+  border: 1px solid var(--pr-hero-borde); border-radius: 999px; background: rgb(255 255 255 / .45); color: var(--pr-hero-tinta);
+  font-size: .8rem; font-weight: 700; white-space: nowrap; scroll-snap-align: start;
+  transition: background-color var(--pr-rapido), color var(--pr-rapido), transform var(--pr-rapido);
+}
+.pr-hoy__chip::before { content: ""; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; }
+.pr-hoy__chip::after { content: ""; position: absolute; inset: -6px 0; }
+.pr-hoy__chip:hover { background: rgb(255 255 255 / .7); }
+.pr-hoy__chip:active { transform: scale(.96); }
+.pr-hoy__chip[aria-checked="true"], .pr-hoy__chip[aria-checked="true"]:hover { --ico: var(--pr-i-check); border-color: var(--pr-tinta); background: var(--pr-tinta); color: #fff; }
+.pr-hoy__estado { margin: 4px 0 0; font-size: .8rem; font-weight: 700; }
 
 /* Búsqueda */
 .pr .search-box { margin: 0; }
