@@ -1,8 +1,10 @@
 import { requireSession } from './comun.js';
 import { cargarCategorias } from './categorias.js';
+import { mostrarTarjetasSesion } from './tarjeta-elegida.js';
 
 const profile = await requireSession();
 if (profile) {
+  mostrarTarjetasSesion(profile);
   const form = document.querySelector('#survey-form');
   const error = document.querySelector('#survey-error');
   const submitBtn = form.querySelector('button[type="submit"]');
