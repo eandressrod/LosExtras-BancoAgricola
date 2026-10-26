@@ -187,3 +187,10 @@ test('H25 (CDA 8) el grupo de chips se maneja con teclado: un solo chip en el or
   // Otras teclas no se interceptan.
   assert.equal(await tecla(ultimo, 'Tab'), false);
 });
+
+test('H25 (CDA 6) un chip en la URL sin visita en curso no se activa: una pestaña nueva empieza sin intención', async () => {
+  const p = await abrirListado({ search: '?intencion=salir', responder: responderParaTi });
+  assert.deepEqual(p.intencionActiva(), []);
+  assert.equal(p.history.url, '/promociones.html');
+  assert.deepEqual(p.consultas, ['/api/para-ti']);
+});

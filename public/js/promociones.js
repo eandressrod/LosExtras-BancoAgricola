@@ -8,7 +8,7 @@ import { destinoEntradaPromociones } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
 import { conIndicador } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
-import { guardarInstantanea, leerInstantanea, marcarVencidas, visitaVencida } from './instantanea.js';
+import { guardarInstantanea, leerInstantanea, marcarVencidas, visitaVigente } from './instantanea.js';
 
 import {
   leerCategoria, leerHoy, leerBusqueda, leerIntencion, normalizarBusqueda, categoriaVigente,
@@ -154,7 +154,8 @@ if (profile) {
   let categoria = null;
   let hoy = leerHoy(location.search, history.state, profile.id);
   let busqueda = leerBusqueda(location.search, history.state, profile.id);
-  let intencion = visitaVencida(sesion, profile.id) ? null : leerIntencion(location.search, history.state, profile.id);
+  // H25: el chip de la URL solo sigue activo dentro de la misma visita (CDA 6).
+  let intencion = visitaVigente(sesion, profile.id) ? leerIntencion(location.search, history.state, profile.id) : null;
   // H16 desde el 24 de octubre: Para ti considera todas las tarjetas propias; filtroTarjeta (null = todas) es opcional.
   let tarjetas = [];
   let filtroTarjeta = null;

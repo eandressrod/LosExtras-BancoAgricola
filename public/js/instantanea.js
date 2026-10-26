@@ -21,12 +21,21 @@ function escribir(almacen, perfilId, consulta, datos) {
   try { almacen?.setItem(clave(perfilId, consulta), JSON.stringify(datos)); } catch { /* Sin almacenamiento se vuelve a ordenar. */ }
 }
 
-/** Indica si había una visita previa registrada para este perfil que ya terminó por tiempo o cambio de día (H25, CDA 6). */
-export function visitaVencida(almacen, perfilId, ahora = new Date()) {
-  let guardada;
-  try { guardada = JSON.parse(almacen?.getItem(clave(perfilId)) ?? 'null'); } catch { return false; }
-  if (!guardada) return false;
-  return guardada.dia !== fechaLocal.format(ahora) || ahora.getTime() - guardada.usadaEn >= DURACION_VISITA_MS;
+/**
+ * H25 (CDA 6): hay visita en curso si el perfil tiene, en cualquier alcance, una instantánea de hoy usada hace menos de
+ * 30 minutos. Sin ella (pestaña nueva, sesión nueva o visita terminada) el chip «Hoy busco» de la URL no se conserva.
+ */
+export function visitaVigente(almacen, perfilId, ahora = new Date()) {
+  const prefijo = PREFIJO_INSTANTANEA + perfilId + ':';
+  try {
+    for (let indice = 0; indice < almacen.length; indice += 1) {
+      const nombre = almacen.key(indice);
+      if (!nombre?.startsWith(prefijo)) continue;
+      const guardada = JSON.parse(almacen.getItem(nombre) ?? 'null');
+      if (guardada?.dia === fechaLocal.format(ahora) && ahora.getTime() - guardada.usadaEn < DURACION_VISITA_MS) return true;
+    }
+  } catch { /* Sin almacenamiento legible no hay visita que conservar. */ }
+  return false;
 }
 
 /** Guarda la respuesta de una consulta como orden de la visita actual. */
