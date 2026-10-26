@@ -17,9 +17,9 @@ test('H17 otro perfil no hereda Disponibles hoy de la entrada del usuario anteri
 });
 
 test('H17 la consulta, el detalle y el retorno conservan Disponibles hoy junto con la categoría', () => {
-  assert.equal(urlConsulta(null, true), '/api/promociones?hoy=1');
-  assert.equal(urlConsulta('Compras', true), '/api/promociones?categoria=Compras&hoy=1');
-  assert.equal(urlConsulta('Compras', false), '/api/promociones?categoria=Compras');
+  assert.equal(urlConsulta(null, true), '/api/para-ti?hoy=1');
+  assert.equal(urlConsulta('Compras', true), '/api/para-ti?categoria=Compras&hoy=1');
+  assert.equal(urlConsulta('Compras', false), '/api/para-ti?categoria=Compras');
   assert.equal(urlListado(null, null, true), '/promociones.html?hoy=1');
   assert.equal(urlListado('Compras', 'tienda', true), '/promociones.html?categoria=Compras&hoy=1#promo-tienda');
   assert.equal(urlDetalle('cine', null, true), '/detalle.html?id=cine&hoy=1');

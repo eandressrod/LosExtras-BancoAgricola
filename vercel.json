@@ -8,7 +8,9 @@
     { "source": "/api/mensajes", "destination": "/api/recursos?recurso=mensajes" },
     { "source": "/api/metas", "destination": "/api/recursos?recurso=metas" },
     { "source": "/api/promociones-apertura", "destination": "/api/recursos?recurso=promociones-apertura" },
-    { "source": "/api/guardadas", "destination": "/api/recursos?recurso=guardadas" }
+    { "source": "/api/guardadas", "destination": "/api/recursos?recurso=guardadas" },
+    { "source": "/api/para-ti", "destination": "/api/recursos?recurso=para-ti" },
+    { "source": "/api/senales", "destination": "/api/recursos?recurso=senales" }
   ],
   "headers": [
     {
