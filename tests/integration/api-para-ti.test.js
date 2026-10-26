@@ -116,6 +116,24 @@ test('H22 los filtros explícitos se validan igual que en /api/promociones y res
   assert.equal((await paraTi.fetch(pedir('/api/para-ti?tarjeta=', 'A'))).status, 400);
 });
 
+test('Explorar (?explorar=1) devuelve todo lo vigente de las tarjetas propias en orden base, aunque haya intereses', async () => {
+  await declarar('A', { clase: 'interes', ambito: 'categoria', valor: 'Salud' });
+  const paraTiA = await consultar('/api/para-ti', 'A');
+  assert.equal(paraTiA.estrategia, 'personalizada');
+  const explorar = await consultar('/api/para-ti?explorar=1', 'A');
+  assert.equal(explorar.estrategia, 'base');
+  assert.deepEqual(new Set(explorar.promociones.map(p => p.id)), new Set([...conTarjeta('basica'), ...conTarjeta('black')]));
+  assert.ok(explorar.promociones.every(p => p.razon === null && p.insignias.length === 0));
+  assert.ok(explorar.promociones.length > paraTiA.promociones.length, 'Para ti recorta por intereses; Explorar no');
+  // Los filtros explícitos siguen restringiendo y la intención del día no reordena Explorar.
+  const compras = await consultar('/api/para-ti?explorar=1&categoria=Compras', 'A');
+  assert.ok(compras.promociones.length > 0 && compras.promociones.every(p => p.category === 'Compras'));
+  const conIntencion = await consultar('/api/para-ti?explorar=1&intencion=salir', 'A');
+  assert.deepEqual(conIntencion.promociones.map(p => p.id), explorar.promociones.map(p => p.id));
+  assert.equal((await paraTi.fetch(pedir('/api/para-ti?explorar=si', 'A'))).status, 400);
+  assert.equal((await paraTi.fetch(pedir('/api/para-ti?explorar=1&explorar=1', 'A'))).status, 400);
+});
+
 test('H22 los perfiles A y B están aislados', async () => {
   await declarar('A', { clase: 'interes', ambito: 'categoria', valor: 'Salud' });
   assert.equal((await consultar('/api/para-ti', 'A')).estrategia, 'personalizada');
