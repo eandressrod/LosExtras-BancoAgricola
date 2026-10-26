@@ -1,5 +1,5 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
-import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias, mostrarPasos } from './promocion-vista.js';
 import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { conMinimoCarga } from './carga-tiempo.js';
@@ -63,6 +63,18 @@ if (profile) {
       mostrarImagen(document.querySelector('#merchant-logo'), promotion.logoUrl);
       mostrarDias(document.querySelector('#days'), promotion);
       mostrarCondiciones(document.querySelector('#conditions'), promotion, { dias: false });
+      mostrarPasos(document.querySelector('#pasos'), promotion);
+      // Dónde: el mapa (H8) solo aplica a promociones que se usan en tienda.
+      const enTienda = Boolean(promotion.channels?.includes('presencial'));
+      document.querySelector('#donde').hidden = !enTienda;
+      const verMapa = document.querySelector('#ver-mapa');
+      verMapa.hidden = !enTienda;
+      verMapa.onclick = evento => {
+        evento.preventDefault();
+        const donde = document.querySelector('#bloque-donde');
+        donde.scrollIntoView?.({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+        donde.focus?.({ preventScroll: true });
+      };
       if (desdeGuardadas) {
         back.href = retornoGuardadas;
         back.textContent = 'Volver a guardadas';

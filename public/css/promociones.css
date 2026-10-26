@@ -48,6 +48,43 @@
 .pr-bloque h2 { color: var(--pr-texto-2); font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .pr-bloque:has(> .promo-conditions[hidden]) { display: none; }
 .detail-page #guardar-error { margin: 0 4px; }
+.pr-bloque[hidden] { display: none; }
+
+/* Cómo usarla: pasos con icono unidos por una línea; las instrucciones de la promoción cierran como nota. */
+.pr-pasos { display: grid; width: 100%; margin: 0; padding: 0; list-style: none; background: linear-gradient(#e2ded6, #e2ded6) 18px 26px / 2px calc(100% - 52px) no-repeat; }
+.pr-paso {
+  --ico: var(--pr-i-bolsa); --tono: var(--pr-cielo);
+  position: relative; display: grid; grid-template-columns: 38px 1fr; align-items: center; gap: 12px; min-height: 52px; margin: 0; padding: 6px 0;
+  font-size: .92rem; font-weight: 700; line-height: 1.35;
+}
+.pr-paso::before {
+  content: ""; width: 38px; height: 38px; border-radius: 13px;
+  background: color-mix(in srgb, var(--tono) 16%, #fff);
+}
+.pr-paso::after {
+  content: ""; position: absolute; left: 10px; top: 50%; width: 18px; height: 18px; translate: 0 -50%; background: color-mix(in srgb, var(--tono) 72%, #000);
+  -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat;
+}
+.pr-paso[data-tipo="dias"] { --ico: var(--pr-i-reloj); --tono: var(--pr-naranja); }
+.pr-paso[data-tipo="tarjeta"] { --ico: var(--pr-i-tarjeta); --tono: var(--pr-amarillo-hondo); }
+.pr-paso[data-tipo="monto"] { --ico: var(--pr-i-etiqueta); --tono: var(--pr-menta); }
+.pr-paso[data-tipo="nota"] {
+  --ico: var(--pr-i-chispa); --tono: var(--pr-uva);
+  margin-top: 8px; padding: 12px 14px 12px 12px; border-radius: 16px; background: color-mix(in srgb, var(--pr-uva) 8%, #fff);
+  color: var(--pr-texto-2); font-weight: 400;
+}
+.pr-paso[data-tipo="nota"]::before { background: #fff; }
+.pr-paso[data-tipo="nota"]::after { left: 22px; }
+.pr-ver-mapa {
+  display: inline-flex; align-items: center; gap: 8px; height: 44px; margin-top: 4px; padding: 0 18px 0 14px; border-radius: 999px;
+  background: var(--pr-tinta); color: #fff; font-size: .88rem; font-weight: 700; text-decoration: none;
+  transition: transform var(--pr-rapido) var(--pr-curva), background-color var(--pr-rapido);
+}
+.pr-ver-mapa::before { content: ""; width: 17px; height: 17px; background: var(--pr-amarillo); -webkit-mask: var(--pr-i-pin) center / contain no-repeat; mask: var(--pr-i-pin) center / contain no-repeat; }
+.pr-ver-mapa:hover { background: #000; }
+.pr-ver-mapa:active { transform: scale(.97); }
+.pr-ver-mapa[hidden] { display: none; }
+#bloque-donde:focus { outline: none; }
 
 /* ── Guardadas ─────────────────────────────────────────────────────── */
 .saved-page.pr #list-status { margin: 14px 2px 10px; color: var(--pr-texto-2); font-size: .85rem; font-weight: 700; }

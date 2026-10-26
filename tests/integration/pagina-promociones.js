@@ -39,7 +39,7 @@ const fuente = async archivo => {
 };
 const vista = {
   textoVigencia: () => '', textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarDias,
-  mostrarImagen: () => {}, mostrarCondiciones: () => {}
+  mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarPasos: () => {}
 };
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 
@@ -101,6 +101,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     cardName,
     revelarPagina: alRevelar,
     conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
+    matchMedia: () => ({ matches: true }),
     ...vista, ...filtro, ...tarjeta, ...instantanea, ...pestanas
   };
   return { obtener, history, contexto, elementos, sesion, timerFake };

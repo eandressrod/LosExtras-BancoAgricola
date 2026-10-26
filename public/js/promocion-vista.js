@@ -80,6 +80,25 @@ export function estadoDias(promo) {
   return { estado: 'neutro', texto: textoDias(promo.usageDays) };
 }
 
+const CANALES = { presencial: 'en tienda', delivery: 'a domicilio', 'en-linea': 'en línea' };
+
+/** Detalle: cómo usar la promoción, solo con datos del catálogo. Las instrucciones propias de la promoción van al final. */
+export function pasosDeUso(promo) {
+  const canales = (promo.channels ?? []).map(canal => CANALES[canal]).filter(Boolean);
+  const cuando = formaDias(promo.usageDays) ? 'Úsala ' + diasConArticulo(promo.usageDays) : 'Úsala cualquier día';
+  const pasos = [
+    { tipo: 'comercio', texto: `Compra en ${promo.merchant}` + (canales.length ? ', ' + unir(canales).replace(/ y (?=[^y]*$)/, ' o ') : '') },
+    { tipo: 'dias', texto: cuando + (promo.validUntil && !promo.expired ? ', hasta el ' + fecha(promo.validUntil) : '') },
+    { tipo: 'tarjeta', texto: 'Paga con tu tarjeta ' + (promo.applicableCard === 'black' ? 'Black' : 'Básica') }
+  ];
+  const montos = [
+    promo.minimumPurchase != null && 'Compra mínima de ' + dinero.format(promo.minimumPurchase),
+    promo.discountCap != null && 'descuento hasta ' + dinero.format(promo.discountCap)
+  ].filter(Boolean);
+  if (montos.length) pasos.push({ tipo: 'monto', texto: mayuscula(montos.join(' · ')) });
+  if (promo.instructions) pasos.push({ tipo: 'nota', texto: promo.instructions });
+  return pasos;
+}
 
 export function condicionesVisibles(promo, { dias: conDias = true } = {}) {
   const condiciones = [];
@@ -111,6 +130,18 @@ export function mostrarCondiciones(lista, promo, opciones) {
     lista.append(item);
   }
   lista.hidden = lista.children.length === 0;
+}
+
+/** Detalle: dibuja los pasos de uso; el tipo elige el icono y la nota final se distingue de los pasos numerados. */
+export function mostrarPasos(lista, promo) {
+  lista.replaceChildren();
+  for (const { tipo, texto } of pasosDeUso(promo)) {
+    const item = document.createElement('li');
+    item.className = 'pr-paso';
+    item.dataset.tipo = tipo;
+    item.textContent = texto;
+    lista.append(item);
+  }
 }
 
 /** Día de la semana (domingo = 0) de una fecha civil AAAA-MM-DD. */
