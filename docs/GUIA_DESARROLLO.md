@@ -376,6 +376,6 @@ La respuesta 200 siempre trae el estado guardado: `{ "promocionesAbiertas": true
 
 Con la encuesta completada las marcas no se consultan. «Listo» sin categorías sigue dejando la encuesta pendiente (`/api/preferencias` no cambia).
 
-**Datos.** La migración `20261026160000_h21_marcas_encuesta.sql` añade `perfiles.encuesta_hoja_mostrada` y `perfiles.encuesta_aviso_cerrado`, booleanos obligatorios en falso. Son columnas aparte de `promociones_abiertas` porque esa marca ya es verdadera en perfiles que nunca vieron la hoja. Son estado de interfaz, no impresiones ni analítica.
+**Datos.** La migración `20261026220500_h21_marcas_encuesta.sql` añade `perfiles.encuesta_hoja_mostrada` y `perfiles.encuesta_aviso_cerrado`, booleanos obligatorios en falso. Son columnas aparte de `promociones_abiertas` porque esa marca ya es verdadera en perfiles que nunca vieron la hoja. Son estado de interfaz, no impresiones ni analítica.
 
-**Aplicar en la base compartida** (solo con autorización): sacar la foto de datos (`npm run respaldo -- crear`), aplicar la migración y comprobar con `npm run test:remote`. El backend con `DATA_SOURCE=supabase` necesita la migración aplicada antes de desplegarse: sin las columnas, la apertura responde 503.
+**Base compartida:** aplicada el 26 de octubre, con foto de datos previa en `respaldos/20261026160000/`. El backend con `DATA_SOURCE=supabase` necesita estas columnas: sin ellas, la apertura responde 503.
