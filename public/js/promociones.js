@@ -223,11 +223,12 @@ if (profile) {
   function crearChipIntencion(item) {
     const chip = document.createElement('button');
     chip.type = 'button';
-    chip.className = 'filter-chip';
+    chip.className = 'pr-hoy__chip';
     chip.setAttribute('role', 'radio');
     chip.setAttribute('aria-checked', 'false');
+    chip.setAttribute('aria-label', item.nombre);
     chip.dataset.intent = item.id;
-    chip.textContent = item.nombre;
+    chip.textContent = item.corto;
     chip.addEventListener('click', () => cambiarIntencion(item.id));
     intentFilter.append(chip);
     chipsIntencion.push(chip);
@@ -323,6 +324,8 @@ if (profile) {
       cardSingle.textContent = 'Tus beneficios con ' + textoTarjeta(tarjetas[0]);
       cardSingle.hidden = false;
     }
+    // H25: la tira «Hoy busco» aparece cuando hay tarjetas con las que consultar, no mientras carga.
+    intentBox.hidden = false;
     mostrarTarjeta();
     return true;
   }

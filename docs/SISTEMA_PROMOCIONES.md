@@ -55,6 +55,7 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 - **Barra** (`.pr-hero__barra`): título grande; iconos `.pr-icono` de Guardadas (con `.pr-contador` de guardadas) y de Mis preferencias. El de la página actual lleva `aria-current`. En Guardadas y Mis preferencias, la flecha de volver lleva a Para ti.
 - **Secciones** (`.pr-secciones`): Para ti | Cerca de ti. Mientras solo haya una sección visible no se dibuja; H8 muestra «Cerca de ti» cuando exista su pantalla.
 - **Fila de búsqueda** (`.pr-buscador`): campo blanco con lupa y botón **Filtros** (`.pr-boton-filtros`), que muestra cuántos filtros hay activos y tiene un nombre accesible («Filtros, 2 activos»).
+- **Hoy busco (H25)** (`.pr-hoy`): tira deslizable bajo la búsqueda (comentario 10035 de SCRUM-118). Cada chip (`.pr-hoy__chip`, `role="radio"`) es una pastilla translúcida con icono y una palabra; su nombre accesible es el nombre completo de la ocasión y contiene esa palabra. Marcado: relleno oscuro, icono ✓ y `aria-checked`. Altura visible de 32 px y área táctil de 44 px. Con un chip activo, «Primero: …» (`.pr-hoy__estado`) aparece en la propia cabecera. La tira está oculta hasta que la página tiene tarjetas con las que consultar.
 - **Fondo:** amarillo de la marca con aros de fondo. Ya no cambia con la tarjeta.
 
 ### Franja de avisos (carrusel)

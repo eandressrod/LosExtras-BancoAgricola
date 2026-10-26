@@ -56,12 +56,12 @@
         </div>
         <button id="abrir-filtros" type="button" class="pr-boton-filtros" aria-label="Filtros" aria-haspopup="dialog" aria-controls="filtros" data-activos="0"></button>
         </div>
-      </section>
-      <!-- H25: intención del día («Hoy busco»). Reordena sin filtrar y vive solo durante la visita. -->
-      <section id="intent-box" class="card-choice">
-        <p id="intent-label" class="card-choice-label">Hoy busco</p>
-        <div id="intent-filter" class="category-filter" role="radiogroup" aria-labelledby="intent-label"></div>
-        <p id="intent-status" class="promo-today" role="status" hidden></p>
+        <!-- H25: intención del día («Hoy busco»). Tira de la cabecera que reordena sin filtrar y vive solo durante la visita. -->
+        <div id="intent-box" class="pr-hoy" hidden>
+          <p id="intent-label" class="visualmente-oculto">Hoy busco</p>
+          <div id="intent-filter" class="pr-hoy__tira" role="radiogroup" aria-labelledby="intent-label"></div>
+          <p id="intent-status" class="pr-hoy__estado" role="status" hidden></p>
+        </div>
       </section>
       <!-- Franja de avisos: no repite tarjetas de la lista (js/franja.js, js/carrusel.js). -->
       <section id="franja" class="pr-franja" aria-roledescription="carrusel" aria-label="Avisos para ti" hidden></section>

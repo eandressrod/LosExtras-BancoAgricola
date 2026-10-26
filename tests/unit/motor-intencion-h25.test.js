@@ -30,7 +30,9 @@ beforeEach(() => reiniciarSenalesMock());
 test('H25 el vocabulario de chips Hoy busco contiene las 11 ocasiones en orden más la etiqueta Regalo del catálogo', () => {
   const ocasionesEsperadas = [...fuente.ocasiones].sort((a, b) => a.orden - b.orden).map(o => ({ id: o.id, nombre: o.nombre, tipo: 'ocasion' }));
   const etiquetasEsperadas = fuente.etiquetasIntencion.map(e => ({ id: e.id, nombre: e.nombre, tipo: 'etiqueta' }));
-  assert.deepEqual(CHIPS_HOY_BUSCO, [...ocasionesEsperadas, ...etiquetasEsperadas]);
+  assert.deepEqual(CHIPS_HOY_BUSCO.map(({ id, nombre, tipo }) => ({ id, nombre, tipo })), [...ocasionesEsperadas, ...etiquetasEsperadas]);
+  // La palabra visible del chip forma parte de su nombre accesible (comentario 10035 de SCRUM-118).
+  for (const chip of CHIPS_HOY_BUSCO) assert.ok(chip.nombre.toLowerCase().includes(chip.corto.toLowerCase()), chip.id);
   assert.equal(textoPrimeroHoyBusco('salir'), 'Primero: salir con amigos o pareja');
   assert.equal(textoPrimeroHoyBusco('regalo'), 'Primero: regalo');
   assert.equal(textoPrimeroHoyBusco(null), '');
