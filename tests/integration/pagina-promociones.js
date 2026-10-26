@@ -102,6 +102,9 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     revelarPagina: alRevelar,
     conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
     matchMedia: () => ({ matches: true }),
+    // H8: Cerca de ti y el bloque Dónde tienen sus propias pruebas; aquí solo se registran sus llamadas.
+    crearCerca: () => ({ mostrar() {}, ocultar() {} }),
+    mostrarDonde: () => {},
     ...vista, ...filtro, ...tarjeta, ...instantanea, ...pestanas
   };
   return { obtener, history, contexto, elementos, sesion, timerFake };

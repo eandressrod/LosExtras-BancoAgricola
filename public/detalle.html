@@ -74,12 +74,30 @@
             <h2 id="bloque-condiciones">Condiciones</h2>
             <ul id="conditions" class="promo-conditions"></ul>
           </section>
-          <!-- H8 monta aquí el mapa del detalle: recorrido aproximado y «Abrir en Waze». Solo con canal presencial. -->
-          <section id="donde" class="pr-bloque" aria-labelledby="bloque-donde" hidden>
+          <!-- H8 (js/cerca/donde.js): distancia a la sucursal más cercana, recorrido aproximado y enlaces. Solo con canal presencial. -->
+          <section id="donde" class="pr-bloque pr-donde" aria-labelledby="bloque-donde" hidden>
             <h2 id="bloque-donde" tabindex="-1">Dónde</h2>
-            <div id="mapa-detalle" class="pr-mapa pr-mapa--detalle" data-mapa="detalle">
+            <p id="donde-distancia" class="pr-donde__distancia" hidden></p>
+            <p id="donde-sucursal" class="pr-donde__sucursal" hidden></p>
+            <button id="ver-distancia" type="button" class="pr-origen__boton" data-icono="ubicacion" hidden>Ver distancia</button>
+            <div id="mapa-detalle" class="pr-mapa pr-mapa--detalle" data-mapa="detalle" hidden>
               <p class="pr-mapa__rotulo">Mapa de la promoción</p>
+              <a id="mapa-detalle-enlace" class="pr-mapa__enlace" href="/promociones.html"><span class="visualmente-oculto">Ver en Cerca de ti</span></a>
             </div>
+            <p id="donde-nota" class="pr-donde__nota" hidden>Recorrido aproximado. La ruta exacta te la da tu app de mapas.</p>
+            <div class="pr-donde__acciones" hidden>
+              <a id="abrir-waze" class="pr-donde__enlace" data-app="waze" target="_blank" rel="noopener">Abrir en Waze</a>
+              <a id="como-llegar" class="pr-donde__enlace" data-app="mapas" target="_blank" rel="noopener">Cómo llegar</a>
+            </div>
+            <dialog id="zonas" class="pr-hoja" aria-labelledby="zonas-titulo">
+              <div class="pr-hoja__asa" aria-hidden="true"></div>
+              <h2 id="zonas-titulo" class="pr-hoja__titulo">¿Qué zona te queda mejor?</h2>
+              <div class="pr-hoja__cuerpo">
+                <button id="donde-ubicacion" type="button" class="pr-origen__boton" data-icono="ubicacion">Usar mi ubicación</button>
+                <div class="pr-zonas" role="group" aria-labelledby="zonas-titulo"></div>
+              </div>
+              <div class="pr-hoja__acciones"><button id="cerrar-zonas" type="button">Cerrar</button></div>
+            </dialog>
           </section>
           <p id="guardar-error" class="error" role="alert"></p>
         </div>
