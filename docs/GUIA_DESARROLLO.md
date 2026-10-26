@@ -352,3 +352,30 @@ Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfi
 - Abre una transición de regreso en `supabase/versiones.json`, porque las pruebas de PR 21 cuentan las tablas de forma fija. El PR del motor se registra como destino al fusionarse.
 
 **Aplicar en la base compartida** (solo con autorización): sacar la foto de datos (`npm run respaldo -- crear`), aplicar la migración y comprobar con `npm run test:remote`.
+
+## 12. H21: marcas de la encuesta sin insistir — 26 de octubre de 2026
+
+Parte 2 de H21 ([SCRUM-71](https://somos-agilistas.atlassian.net/browse/SCRUM-71)), caso de backend de [ADR-010](<../ADR/0010-Decision de ofrecer la encuesta sin insistir.md>). La interfaz que las usa queda por hacer; mientras tanto la hoja sigue con la marca de sesión de la parte 1.
+
+**Contrato.** `POST /api/promociones-apertura` conserva su ruta, su método y la validación de sesión. El propietario sale siempre de la sesión.
+
+| Cuerpo | Efecto |
+| --- | --- |
+| Vacío, como hasta ahora | Registra la apertura de Promociones. |
+| `{ "marca": "hoja-mostrada" }` | Además guarda que la hoja ya se abrió sola. |
+| `{ "marca": "aviso-cerrado" }` | Además guarda que la persona cerró el aviso de la lista. |
+| Otra marca o JSON inválido | 400 «Marca de encuesta no válida.», sin cambios. |
+
+La respuesta 200 siempre trae el estado guardado: `{ "promocionesAbiertas": true, "hojaMostrada": bool, "avisoCerrado": bool }`. Las marcas no se desmarcan.
+
+**Uso previsto en la interfaz.** La llamada que ya hace Promociones al entrar devuelve las marcas, sin otra petición. Con la encuesta pendiente:
+
+- Si `hojaMostrada` es falso, se abre la hoja y se envía `hoja-mostrada`.
+- Si ya es verdadero y `avisoCerrado` es falso, se muestra el aviso en la lista; al cerrarlo se envía `aviso-cerrado`.
+- Si las dos son verdaderas, no se ofrece nada; la encuesta sigue en «Mis preferencias».
+
+Con la encuesta completada las marcas no se consultan. «Listo» sin categorías sigue dejando la encuesta pendiente (`/api/preferencias` no cambia).
+
+**Datos.** La migración `20261026160000_h21_marcas_encuesta.sql` añade `perfiles.encuesta_hoja_mostrada` y `perfiles.encuesta_aviso_cerrado`, booleanos obligatorios en falso. Son columnas aparte de `promociones_abiertas` porque esa marca ya es verdadera en perfiles que nunca vieron la hoja. Son estado de interfaz, no impresiones ni analítica.
+
+**Aplicar en la base compartida** (solo con autorización): sacar la foto de datos (`npm run respaldo -- crear`), aplicar la migración y comprobar con `npm run test:remote`. El backend con `DATA_SOURCE=supabase` necesita la migración aplicada antes de desplegarse: sin las columnas, la apertura responde 503.
