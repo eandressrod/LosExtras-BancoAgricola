@@ -1,5 +1,15 @@
 // H22: motor de Para ti, fases 1–2 (ADR-004 y ADR-009). Función pura: misma entrada, mismo orden.
 // Corre en el backend (/api/para-ti) y, sin cambios, en el cliente para la vista previa de H21.
+//
+// Recorrido de ordenarParaTi, en este orden:
+//   1. Elegibilidad (elegibilidad.js): fuera lo que la tarjeta no puede usar; cada descarte guarda su motivo.
+//   2. Perfil (perfil.js): se deriva de las señales activas en cada llamada; no se guarda.
+//   3. Alcance (alcance.js) y filtros explícitos (filtros.js): qué ofertas compiten. Las reglas externas pueden excluir.
+//   4. Estrategia: 'base' sin intereses declarados ni intención del día (H25); 'personalizada' con puntaje (puntaje.js).
+//   5. Armado (orden.js): posición por posición, con variedad por comercio y cobertura de categorías.
+//   6. Explicación: una razón (término dominante) y las insignias de los criterios declarados (insignias.js).
+//
+// El motor no lee el reloj ni el almacenamiento: la vigencia ya viene calculada en cada oferta (canUse, availableToday).
 import { CONFIGURACION } from './config.js';
 import { separarOrdenables } from './elegibilidad.js';
 import { perfilDeSenales } from './perfil.js';
