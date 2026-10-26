@@ -25,6 +25,7 @@ El documento «Encuesta inicial · Bases de diseño (beta)» y el criterio 8 de 
    - `encuesta.html` redirige a Promociones, donde se abre la hoja. El contrato del menú (`encuestaPendiente`, `destinoPromociones`) no cambia.
    - **Transición:** mientras falte la persistencia, la hoja se abre al entrar con la encuesta pendiente y «Omitir» evita que vuelva a abrirse en la misma sesión (marca en `sessionStorage` por perfil, que se borra al iniciar o cerrar sesión). El aviso del punto 2 no se muestra todavía.
 5. **Parte 2 (caso de backend acordado):** guardar por usuario dos marcas, «hoja mostrada» y «aviso cerrado», y exponerlas sin sumar funciones de Vercel. Se puede ampliar `/api/promociones-apertura` o reutilizar `perfiles.promociones_abiertas`, que ya registra la primera apertura, si devuelve su valor anterior. Esa elección se documenta al implementarla.
+   - **Elección (26 de octubre):** dos columnas nuevas en `perfiles` (`encuesta_hoja_mostrada` y `encuesta_aviso_cerrado`) y `POST /api/promociones-apertura` ampliado con una `marca` opcional, que siempre devuelve las marcas guardadas. No se reutiliza `promociones_abiertas`, porque ya es verdadera en perfiles que nunca vieron la hoja: no volverían a ver la encuesta. Contrato en la sección 12 de la [guía de desarrollo](<../docs/GUIA_DESARROLLO.md>).
 
 ## Alternativas consideradas
 
