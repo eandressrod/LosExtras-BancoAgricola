@@ -172,7 +172,12 @@ if (profile) {
   function mostrarFiltro(url) {
     for (const chip of chips) chip.setAttribute('aria-pressed', String((chip.dataset.category || null) === categoria));
     todayFilter.setAttribute('aria-pressed', String(hoy));
-    for (const chip of chipsIntencion) chip.setAttribute('aria-checked', String(chip.dataset.intent === intencion));
+    // Grupo de radio: solo el chip marcado (o el primero, si no hay) entra en la tabulación.
+    const enTabulacion = chipsIntencion.find(chip => chip.dataset.intent === intencion) ?? chipsIntencion[0];
+    for (const chip of chipsIntencion) {
+      chip.setAttribute('aria-checked', String(chip.dataset.intent === intencion));
+      chip.setAttribute('tabindex', chip === enTabulacion ? '0' : '-1');
+    }
     const primero = textoPrimeroHoyBusco(intencion);
     intentStatus.textContent = primero;
     intentStatus.hidden = !primero;
@@ -230,8 +235,21 @@ if (profile) {
     chip.dataset.intent = item.id;
     chip.textContent = item.corto;
     chip.addEventListener('click', () => cambiarIntencion(item.id));
+    chip.addEventListener('keydown', evento => moverIntencion(chip, evento));
     intentFilter.append(chip);
     chipsIntencion.push(chip);
+  }
+
+  // Teclado del grupo de radio: las flechas (con vuelta), Inicio y Fin mueven el foco y marcan ese chip.
+  function moverIntencion(chip, evento) {
+    const actual = chipsIntencion.indexOf(chip);
+    const total = chipsIntencion.length;
+    const destino = { ArrowRight: actual + 1, ArrowDown: actual + 1, ArrowLeft: actual - 1, ArrowUp: actual - 1, Home: 0, End: total - 1 }[evento.key];
+    if (destino === undefined) return;
+    evento.preventDefault();
+    const siguiente = chipsIntencion[(destino + total) % total];
+    siguiente.focus();
+    if (siguiente.dataset.intent !== intencion) return cambiarIntencion(siguiente.dataset.intent);
   }
 
   // H16: el filtro de tarjeta se marca en la hoja Filtros y la cabecera dice qué tarjetas se consideran.

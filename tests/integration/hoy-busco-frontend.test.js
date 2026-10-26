@@ -150,3 +150,40 @@ test('H25 el chip se limpia al cambiar de perfil o al iniciar una visita nueva',
   assert.equal(p.history.url, '/promociones.html');
   assert.deepEqual(p.consultas, ['/api/para-ti']);
 });
+test('H25 (CDA 8) el grupo de chips se maneja con teclado: un solo chip en el orden de tabulación y las flechas mueven y marcan', async () => {
+  const p = await abrirListado({ responder: responderParaTi });
+  let foco = null;
+  for (const chip of p.chipsIntencion()) chip.focus = function () { foco = this; };
+  const tecla = async (chip, key) => {
+    let evitado = false;
+    await chip.listeners.keydown({ key, preventDefault() { evitado = true; } });
+    await new Promise(r => setImmediate(r));
+    return evitado;
+  };
+  const indices = () => p.chipsIntencion().map(chip => chip.attributes.tabindex);
+  const [primero, segundo] = p.chipsIntencion();
+  const ultimo = p.chipsIntencion().at(-1);
+
+  // Sin chip marcado, solo el primero entra en la tabulación.
+  assert.deepEqual(indices(), ['0', ...Array(11).fill('-1')]);
+
+  assert.equal(await tecla(primero, 'ArrowRight'), true);
+  assert.deepEqual(p.intencionActiva(), [segundo.attributes['aria-label']]);
+  assert.equal(foco, segundo);
+  assert.equal(p.consultas.at(-1), '/api/para-ti?intencion=rapido-practico');
+  assert.equal(segundo.attributes.tabindex, '0');
+  assert.equal(primero.attributes.tabindex, '-1');
+
+  await tecla(segundo, 'ArrowLeft');
+  assert.equal(foco, primero);
+  await tecla(primero, 'ArrowLeft');
+  assert.equal(foco, ultimo, 'las flechas dan la vuelta');
+  assert.deepEqual(p.intencionActiva(), ['Regalo']);
+  await tecla(ultimo, 'Home');
+  assert.equal(foco, primero);
+  await tecla(primero, 'End');
+  assert.equal(foco, ultimo);
+
+  // Otras teclas no se interceptan.
+  assert.equal(await tecla(ultimo, 'Tab'), false);
+});
