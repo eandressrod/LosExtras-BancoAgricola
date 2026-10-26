@@ -35,6 +35,18 @@ test('sesión ausente y 401 de datos vuelven al login conservando el motivo del 
   }
 });
 
+test('SCRUM-109 la insignia de la sesión no muestra el tipo de tarjeta heredado del perfil', async () => {
+  const storage={getItem:()=>null,setItem(){},removeItem(){},length:0};
+  const insignia={hidden:true,textContent:''};
+  await vm.runInNewContext(source+'\nrequireSession({revelar:false})',{
+    localStorage:storage,sessionStorage:storage,addEventListener(){},...modelo,...instantanea,conMinimoCarga:async f=>f(),actualizarSesion(){},iniciarInactividad(){},
+    document:{hidden:false,querySelector:selector=>selector==='#session-profile'?insignia:null},
+    fetch:async()=>({ok:true,status:200,json:async()=>({perfil:{id:'A',nombre:'Usuario A',tipoTarjeta:'basica'},sesion:{id:'sid'}})})
+  });
+  assert.equal(insignia.textContent,'Usuario A');
+  assert.equal(insignia.hidden,false);
+});
+
 test('una primera visita a una ruta privada pide login sin inventar una sesión anterior', async () => {
   const datos=new Map();
   const storage={getItem:k=>datos.get(k),setItem:(k,v)=>datos.set(k,v),removeItem:k=>datos.delete(k),length:0};

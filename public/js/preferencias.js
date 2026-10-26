@@ -1,7 +1,10 @@
 import { requireSession, getJSON } from './comun.js';
 import { cargarCategorias } from './categorias.js';
+import { mostrarTarjetasSesion } from './tarjeta-elegida.js';
 
-if (await requireSession()) {
+const perfil = await requireSession();
+if (perfil) {
+  mostrarTarjetasSesion(perfil);
   const form = document.querySelector('#preferences-form');
   const status = document.querySelector('#preferences-status');
   const error = document.querySelector('#preferences-error');

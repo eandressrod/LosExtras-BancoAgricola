@@ -97,9 +97,10 @@ export async function requireSession({ revelar = true } = {}) {
     volverAlLogin();
     return null;
   }
+  // SCRUM-109: el tipo del perfil es heredado; cada página añade sus tarjetas propias a la insignia.
   const badge = document.querySelector('#session-profile');
   if (badge) {
-    badge.textContent = `${profile.nombre} · ${cardName(profile)}`;
+    badge.textContent = profile.nombre;
     badge.hidden = false;
   }
   if (revelar) revelarPagina();

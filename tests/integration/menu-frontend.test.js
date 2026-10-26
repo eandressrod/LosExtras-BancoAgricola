@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import * as modeloMenu from '../../public/js/menu-modelo.js';
+import { descripcionTarjetas } from '../../public/js/tarjeta-elegida.js';
 
 const source = (await readFile(new URL('../../public/js/menu.js', import.meta.url), 'utf8')).replace(/^\uFEFF?import[^\n]+\n/gm, '');
 function element() {
@@ -19,7 +20,7 @@ function element() {
     classList: { add() {} }
   };
 }
-async function page({ statuses = [200], completed = false, logoutFails = false, cuentas, mensajes = [], entrada } = {}) {
+async function page({ statuses = [200], completed = false, logoutFails = false, cuentas, tarjetas, elegida = null, mensajes = [], entrada } = {}) {
   const els = new Map(); let ready; let forgotten = false; const requests = [];
   const get = id => { if (!els.has(id)) els.set(id, { ...element(), id }); return els.get(id); };
   const location = { value: '', assign(url) { this.value = url; }, replace(url) { this.value = url; }, reload() {} };
@@ -29,7 +30,7 @@ async function page({ statuses = [200], completed = false, logoutFails = false, 
     window: { location }, location,
     requireSession: async () => ({ id: 'A', nombre: 'Usuario A', tipoTarjeta: 'basica' }),
     ...modeloMenu,
-    cardName: () => 'Tarjeta Básica', compartirCuenta: async () => 'copiado',
+    cardName: () => 'Tarjeta Básica', descripcionTarjetas, almacenSesion: () => null, leerTarjetaElegida: () => elegida, compartirCuenta: async () => 'copiado',
     animarEntradaMenu:async(_,opciones)=>{ requests.push('entrada-menu'); opciones?.revelar(); }, animarPantalla:async()=>{}, regresarEnVentana:async f=>f(), conMinimoCarga:async f=>f(), revelarPagina(){},
     forgetLogin() { forgotten = true; },
     logout: async () => { if (state.logoutFails) throw new Error('No se pudo cerrar la sesión.'); forgotten = true; },
@@ -39,7 +40,7 @@ async function page({ statuses = [200], completed = false, logoutFails = false, 
       return { ok: status === 200, status, json: async () => status === 200 ? {
         perfil: { id: 'A', nombre: 'Usuario A', tipoTarjeta: 'basica' },
         cuentas: cuentas ?? [{ id: 'cta-a', nombre: 'Cuenta A', tipo: 'Ahorro', numeroEnmascarado: '•••• 1234', numeroCompleto: '1000001234', saldo: 30, moneda: 'USD' }],
-        tarjetas: [{ id: 'tarjeta-a', numeroEnmascarado: '•••• 9876', saldo: 50, moneda: 'USD', producto: { nombre: 'Clásica', modalidad: 'crédito', red: 'Visa' } }],
+        tarjetas: tarjetas ?? [{ id: 'tarjeta-a', numeroEnmascarado: '•••• 9876', saldo: 50, moneda: 'USD', producto: { nombre: 'Clásica', modalidad: 'crédito', red: 'Visa' } }],
         encuestaPendiente: !state.completed, destinoPromociones: state.completed ? '/promociones.html' : '/encuesta.html'
       } : { error: 'Servicio no disponible' } };
     }
@@ -70,6 +71,22 @@ test('Perfil abre la pantalla bancaria con identidad y solo cierre de sesión', 
   assert.equal(p.get('dialog-body').children[1].textContent, 'Usuario A');
   assert.equal(p.get('dialog-back').attributes['aria-label'], 'Volver al menú');
   assert.equal(p.get('menu-dialog').scrollTop, 0);
+});
+
+test('SCRUM-109 Perfil nombra la tarjeta elegida y no el tipo heredado del perfil', async () => {
+  const propias = [
+    { id: 'cta-a-3', tipoTarjeta: 'basica', numeroEnmascarado: '•••• 4821', saldo: 0, moneda: 'USD', producto: { nombre: 'Clásica', modalidad: 'crédito', red: 'Visa' } },
+    { id: 'cta-a-4', tipoTarjeta: 'black', numeroEnmascarado: '•••• 7754', saldo: 0, moneda: 'USD', producto: { nombre: 'Black', modalidad: 'crédito', red: 'Visa' } }
+  ];
+  const elegida = await page({ tarjetas: propias, elegida: 'cta-a-4' });
+  await elegida.get('btn-perfil').click();
+  assert.equal(elegida.get('dialog-body').children[2].textContent, 'Tarjeta Black');
+  const sinElegir = await page({ tarjetas: propias });
+  await sinElegir.get('btn-perfil').click();
+  assert.equal(sinElegir.get('dialog-body').children[2].textContent, '2 tarjetas');
+  const sinTarjetas = await page({ tarjetas: [] });
+  await sinTarjetas.get('btn-perfil').click();
+  assert.equal(sinTarjetas.get('dialog-body').children.length, 2);
 });
 
 test('disponibles se despliega en el menú; Metas solo presenta la referencia sin consultar API', async () => {
