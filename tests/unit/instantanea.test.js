@@ -1,7 +1,7 @@
 // H22: la instantánea de Para ti conserva el orden durante la visita, solo en esta pestaña y por perfil.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { guardarInstantanea, leerInstantanea, marcarVencidas, olvidarInstantaneas, alcanceDeConsulta, DURACION_VISITA_MS } from '../../public/js/instantanea.js';
+import { guardarInstantanea, leerInstantanea, marcarVencidas, olvidarInstantaneas, alcanceDeConsulta, visitaVigente, DURACION_VISITA_MS } from '../../public/js/instantanea.js';
 
 function almacen() {
   const datos = new Map();
@@ -76,4 +76,15 @@ test('SCRUM-133 la clave distingue «todas las tarjetas» de una tarjeta concret
   assert.deepEqual(leerInstantanea(sesion, 'A', CONSULTA, despues(60_000)), RESPUESTA);
   olvidarInstantaneas(sesion);
   assert.equal(sesion.length, 0);
+});
+
+test('H25 (CDA 6) hay visita vigente solo si el perfil tiene una instantánea de hoy usada hace menos de 30 minutos, en cualquier alcance', () => {
+  const sesion = almacen();
+  assert.equal(visitaVigente(sesion, 'A', MEDIODIA), false, 'sin instantánea la visita es nueva');
+  guardarInstantanea(sesion, 'A', CONSULTA, RESPUESTA, MEDIODIA);
+  assert.equal(visitaVigente(sesion, 'A', despues(60_000)), true, 'vale la instantánea de una tarjeta, no solo la de todas');
+  assert.equal(visitaVigente(sesion, 'B', despues(60_000)), false, 'la visita es por perfil');
+  assert.equal(visitaVigente(sesion, 'A', despues(DURACION_VISITA_MS)), false, 'tras 30 minutos empieza otra visita');
+  assert.equal(visitaVigente(sesion, 'A', new Date('2026-10-22T07:00:00Z')), false, 'al cambiar de día en El Salvador empieza otra visita');
+  assert.equal(visitaVigente(null, 'A', MEDIODIA), false, 'sin almacenamiento no hay visita que conservar');
 });
