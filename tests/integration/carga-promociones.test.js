@@ -11,7 +11,8 @@ test('Promociones conserva aro, filtros y tarjeta durante petición/reintento si
   respuesta = new Promise((r,j) => { resolver=r; rechazar=j; });
   const consulta = p.chip('Compras').click();
   assert.equal(aro.hidden, false);
-  assert.match(p.consultas.at(-1), /categoria=Compras&tarjeta=cta-a-3/);
+  // Sin tarjeta elegida se consultan todas las propias (decisión del 24 de octubre).
+  assert.equal(p.consultas.at(-1), '/api/para-ti?categoria=Compras');
   resolver([]); await consulta;
   assert.equal(aro.hidden, true);
   respuesta = new Promise((r,j) => { resolver=r; rechazar=j; });

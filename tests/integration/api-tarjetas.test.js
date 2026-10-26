@@ -76,7 +76,7 @@ test('H16 el detalle mantiene la tarjeta elegida', async () => {
   assert.equal(exclusiva.applicableCard, 'black');
   assert.equal(exclusiva.exclusive, true);
   assert.equal((await json(promocion, '/api/promocion?id=tienda&tarjeta=cta-a-4', 'A')).benefit, '25 % de descuento');
-  assert.equal((await promocion.fetch(pedir('/api/promocion?id=siman-black', 'A'))).status, 404);
+  assert.equal((await promocion.fetch(pedir('/api/promocion?id=siman-black&tarjeta=cta-a-3', 'A'))).status, 404);
 });
 
 test('H16 no se puede usar la tarjeta de otro usuario manipulando el ID', async () => {
