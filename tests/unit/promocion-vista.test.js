@@ -121,3 +121,17 @@ test('el detalle puede dejar las restricciones fuera de las condiciones porque v
   assert.deepEqual(condicionesVisibles(promo, { restricciones: false }), ['Compra mínima: $10.00']);
   assert.deepEqual(condicionesVisibles(promo), ['Compra mínima: $10.00', 'No acumulable.']);
 });
+
+test('con varias tarjetas, la promoción dice con cuáles de ellas aplica', async () => {
+  const { textoAplica } = await import('../../public/js/promocion-vista.js');
+  const black = { tarjetaId: 'n', tipoTarjeta: 'black', texto: '20 %' };
+  const basica = { tarjetaId: 'b', tipoTarjeta: 'basica', texto: '20 %' };
+  assert.deepEqual(textoAplica({ mejorBeneficio: black, otrosBeneficios: [basica] }, 2), { texto: 'Aplica a tus tarjetas Black y Básica', tarjeta: 'ambas' });
+  assert.deepEqual(textoAplica({ mejorBeneficio: black, otrosBeneficios: [{ ...basica, texto: '10 %' }] }, 2),
+    { texto: 'Aplica a tus tarjetas Black y Básica', tarjeta: 'ambas' }, 'aunque el beneficio cambie, aplica a las dos');
+  assert.deepEqual(textoAplica({ mejorBeneficio: black, otrosBeneficios: [] }, 2), { texto: 'Solo con tu tarjeta Black', tarjeta: 'black' });
+  assert.deepEqual(textoAplica({ mejorBeneficio: basica, otrosBeneficios: [{ ...basica, tarjetaId: 'b2' }] }, 2),
+    { texto: 'Aplica a tus 2 tarjetas Básica', tarjeta: 'basica' });
+  assert.deepEqual(textoAplica({ mejorBeneficio: basica, otrosBeneficios: [] }, 1), { texto: 'Aplica a tu tarjeta Básica', tarjeta: 'basica' });
+  assert.deepEqual(textoAplica({ applicableCard: 'black' }, 2), { texto: 'Aplica a tu tarjeta Black', tarjeta: 'black' }, 'con una tarjeta elegida en Filtros');
+});

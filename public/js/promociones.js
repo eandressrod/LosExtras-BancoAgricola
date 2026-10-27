@@ -1,5 +1,5 @@
 import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
-import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { SECCIONES, seccionVecina, seccionPorDeslizamiento, leerSeccion, guardarSeccion, urlSeccion } from './pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from './filtros-activos.js';
 import { crearAviso } from './aviso-deshacer.js';
@@ -20,6 +20,8 @@ import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjet
 import { crearCerca } from './cerca/pantalla.js';
 
 let idsGuardados = [];
+// Cuántas tarjetas tiene el perfil: con más de una, cada promoción dice con cuáles aplica.
+let totalTarjetas = 1;
 let avisoGuardar = null;
 
 // Cabecera: el icono de Guardadas cuenta las guardadas de la sesión.
@@ -90,8 +92,10 @@ function crearOferta(promotion, categoria, hoy, busqueda, intencion) {
   vencida.textContent = 'Vencida';
   vencida.hidden = !promotion.vencida;
   const aplica = card.querySelector('.promo-applicability');
-  aplica.textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
-  aplica.dataset.tarjeta = promotion.applicableCard === 'black' ? 'black' : 'basica';
+  // Con varias tarjetas, el pie dice con cuáles aplica; la otra tarjeta se menciona aparte si su beneficio cambia.
+  const { texto: textoTarjetas, tarjeta } = textoAplica(promotion, totalTarjetas);
+  aplica.textContent = textoTarjetas;
+  aplica.dataset.tarjeta = tarjeta;
   // Todas las tarjetas (SCRUM-133): la otra tarjeta propia solo se menciona si su beneficio cambia.
   const otras = card.querySelector('.promo-otras');
   otras.textContent = textoOtrasTarjetas(promotion);
@@ -413,6 +417,7 @@ if (profile) {
     categoria = categoriaVigente(pedida, categorias)?.id ?? null;
     mostrarFiltro(urlListado(categoria, null, hoy, busqueda, intencion) + location.hash);
     tarjetas = lista;
+    totalTarjetas = Math.max(1, tarjetas.length);
     preparada = true;
     if (!tarjetas.length) {
       mostrarSinTarjetas();
