@@ -1,5 +1,5 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
-import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias, mostrarPasos } from './promocion-vista.js';
+import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias, mostrarPasos, mostrarRestricciones } from './promocion-vista.js';
 import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { conMinimoCarga } from './carga-tiempo.js';
@@ -63,8 +63,10 @@ if (profile) {
       mostrarImagen(document.querySelector('#promotion-image'), promotion.imageUrl, promotion.imageAlt);
       mostrarImagen(document.querySelector('#merchant-logo'), promotion.logoUrl);
       mostrarDias(document.querySelector('#days'), promotion);
-      mostrarCondiciones(document.querySelector('#conditions'), promotion, { dias: false });
+      // Las restricciones van en «Cómo usarla»; Condiciones no las repite.
+      mostrarCondiciones(document.querySelector('#conditions'), promotion, { dias: false, restricciones: false });
       mostrarPasos(document.querySelector('#pasos'), promotion);
+      mostrarRestricciones(document.querySelector('#restricciones'), promotion);
       // Dónde: el mapa (H8) solo aplica a promociones que se usan en tienda.
       const enTienda = Boolean(promotion.channels?.includes('presencial'));
       document.querySelector('#donde').hidden = !enTienda;
