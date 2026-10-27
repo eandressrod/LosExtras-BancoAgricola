@@ -10,7 +10,6 @@ import { ofertaEncuesta } from './encuesta-modelo.js';
 import { abrirEncuestaHoja } from './encuesta-hoja.js';
 import { repintarConMovimiento } from './movimiento-lista.js';
 import { conIndicador } from './transiciones.js';
-import { conMinimoCarga } from './carga-tiempo.js';
 import { guardarInstantanea, leerInstantanea, marcarVencidas, visitaVigente } from './instantanea.js';
 
 import {
@@ -392,13 +391,15 @@ if (profile) {
     retry.hidden = true;
     let lista;
     try {
-      // La apertura devuelve las marcas de la encuesta guardadas en el servidor; con las preferencias se decide qué ofrecer.
-      [marcas, preferencias] = await Promise.all([marcas ?? registrarAperturaPromociones(), getJSON('/api/preferencias')]);
+      // Todo lo que la página necesita se pide a la vez. La apertura devuelve las marcas de la encuesta guardadas en el servidor;
+      // con las preferencias se decide qué ofrecer.
+      [marcas, preferencias, categorias, lista] = await Promise.all([
+        marcas ?? registrarAperturaPromociones(), getJSON('/api/preferencias'), getJSON('/api/categorias'), getJSON('/api/tarjetas')
+      ]);
       ofertaDeEncuesta = ofertaEncuesta({ pendiente: !preferencias.completed, pedida: encuestaPedida, ...marcas });
       // La hoja va sobre la lista de Para ti, aunque la visita anterior quedara en otra sección.
       if (ofertaDeEncuesta === 'hoja') seccion = 'para-ti';
       revelarPagina();
-      [categorias, lista] = await Promise.all([getJSON('/api/categorias'), getJSON('/api/tarjetas')]);
     } catch (error) {
       revelarPagina();
       status.textContent = error.message;
@@ -479,13 +480,13 @@ if (profile) {
       // H22 y H25: al volver del detalle se conserva el orden de la visita; entrar o cambiar un filtro o chip lo recalcula.
       const guardada = volverDelDetalle ? leerInstantanea(sesion, profile.id, consulta) : null;
       volverDelDetalle = false;
-      const respuesta = guardada ?? await conMinimoCarga(() => getJSON(consulta));
+      // La lista y las guardadas se piden juntas.
+      const [respuesta, ids] = await Promise.all([guardada ?? getJSON(consulta), leerIdsGuardados()]);
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
       if (!guardada) guardarInstantanea(sesion, profile.id, consulta, respuesta);
       const promotions = marcarVencidas(respuesta.promociones);
       listaActual = promotions;
-      idsGuardados = await leerIdsGuardados();
-      if (turno !== consultaActual) return;
+      idsGuardados = ids;
       pintarContadorGuardadas();
       for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda, intencion));
       const vacio = promotions.length === 0;
