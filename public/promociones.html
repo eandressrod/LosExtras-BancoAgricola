@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Para ti · Los Extras</title>
+    <title>Promociones · Los Extras</title>
     <script src="/js/arranque.js"></script>
     <link rel="stylesheet" href="/css/inicio.css">
     <link rel="stylesheet" href="/css/styles.css">
@@ -34,17 +34,13 @@
       </div>
     </header>
     <main>
-      <!-- Sistema visual: cabecera de la sección. Cerca de ti (H8) se muestra cuando su pantalla exista. -->
+      <!-- Sistema visual: cabecera de Promociones; las secciones van en las pestañas bajo la franja. -->
       <section class="pr-hero">
         <div class="pr-hero__barra">
-          <h1>Para ti</h1>
+          <h1>Promociones</h1>
           <a class="pr-icono pr-icono--guardadas" href="/guardadas.html" aria-label="Guardadas"><span id="pr-contador-guardadas" class="pr-contador" hidden></span></a>
           <a class="pr-icono pr-icono--preferencias" href="/preferencias.html" aria-label="Mis preferencias"></a>
         </div>
-        <nav class="pr-secciones" aria-label="Secciones de Promociones">
-          <a href="/promociones.html" aria-current="page">Para ti</a>
-          <a href="/cerca-de-ti.html" hidden>Cerca de ti</a>
-        </nav>
         <div class="pr-buscador">
         <!-- H10: búsqueda temporal por nombre de comercio sobre el catálogo aplicable. -->
         <div id="search-box" class="search-box" role="search">
@@ -65,6 +61,19 @@
       </section>
       <!-- Franja de avisos: no repite tarjetas de la lista (js/franja.js, js/carrusel.js). -->
       <section id="franja" class="pr-franja" aria-roledescription="carrusel" aria-label="Avisos para ti" hidden></section>
+      <!-- Secciones (js/pestanas.js): Para ti y Explorar comparten la lista; Cerca de ti muestra el mapa. Se puede deslizar entre ellas. -->
+      <div class="pr-pestanas" role="tablist" aria-label="Secciones de Promociones" data-seccion="para-ti">
+        <button id="tab-para-ti" type="button" role="tab" class="pr-pestana" data-seccion="para-ti" aria-controls="panel-lista" aria-selected="true">Para ti</button>
+        <button id="tab-cerca" type="button" role="tab" class="pr-pestana" data-seccion="cerca" aria-controls="panel-cerca" aria-selected="false" tabindex="-1">Cerca de ti</button>
+        <button id="tab-explorar" type="button" role="tab" class="pr-pestana" data-seccion="explorar" aria-controls="panel-lista" aria-selected="false" tabindex="-1">Explorar</button>
+      </div>
+      <!-- H8 monta aquí el mapa de Cerca de ti: primero la zona, con el GPS reservado. -->
+      <section id="panel-cerca" class="pr-panel pr-cerca" role="tabpanel" aria-labelledby="tab-cerca" hidden>
+        <div id="mapa-cerca" class="pr-mapa" data-mapa="cerca">
+          <p class="pr-mapa__rotulo">Mapa de comercios cerca de ti</p>
+        </div>
+      </section>
+      <section id="panel-lista" class="pr-panel" role="tabpanel" aria-labelledby="tab-para-ti">
       <!-- Solo los filtros activos, como píldoras que se quitan con un toque. -->
       <div id="filtros-activos" class="pr-pildoras" role="group" aria-label="Filtros activos" hidden></div>
       <p id="pr-conteo" class="pr-conteo" aria-live="polite"></p>
@@ -85,6 +94,7 @@
         </div>
       </section>
       <div id="cards" class="promo-list"></div>
+      </section>
       <template id="promotion-card">
         <article class="promo-item">
           <a class="promo-card">
@@ -101,11 +111,10 @@
               </div>
               <p class="promo-reason" hidden></p>
               <p class="promo-description"></p>
-              <ol class="promo-dias" hidden></ol>
+              <p class="promo-cuando"></p>
               <p class="promo-validity"></p>
               <p class="promo-ending" hidden></p>
               <p class="promo-expired" hidden>Vencida</p>
-              <p class="promo-today" hidden></p>
               <p class="promo-badges" hidden></p>
               <ul class="promo-conditions"></ul>
               <div class="promo-pie">

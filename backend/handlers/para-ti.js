@@ -1,7 +1,7 @@
 // H22 y H25: GET /api/para-ti. El motor ordena las promociones de la tarjeta elegida, o de todas las propias sin ?tarjeta= (SCRUM-133),
 // con las señales del dueño de la sesión y la intención temporal del día («Hoy busco»).
 // La instantánea vive en el navegador: el servidor no guarda órdenes, puntajes ni impresiones.
-import { filtrarPromociones } from '../promociones.js';
+import { filtrarPromociones, leerExplorar } from '../promociones.js';
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioPreferencias, obtenerRepositorioProductosMenu,
   obtenerRepositorioSenales } from '../repositorios/index.js';
 import { leerConsultaPromociones } from '../servicios/consulta-promociones.js';
@@ -27,6 +27,8 @@ export function crearHandlerParaTi(repositorios = {
       const parametros = new URL(request.url).searchParams;
       const intencion = leerIntencionTemporal(parametros);
       if (!intencion.ok) return responderJson({ error: 'Intención del día no válida.' }, 400);
+      const seccion = leerExplorar(parametros);
+      if (!seccion.ok) return responderJson({ error: 'Sección no válida.' }, 400);
       const [categorias, propias] = await Promise.all([
         repositorios.preferencias().obtenerCategorias(),
         repositorios.tarjetas().listarTarjetas(perfil.id)
@@ -45,6 +47,8 @@ export function crearHandlerParaTi(repositorios = {
       const alcance = consulta.todas ? { tarjetas: consulta.tarjetas, predeterminadaId: consulta.tarjeta.id } : consulta.tarjeta.tipoTarjeta;
       // Las preferencias no filtran aquí: el motor decide el alcance y el orden a partir de las señales y la intención del día.
       const ofertas = filtrarPromociones(catalogo, alcance, [], ahora);
+      // Explorar: todo lo elegible, sin recortar por intereses ni intención del día; las señales siguen ordenando.
+      if (seccion.explorar) return responderJson(ordenarParaTi({ ofertas, senales, filtros: consulta.filtros, alcance: 'todo' }));
       const reglas = intencion.intencion ? { intencion: reglaIntencion(intencion.intencion) } : {};
       return responderJson(ordenarParaTi({ ofertas, senales, filtros: consulta.filtros, reglas }));
     } catch {
