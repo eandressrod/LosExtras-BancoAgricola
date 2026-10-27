@@ -367,7 +367,7 @@ Las rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (
 
 ## 12. H21: marcas de la encuesta sin insistir — 26 de octubre de 2026
 
-Parte 2 de H21 ([SCRUM-71](https://somos-agilistas.atlassian.net/browse/SCRUM-71)), caso de backend de [ADR-010](<../ADR/0010-Decision de ofrecer la encuesta sin insistir.md>). La interfaz que las usa queda por hacer; mientras tanto la hoja sigue con la marca de sesión de la parte 1.
+Parte 2 de H21 ([SCRUM-71](https://somos-agilistas.atlassian.net/browse/SCRUM-71)), caso de backend de [ADR-010](<../ADR/0010-Decision de ofrecer la encuesta sin insistir.md>). La interfaz las usa desde el 26 de octubre (`ofertaEncuesta` en `public/js/encuesta-modelo.js` y `marcarEncuesta` en `public/js/usuarios-prueba.js`), en lugar de la marca de sesión de la parte 1. Mis preferencias abre la hoja con `/promociones.html?encuesta=1`, que no guarda ninguna marca.
 
 **Contrato.** `POST /api/promociones-apertura` conserva su ruta, su método y la validación de sesión. El propietario sale siempre de la sesión.
 

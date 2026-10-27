@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   opcionesIntereses, categoriasAfinar, opcionesAfinar, ordenSorteado, alternar, seleccionVacia, textoBotonPrincipal,
   pasosEncuesta, senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia,
-  encuestaOmitida, marcarEncuestaOmitida, olvidarEncuestasOmitidas
+  ofertaEncuesta
 } from '../../public/js/encuesta-modelo.js';
 
 const oferta = (id, merchantId, category, extra = {}) => ({
@@ -188,18 +188,15 @@ test('H21 al confirmar una página se activa lo nuevo y se desactiva solo lo que
   assert.deepEqual(pagina2, { activar: [], desactivar: [3] });
 });
 
-test('H21 «Omitir» se recuerda por perfil durante la sesión y se olvida al iniciar o cerrar sesión', () => {
-  const sesion = almacen();
-  assert.equal(encuestaOmitida(sesion, 'A'), false);
-  marcarEncuestaOmitida(sesion, 'A');
-  assert.equal(encuestaOmitida(sesion, 'A'), true);
-  assert.equal(encuestaOmitida(sesion, 'B'), false);
-  sesion.setItem('otra-clave', '1');
-  olvidarEncuestasOmitidas(sesion);
-  assert.equal(encuestaOmitida(sesion, 'A'), false);
-  assert.equal(sesion.getItem('otra-clave'), '1');
-  assert.equal(encuestaOmitida(null, 'A'), false);
-  assert.doesNotThrow(() => marcarEncuestaOmitida(null, 'A'));
+test('H21 (ADR-010) la hoja se abre sola la primera vez; después queda el aviso hasta cerrarlo una vez', () => {
+  const marcas = (hojaMostrada, avisoCerrado) => ({ hojaMostrada, avisoCerrado });
+  assert.equal(ofertaEncuesta({ pendiente: true, ...marcas(false, false) }), 'hoja');
+  assert.equal(ofertaEncuesta({ pendiente: true, ...marcas(true, false) }), 'aviso');
+  assert.equal(ofertaEncuesta({ pendiente: true, ...marcas(true, true) }), null, 'cerrado una vez, no vuelve');
+  assert.equal(ofertaEncuesta({ pendiente: false, ...marcas(false, false) }), null, 'completada: nada que ofrecer');
+  // Desde «Mis preferencias» la encuesta siempre se abre, aunque esté completada o el aviso cerrado.
+  assert.equal(ofertaEncuesta({ pendiente: false, pedida: true, ...marcas(true, true) }), 'hoja');
+  assert.equal(ofertaEncuesta({ pendiente: true }), 'hoja', 'sin marcas leídas se trata como primera vez');
 });
 
 test('H21 buscar encuentra por nombre o subcategoría sin distinguir mayúsculas ni tildes', () => {

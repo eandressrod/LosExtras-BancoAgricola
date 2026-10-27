@@ -192,6 +192,52 @@
 .survey-link[aria-disabled="true"] { color: var(--muted); text-decoration: none; cursor: default; }
 .survey-primary { flex: 1; min-height: 48px; }
 .survey-sheet .error { margin: 0; flex-shrink: 0; }
-.survey-notice { margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--primary); background: #fffbea; }
+/* Aviso de la lista tras la primera vez (ADR-010): discreto, dentro de la lista, con Empezar y cierre. */
+.pr-encuesta-aviso {
+  position: relative; display: grid; grid-template-columns: 44px 1fr; gap: 2px 12px; align-items: center; margin: 16px 0 4px;
+  padding: 14px 46px 14px 14px; border-radius: 20px; background: var(--pr-amarillo-suave);
+  box-shadow: inset 0 0 0 1px rgb(242 183 5 / .35);
+}
+.pr-encuesta-aviso[hidden] { display: none; }
+.pr-encuesta-aviso::before {
+  content: ""; grid-row: 1 / 4; align-self: start; width: 44px; height: 44px; border-radius: 14px;
+  background: var(--pr-amarillo) var(--pr-i-chispa) center / 22px no-repeat;
+}
+.pr-encuesta-aviso > * { grid-column: 2; margin: 0; }
+.pr-encuesta-aviso__titulo { font-size: .95rem; font-weight: 800; line-height: 1.25; }
+.pr-encuesta-aviso__texto { color: var(--pr-texto-2); font-size: .84rem; line-height: 1.35; }
+.pr-encuesta-aviso__empezar {
+  justify-self: start; min-height: 44px; margin-top: 8px; padding: 0 18px; border: 0; border-radius: 999px;
+  background: var(--pr-tinta); color: #fff; font-size: .88rem; font-weight: 700;
+}
+.pr-encuesta-aviso__empezar:hover { background: #000; }
+.pr-encuesta-aviso__cerrar {
+  position: absolute; top: 4px; right: 4px; display: grid; place-items: center; width: 44px; height: 44px; min-height: 0; margin: 0; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; color: var(--pr-tinta);
+}
+.pr-encuesta-aviso__cerrar:hover { background: rgb(29 27 26 / .06); }
+.pr-encuesta-aviso__cerrar::before { content: ""; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--pr-i-cerrar) center / contain no-repeat; mask: var(--pr-i-cerrar) center / contain no-repeat; }
+
+/* Al terminar: un aviso único dice dónde editar los intereses (CDA 8). */
+.pr-encuesta-listo {
+  position: relative; margin: 14px 0 0; padding: 10px 14px 10px 38px; border-radius: 14px; line-height: 1.4;
+  background: var(--pr-verde-suave); color: var(--pr-verde); font-size: .86rem; font-weight: 700;
+}
+.pr-encuesta-listo[hidden] { display: none; }
+.pr-encuesta-listo::before { content: ""; position: absolute; left: 14px; top: 12px; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--pr-i-check) center / contain no-repeat; mask: var(--pr-i-check) center / contain no-repeat; }
+.pr-encuesta-listo a { color: inherit; }
+
+/* Entrada permanente desde «Mis preferencias» (ADR-010). */
+.pr-encuesta-entrada {
+  position: relative; display: grid; gap: 2px; margin: 16px 0 8px; padding: 14px 48px 14px 14px; border-radius: 18px;
+  background: var(--pr-amarillo-suave); color: var(--pr-tinta); text-decoration: none; box-shadow: inset 0 0 0 1px rgb(242 183 5 / .35);
+}
+.pr-encuesta-entrada::after {
+  content: ""; position: absolute; right: 14px; top: 50%; width: 28px; height: 28px; translate: 0 -50%; border-radius: 50%;
+  background: var(--pr-amarillo) var(--pr-i-flecha) center / 14px no-repeat;
+}
+.pr-encuesta-entrada__titulo { font-size: .95rem; font-weight: 800; }
+.pr-encuesta-entrada__texto { color: var(--pr-texto-2); font-size: .84rem; line-height: 1.35; }
 /* Deja ver detrás el contador y las dos primeras tarjetas: la lista termina por encima de la hoja. */
 body.promotions-page:has(.survey-sheet:not([hidden])) > main { padding-bottom: 62dvh; }
+.pr #pr-conteo { scroll-margin-top: 64px; }
