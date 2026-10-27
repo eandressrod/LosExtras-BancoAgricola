@@ -9,7 +9,6 @@ const MAXIMO_OPCIONES = 6;
 const MAXIMO_BENEFICIOS = 2;
 const NINGUNO = 'ninguno';
 const INDIFERENTE = 'indiferente';
-const PREFIJO_OMITIDA = 'los-extras-encuesta-omitida:';
 
 const aplicables = ofertas => (ofertas ?? []).filter(oferta => oferta.canUse);
 const contarPor = (ofertas, clave) => ofertas.reduce((cuenta, oferta) => cuenta.set(clave(oferta), (cuenta.get(clave(oferta)) ?? 0) + 1), new Map());
@@ -211,21 +210,25 @@ export function anuncioVistaPrevia(antes, despues) {
   return `Ahora ves primero promociones de ${despues[0].categoryName}`;
 }
 
-// «Omitir» evita que la hoja vuelva a abrirse en la misma sesión (transición del ADR-010 hasta la persistencia de la parte 2).
-export function encuestaOmitida(almacen, perfilId) {
-  try { return almacen?.getItem(PREFIJO_OMITIDA + perfilId) === '1'; } catch { return false; }
+/**
+ * ADR-010: qué se ofrece al entrar a Promociones. 'hoja' la primera vez con la encuesta pendiente; luego 'aviso' en la lista
+ * hasta que la persona lo cierra una vez; después nada. Desde «Mis preferencias» (pedida) la hoja siempre se abre.
+ * @param {{pendiente: boolean, pedida?: boolean, hojaMostrada?: boolean, avisoCerrado?: boolean}} estado
+ * @returns {'hoja' | 'aviso' | null}
+ */
+export function ofertaEncuesta({ pendiente, pedida = false, hojaMostrada = false, avisoCerrado = false }) {
+  if (pedida) return 'hoja';
+  if (!pendiente) return null;
+  if (!hojaMostrada) return 'hoja';
+  return avisoCerrado ? null : 'aviso';
 }
 
-export function marcarEncuestaOmitida(almacen, perfilId) {
-  try { almacen?.setItem(PREFIJO_OMITIDA + perfilId, '1'); } catch { /* Sin almacenamiento la hoja puede volver a abrirse. */ }
-}
-
-/** Al iniciar o cerrar sesión se olvidan las omisiones de cualquier perfil. */
-export function olvidarEncuestasOmitidas(almacen) {
-  try {
-    for (let indice = almacen.length - 1; indice >= 0; indice -= 1) {
-      const nombre = almacen.key(indice);
-      if (nombre?.startsWith(PREFIJO_OMITIDA)) almacen.removeItem(nombre);
-    }
-  } catch { /* Sin almacenamiento no hay omisiones que borrar. */ }
+/**
+ * CDA 10: con letra grande caben menos opciones sin cortar texto ni desplazar. La escala es la letra raíz entre 16 px.
+ * Con letra grande las categorías pasan a dos columnas para que su nombre quepa entero; los cupos dejan filas completas
+ * contando «Buscar».
+ */
+export function cupoOpciones(escala) {
+  if (!(escala >= 1.3)) return { categorias: MAXIMO_CATEGORIAS, comercios: MAXIMO_OPCIONES, columnas: 3 };
+  return escala < 1.6 ? { categorias: 3, comercios: 4, columnas: 2 } : { categorias: 1, comercios: 2, columnas: 2 };
 }

@@ -70,11 +70,9 @@ test('el orden explica sus intereses con los nombres de las razones, o la estrat
   assert.equal(base.accion.etiqueta, 'Personalizar');
 });
 
-test('la encuesta pendiente va primero y sustituye al orden base', () => {
+test('la encuesta no se ofrece en la franja: la hoja y el aviso de la lista ya la ofrecen (ADR-010)', () => {
   const lista = diapositivasFranja({ promociones: [promo('a')], hoy: HOY, estrategia: 'base', encuestaPendiente: true });
-  assert.equal(lista[0].tipo, 'encuesta');
-  assert.deepEqual(lista[0].accion, { tipo: 'ir', destino: '/encuesta.html', etiqueta: 'Empezar' });
-  assert.equal(tipos(lista).includes('orden'), false);
+  assert.equal(tipos(lista).includes('encuesta'), false);
 });
 
 test('guardadas y vence pronto solo aparecen con datos reales', () => {
@@ -99,9 +97,9 @@ test('nunca pasan de cinco diapositivas, siguen la prioridad y sin promociones n
     promo('martes', { usageDays: [2], availableToday: false }),
     promo('guard')
   ];
-  const lista = diapositivasFranja({ promociones, hoy: HOY, estrategia: 'base', guardadas: ['guard'], encuestaPendiente: true });
-  assert.deepEqual(tipos(lista), ['encuesta', 'vence', 'ahorro', 'hoy-toca', 'semana']);
-  assert.deepEqual(diapositivasFranja({ promociones: [], hoy: HOY, estrategia: 'base', encuestaPendiente: true }), []);
+  const lista = diapositivasFranja({ promociones, hoy: HOY, estrategia: 'base', guardadas: ['guard'] });
+  assert.deepEqual(tipos(lista), ['vence', 'ahorro', 'hoy-toca', 'semana', 'guardadas']);
+  assert.deepEqual(diapositivasFranja({ promociones: [], hoy: HOY, estrategia: 'base' }), []);
 });
 
 test('la misma entrada produce las mismas diapositivas', () => {
