@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   opcionesIntereses, categoriasAfinar, opcionesAfinar, ordenSorteado, alternar, seleccionVacia, textoBotonPrincipal,
   pasosEncuesta, senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia,
-  ofertaEncuesta
+  ofertaEncuesta, cupoOpciones
 } from '../../public/js/encuesta-modelo.js';
 
 const oferta = (id, merchantId, category, extra = {}) => ({
@@ -197,6 +197,14 @@ test('H21 (ADR-010) la hoja se abre sola la primera vez; después queda el aviso
   // Desde «Mis preferencias» la encuesta siempre se abre, aunque esté completada o el aviso cerrado.
   assert.equal(ofertaEncuesta({ pendiente: false, pedida: true, ...marcas(true, true) }), 'hoja');
   assert.equal(ofertaEncuesta({ pendiente: true }), 'hoja', 'sin marcas leídas se trata como primera vez');
+});
+
+test('H21 con letra grande la hoja muestra menos opciones, nunca texto cortado (CDA 10)', () => {
+  assert.deepEqual(cupoOpciones(1), { categorias: 8, comercios: 6, columnas: 3 });
+  assert.deepEqual(cupoOpciones(1.2), { categorias: 8, comercios: 6, columnas: 3 });
+  assert.deepEqual(cupoOpciones(1.3), { categorias: 3, comercios: 4, columnas: 2 }, 'con letra grande la rejilla pasa a dos columnas');
+  assert.deepEqual(cupoOpciones(2), { categorias: 1, comercios: 2, columnas: 2 });
+  assert.deepEqual(cupoOpciones(Number.NaN), { categorias: 8, comercios: 6, columnas: 3 }, 'sin medida se usa la normal');
 });
 
 test('H21 buscar encuentra por nombre o subcategoría sin distinguir mayúsculas ni tildes', () => {

@@ -8,6 +8,7 @@ import { montarCarrusel } from './carrusel.js';
 import { registrarAperturaPromociones, marcarEncuesta } from './usuarios-prueba.js';
 import { ofertaEncuesta } from './encuesta-modelo.js';
 import { abrirEncuestaHoja } from './encuesta-hoja.js';
+import { repintarConMovimiento } from './movimiento-lista.js';
 import { conIndicador } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
 import { guardarInstantanea, leerInstantanea, marcarVencidas, visitaVigente } from './instantanea.js';
@@ -554,15 +555,20 @@ if (profile) {
     return loadPromotions();
   }
 
-  // H21: la vista previa de la hoja pinta el orden calculado en el navegador sobre la lista real.
+  // H21: la vista previa de la hoja pinta el orden calculado en el navegador sobre la lista real. Las tarjetas se desplazan
+  // 200 ms (CDA 7) en lugar de su animación de entrada, que vuelve al cerrar la hoja.
   function mostrarVistaPrevia({ promociones, contador }) {
-    cards.replaceChildren();
-    for (const promotion of promociones) cards.append(crearOferta(promotion, categoria, hoy, busqueda, intencion));
+    cards.dataset.previa = '';
+    repintarConMovimiento(cards, oferta => oferta.querySelector('a')?.id, () => {
+      cards.replaceChildren();
+      for (const promotion of promociones) cards.append(crearOferta(promotion, categoria, hoy, busqueda, intencion));
+    });
     conteo.textContent = contador;
   }
 
   // Al cerrar la hoja, el orden vuelve a pedirse a /api/para-ti con lo que quedó guardado.
   async function alCerrarEncuesta({ terminada = false } = {}) {
+    delete cards.dataset.previa;
     if (terminada) preferencias = await getJSON('/api/preferencias');
     await loadPromotions();
     surveyNotice.hidden = !terminada;
