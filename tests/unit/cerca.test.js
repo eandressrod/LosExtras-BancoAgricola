@@ -16,7 +16,7 @@ const casi = (real, esperado, margen, mensaje) => assert.ok(Math.abs(real - espe
 const ORIGEN = { latitud: 13.7, longitud: -89.2 };
 const alNorte = metros => ({ latitud: 13.7 + metros / 111195, longitud: -89.2 });
 const sucursal = (id, metros) => ({ id, name: id, address: '', zoneId: 'z', ...(({ latitud, longitud }) => ({ latitude: latitud, longitude: longitud }))(alNorte(metros)) });
-const promo = (id, R, ...sucursales) => ({ id, componentes: { R }, branches: sucursales });
+const promo = (id, R, ...sucursales) => ({ id, componentes: { R }, branches: sucursales, canUse: true, availableToday: true });
 
 test('distanciaMetros usa haversine: un grado de latitud mide unos 111 km', () => {
   casi(distanciaMetros({ latitud: 13, longitud: -89 }, { latitud: 14, longitud: -89 }), 111195, 1);
@@ -51,32 +51,44 @@ test('sucursalMasCercana elige la sucursal participante más cercana y null sin 
   assert.equal(sucursalMasCercana({ id: 'sin-campo' }, ORIGEN), null);
 });
 
-test('resultadosCerca: radio de 3 km, una vez por oferta y orden por puntaje', () => {
-  const { resultados, fueraDelRadio } = resultadosCerca([
+test('resultadosCerca: arriba lo de 3 km o menos por puntaje, una vez por oferta con su sucursal más cercana', () => {
+  const { cerca, lejos } = resultadosCerca([
     promo('cerca-r-bajo', 10, sucursal('a1', 200)),
     promo('media-r-alto', 95, sucursal('b1', 1200), sucursal('b2', 2500)),
     promo('lejos', 95, sucursal('c1', 3500)),
     promo('en-linea', 95)
   ], ORIGEN);
-  assert.equal(fueraDelRadio, false);
-  assert.deepEqual(resultados.map(r => r.promocion.id), ['media-r-alto', 'cerca-r-bajo']);
-  assert.equal(resultados[0].sucursal.id, 'b1');
-  casi(resultados[0].metros, 1200, 1);
+  assert.deepEqual(cerca.map(r => r.promocion.id), ['media-r-alto', 'cerca-r-bajo']);
+  assert.equal(cerca[0].sucursal.id, 'b1');
+  casi(cerca[0].metros, 1200, 1);
+  assert.deepEqual(lejos.map(r => r.promocion.id), ['lejos'], 'lo que está más lejos no se pierde; lo que no tiene tienda no entra');
 });
 
 test('resultadosCerca: sin puntaje del motor queda en orden de distancia', () => {
-  const { resultados } = resultadosCerca([
+  const { cerca } = resultadosCerca([
     promo('tercera', 0, sucursal('x', 2900)), promo('primera', 0, sucursal('y', 100)), promo('segunda', 0, sucursal('z', 450))
   ], ORIGEN);
-  assert.deepEqual(resultados.map(r => r.promocion.id), ['primera', 'segunda', 'tercera']);
+  assert.deepEqual(cerca.map(r => r.promocion.id), ['primera', 'segunda', 'tercera']);
 });
 
-test('resultadosCerca: sin nada en el radio devuelve lo más cercano, marcado como fuera del radio', () => {
+test('resultadosCerca: todo lo que está a más de 3 km va debajo, de la más cercana a la más lejana', () => {
   const ofertas = Array.from({ length: 7 }, (_, i) => promo(`p${i}`, 50, sucursal(`s${i}`, 9500 - i * 1000)));
-  const { resultados, fueraDelRadio } = resultadosCerca(ofertas, ORIGEN);
-  assert.equal(fueraDelRadio, true);
-  assert.deepEqual(resultados.map(r => r.promocion.id), ['p6', 'p5', 'p4', 'p3', 'p2']);
-  assert.deepEqual(resultadosCerca([], ORIGEN), { resultados: [], fueraDelRadio: false });
+  const { cerca, lejos } = resultadosCerca(ofertas, ORIGEN);
+  assert.deepEqual(cerca, []);
+  assert.deepEqual(lejos.map(r => r.promocion.id), ['p6', 'p5', 'p4', 'p3', 'p2', 'p1', 'p0']);
+  assert.deepEqual(resultadosCerca([], ORIGEN), { cerca: [], lejos: [] });
+});
+
+test('resultadosCerca: Cerca de ti solo muestra lo que se puede usar ahora mismo', () => {
+  const { cerca, lejos } = resultadosCerca([
+    promo('hoy', 0, sucursal('h', 300)),
+    { ...promo('otro-dia', 0, sucursal('o', 200)), availableToday: false },
+    { ...promo('vencida', 0, sucursal('v', 100)), canUse: false },
+    { ...promo('vencida-en-la-visita', 0, sucursal('w', 150)), vencida: true },
+    { ...promo('lejos-otro-dia', 0, sucursal('l', 5000)), availableToday: false }
+  ], ORIGEN);
+  assert.deepEqual(cerca.map(r => r.promocion.id), ['hoy']);
+  assert.deepEqual(lejos, []);
 });
 
 test('textoDistancia se indica aproximada y en kilómetros', () => {

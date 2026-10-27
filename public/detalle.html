@@ -22,6 +22,25 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
+    <!-- Rendimiento: módulos precargados en paralelo (tests/unit/precarga-modulos.test.js mantiene la lista). -->
+    <link rel="modulepreload" href="/js/carga-tiempo.js">
+    <link rel="modulepreload" href="/js/cerca/cercania.js">
+    <link rel="modulepreload" href="/js/cerca/donde.js">
+    <link rel="modulepreload" href="/js/cerca/enlaces.js">
+    <link rel="modulepreload" href="/js/cerca/mapa.js">
+    <link rel="modulepreload" href="/js/cerca/origen.js">
+    <link rel="modulepreload" href="/js/cerca/recorrido.js">
+    <link rel="modulepreload" href="/js/cerca/zona.js">
+    <link rel="modulepreload" href="/js/comun.js">
+    <link rel="modulepreload" href="/js/filtro-categoria.js">
+    <link rel="modulepreload" href="/js/instantanea.js">
+    <link rel="modulepreload" href="/js/motor/config.js">
+    <link rel="modulepreload" href="/js/motor/intencion.js">
+    <link rel="modulepreload" href="/js/promocion-vista.js">
+    <link rel="modulepreload" href="/js/tarjeta-elegida.js">
+    <link rel="modulepreload" href="/js/transiciones.js">
+    <link rel="modulepreload" href="/pwa/inactividad-modelo.js">
+    <link rel="modulepreload" href="/pwa/inactividad.js">
   </head>
   <body class="detail-page pr" data-session="pending">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>

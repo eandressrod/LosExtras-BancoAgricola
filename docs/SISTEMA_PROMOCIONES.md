@@ -20,7 +20,7 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 ## Idea
 
 - **Pocas opciones a la vista.** Arriba están el título, Guardadas y Mis preferencias como iconos, y una sola fila con la búsqueda y el botón **Filtros**. Tarjeta, categoría y «Solo lo que aplica hoy» viven en la hoja Filtros. Sobre la lista solo se ven los filtros activos, como píldoras que se quitan con ×.
-- **Todas tus tarjetas.** Para ti ordena lo mejor de todas las tarjetas propias. Cada promoción dice con cuál conviene («Aplica a tu tarjeta Black») y, si otra cambia el beneficio, la menciona («También 15 % con tu Básica»).
+- **Todas tus tarjetas.** Para ti ordena lo mejor de todas las tarjetas propias. Cada promoción dice con cuáles de ellas aplica («Aplica a tus tarjetas Black y Básica», «Solo con tu tarjeta Black») y, si otra cambia el beneficio, la menciona («También 15 % con tu Básica»).
 - **Fondo blanco y cabecera amarilla.** El fondo es blanco puro, como la app del banco. El amarillo de la marca se queda en la cabecera, siempre igual, y en las acciones.
 - **Acentos de compras.** Cada categoría tiene un color alegre (mandarina, sandía, uva, menta, agua y cielo) que se usa como tinte suave con el icono saturado, nunca como color de texto. El beneficio va en una **etiqueta de precio** sobre la foto real.
 - **Simplicidad cuidada.** Mucho aire, jerarquía por peso y tamaño, hojas inferiores para las opciones y microanimaciones discretas.
@@ -120,7 +120,7 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 | Vencida durante la visita | Píldora roja «Vencida» y foto en gris. |
 | Beneficio | Etiqueta de precio color sandía, con orificio y ligera inclinación, sobre la foto; el degradado de la foto es suave. |
 | Exclusiva Black | Insignia sobre la foto, etiqueta de precio negra con dorado y cuerpo negro con filo dorado. |
-| Todas las tarjetas | «Aplica a tu tarjeta …» con el mejor beneficio y, debajo, `.promo-otras` con la otra tarjeta si su beneficio cambia. Dos tarjetas del mismo tipo y beneficio no se repiten. |
+| Todas las tarjetas | `textoAplica`: «Aplica a tus tarjetas Black y Básica» (mini tarjeta doble, `data-tarjeta="ambas"`), «Aplica a tus 2 tarjetas Básica», «Solo con tu tarjeta Black» si el perfil tiene más de una, o «Aplica a tu tarjeta …». Debajo, `.promo-otras` con la otra tarjeta si su beneficio cambia. Dos tarjetas del mismo tipo y beneficio no se repiten. |
 | Sin foto | Fondo oscuro con un halo del acento de la categoría. |
 | Guardada | Botón amarillo con icono lleno y un latido breve. Para ti confirma con el aviso «Deshacer». |
 | Error al guardar | Mensaje rojo bajo la tarjeta. |
