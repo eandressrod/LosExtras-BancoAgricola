@@ -3,23 +3,23 @@
 //
 // Cada página se confirma con el botón principal y entonces escribe sus señales con origen encuesta.
 // Antes de confirmar, la selección solo alimenta la vista previa, calculada en el navegador con el motor de H22.
-import { getJSON, almacenSesion } from './comun.js';
+import { getJSON } from './comun.js';
 import { ordenarParaTi } from './motor/index.js';
 import {
   opcionesIntereses, categoriasAfinar, opcionesAfinar, alternar, seleccionVacia, textoBotonPrincipal, pasosEncuesta,
-  senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia, marcarEncuestaOmitida
+  senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia, cupoOpciones
 } from './encuesta-modelo.js';
 
 const ESPERA_VISTA_PREVIA_MS = 250;
 const ERROR_GUARDAR = 'No se pudieron guardar tus intereses. Intenta de nuevo.';
 // Paso 3: una página por pregunta (P3), en este orden.
 const FILAS_CRITERIOS = [
-  { fila: 'canal', pregunta: '¿Cómo aprovechas tus promos?', rol: 'radio', opciones: [
+  { fila: 'canal', pregunta: '¿Cómo aprovechas tus promos?', ayuda: 'Elige una', rol: 'radio', opciones: [
     ['presencial', 'En el local'], ['delivery', 'A domicilio'], ['en-linea', 'En línea'], ['indiferente', 'De todo un poco']] },
-  { fila: 'beneficio', pregunta: '¿Qué beneficio te sirve más?', ayuda: 'Hasta 2', rol: 'checkbox', opciones: [
+  { fila: 'beneficio', pregunta: '¿Qué beneficio te sirve más?', ayuda: 'Elige hasta 2', rol: 'checkbox', opciones: [
     ['descuento', 'Descuento'], ['2x1-combo', '2x1 o combos'], ['cuotas-sin-intereses', 'Cuotas sin intereses'],
     ['cashback-puntos', 'Cashback o puntos'], ['indiferente', 'Me da igual']] },
-  { fila: 'descubrir', pregunta: '¿Qué prefieres ver?', rol: 'radio', opciones: [
+  { fila: 'descubrir', pregunta: '¿Qué prefieres ver?', ayuda: 'Elige una', rol: 'radio', opciones: [
     ['siempre', 'Mis lugares de siempre'], ['mezcla', 'Un poco de todo'], ['nuevos', 'Lugares nuevos']] }
 ];
 
@@ -50,7 +50,11 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
   const atras = hoja.querySelector('#survey-back');
   const omitir = hoja.querySelector('#survey-skip');
   const principal = hoja.querySelector('#survey-next');
+  const cuenta = hoja.querySelector('#survey-cuenta');
   const fondo = [document.querySelector('body > header'), document.querySelector('body > main')].filter(Boolean);
+  // CDA 10: con letra grande caben menos opciones; la escala se mide una vez al abrir.
+  const cupo = cupoOpciones(parseFloat(getComputedStyle(document.documentElement).fontSize) / 16);
+  hoja.dataset.columnas = String(cupo.columnas);
 
   let ofertas = [];
   let activas = [];
@@ -61,6 +65,8 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
   let ocupada = false;
   let previa = [];
   let temporizador = null;
+  // Posición de la última opción tocada: tras repintar, solo esa hace su pequeño salto al marcarse.
+  let tocada = -1;
 
   const actual = () => pasos[indice];
   const ultima = () => indice === pasos.length - 1;
@@ -110,9 +116,25 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     const anuncio = anuncioVistaPrevia(previa, promociones);
     const igual = previa.length === promociones.length && previa.every((promo, i) => promo.id === promociones[i].id);
     previa = promociones;
+    pintarCuenta(promociones.length);
     if (igual) return;
     mostrarVistaPrevia({ promociones, contador: textoContador(promociones.length) });
     enVivo.textContent = anuncio;
+  }
+
+  // Contador de la cabecera: salta un poco cuando cambia, como confirmación visible de que la lista ya cambió.
+  function pintarCuenta(total) {
+    const texto = total === 1 ? '1 promoción' : `${total} promociones`;
+    if (cuenta.textContent === texto) return;
+    const habia = Boolean(cuenta.textContent);
+    cuenta.textContent = texto;
+    if (habia) reiniciarAnimacion(cuenta, 'survey-cuenta--cambio');
+  }
+
+  function reiniciarAnimacion(elemento, clase) {
+    elemento.classList.remove(clase);
+    void elemento.offsetWidth;
+    elemento.classList.add(clase);
   }
 
   function programarVistaPrevia() {
@@ -120,12 +142,16 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     temporizador = setTimeout(calcularVistaPrevia, ESPERA_VISTA_PREVIA_MS);
   }
 
-  function crearOpcion({ texto, imagen, rol, marcada, alPulsar, clase = '' }) {
+  function crearOpcion({ texto, imagen, rol, marcada, alPulsar, clase = '', categoria, valor }) {
     const boton = document.createElement('button');
     boton.type = 'button';
     boton.className = `survey-option ${clase}`.trim();
     boton.setAttribute('role', rol);
     boton.setAttribute('aria-checked', String(marcada));
+    // El acento de la categoría (sistema visual) tiñe el icono del mosaico.
+    if (categoria) boton.dataset.categoria = categoria;
+    // Las pastillas del paso 3 llevan un icono según su valor.
+    if (valor) boton.dataset.valor = valor;
     if (imagen) {
       const img = document.createElement('img');
       img.src = imagen; img.alt = ''; img.width = 32; img.height = 32; img.loading = 'lazy';
@@ -136,7 +162,10 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     nombre.className = 'survey-option__name';
     nombre.textContent = texto;
     boton.append(nombre);
-    boton.addEventListener('click', alPulsar);
+    boton.addEventListener('click', () => {
+      tocada = [...cuerpo.querySelectorAll('button')].indexOf(boton);
+      alPulsar();
+    });
     return boton;
   }
 
@@ -148,6 +177,8 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     error.textContent = '';
     pintar();
     if (enfocada >= 0) opciones()[enfocada]?.focus();
+    opciones()[tocada]?.classList.add('survey-option--recien');
+    tocada = -1;
     programarVistaPrevia();
   }
 
@@ -186,7 +217,7 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
 
   function paginaIntereses() {
     const conOfertas = new Set(opcionesIntereses(ofertas, categorias, Infinity).map(opcion => opcion.id));
-    const tile = opcion => crearOpcion({ texto: opcion.nombre, imagen: opcion.icono ?? opcion.icono_url, rol: 'checkbox',
+    const tile = opcion => crearOpcion({ texto: opcion.nombre, imagen: opcion.icono ?? opcion.icono_url, rol: 'checkbox', categoria: opcion.id,
       marcada: seleccion.categorias.includes(opcion.id), alPulsar: () => cambiar('categorias', opcion.id) });
     if (buscando) {
       const buscables = categorias.filter(categoria => conOfertas.has(categoria.id));
@@ -199,10 +230,10 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
       alPulsar: () => { buscando = true; pintar(); } });
     buscar.removeAttribute('aria-checked');
     // Las elegidas por búsqueda que no están entre las 8 también se ven marcadas.
-    const visibles = opcionesIntereses(ofertas, categorias);
+    const visibles = opcionesIntereses(ofertas, categorias, cupo.categorias);
     const extra = categorias.filter(c => seleccion.categorias.includes(c.id) && !visibles.some(v => v.id === c.id))
       .map(c => ({ id: c.id, nombre: c.nombre, icono: c.icono_url }));
-    return [rejilla('survey-grid--3', [...visibles.slice(0, 8 - extra.length), ...extra].map(tile).concat(buscar))];
+    return [rejilla('survey-grid--3', [...visibles.slice(0, cupo.categorias - extra.length), ...extra].map(tile).concat(buscar))];
   }
 
   function paginaAfinar(categoria) {
@@ -210,7 +241,7 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     const tile = opcion => crearOpcion({ texto: opcion.nombre, imagen: opcion.imagen, rol: 'checkbox',
       marcada: marcadas.includes(claveOpcion(opcion)), alPulsar: () => cambiar('afinar', claveOpcion(opcion), categoria),
       clase: opcion.ambito === 'comercio' ? 'survey-option--merchant' : '' });
-    const { modo, opciones } = opcionesAfinar(categoria, ofertas, perfil.id);
+    const { modo, opciones } = opcionesAfinar(categoria, ofertas, perfil.id, cupo.comercios);
     const todas = candidatasDe(categoria);
     if (buscando) {
       return [campoBusqueda('Buscar comercio', texto => {
@@ -228,7 +259,7 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     }
     extras.push(crearOpcion({ texto: 'Ninguno de estos', rol: 'checkbox', marcada: marcadas.includes('ninguno'),
       clase: 'survey-option--link', alPulsar: () => cambiar('afinar', 'ninguno', categoria) }));
-    return [rejilla('survey-grid--2', [...opciones.slice(0, 6 - elegidasFuera.length), ...elegidasFuera].map(tile)),
+    return [rejilla('survey-grid--2', [...opciones.slice(0, cupo.comercios - elegidasFuera.length), ...elegidasFuera].map(tile)),
       rejilla('survey-grid--extras', extras)];
   }
 
@@ -240,10 +271,10 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
       const etiqueta = document.createElement('p');
       etiqueta.className = 'survey-row__label';
       etiqueta.id = `survey-row-${fila}`;
-      etiqueta.textContent = ayuda ? `${pregunta} · ${ayuda}` : pregunta;
+      etiqueta.textContent = pregunta;
       grupo.setAttribute('aria-labelledby', etiqueta.id);
       const valor = seleccion[fila];
-      const chips = opciones.map(([id, texto]) => crearOpcion({ texto, rol, clase: 'survey-chip',
+      const chips = opciones.map(([id, texto]) => crearOpcion({ texto, rol, clase: 'survey-chip', valor: `${fila}-${id}`,
         marcada: Array.isArray(valor) ? valor.includes(id) : valor === id, alPulsar: () => cambiar(fila, id) }));
       grupo.append(etiqueta, ...chips);
       return grupo;
@@ -262,23 +293,29 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     const posicion = pasos.filter(p => p.pagina === pagina);
     paso.textContent = `Paso ${pagina} de 3`;
     titulo.textContent = pagina === 1 ? '¿Qué te interesa?' : pagina === 2 ? '¿Cuáles te gustan?' : '¿Cómo las prefieres?';
-    subtitulo.hidden = pagina === 1;
-    // Los pasos 2 y 3 tienen varias páginas: «Restaurantes · 1 de 2» o «1 de 3».
+    hoja.dataset.paso = String(pagina);
+    subtitulo.hidden = false;
+    // Una línea de ayuda; los pasos 2 y 3 tienen varias páginas: «Restaurantes · 1 de 2» o «Elige una · 1 de 3».
     const enPaso = `${posicion.findIndex(p => detalle(p) === detalle(actual())) + 1} de ${posicion.length}`;
+    if (pagina === 1) subtitulo.textContent = 'Elige todas las que quieras.';
     if (pagina === 2) subtitulo.textContent = `${categorias.find(c => c.id === categoria)?.nombre ?? categoria} · ${enPaso}`;
-    if (pagina === 3) subtitulo.textContent = enPaso;
+    if (pagina === 3) subtitulo.textContent = `${FILAS_CRITERIOS.find(({ fila }) => fila === criterio)?.ayuda} · ${enPaso}`;
     hoja.classList.toggle('survey-sheet--full', buscando);
     cuerpo.replaceChildren(...(pagina === 1 ? paginaIntereses() : pagina === 2 ? paginaAfinar(categoria) : paginaCriterios(criterio)));
     principal.textContent = textoBotonPrincipal(ultima(), haySeleccion());
+    // Flecha en «Siguiente» y ✓ en «Listo», siempre junto al texto (P4).
+    principal.dataset.accion = { Siguiente: 'siguiente', Listo: 'listo' }[principal.textContent] ?? '';
     atras.setAttribute('aria-disabled', String(indice === 0));
     principal.disabled = ocupada;
     omitir.disabled = ocupada;
   }
 
   function irA(nuevo) {
+    cuerpo.dataset.direccion = nuevo > indice ? 'adelante' : 'atras';
     indice = nuevo;
     buscando = false;
     pintar();
+    reiniciarAnimacion(cuerpo, 'survey-body--entra');
     titulo.focus();
     programarVistaPrevia();
   }
@@ -352,10 +389,9 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
 
   principal.onclick = confirmar;
   atras.onclick = () => { if (indice > 0 && !ocupada) irA(indice - 1); };
-  // «Omitir» conserva lo ya confirmado y no vuelve a abrir la hoja en esta sesión.
+  // «Omitir» conserva lo ya confirmado y cierra; la marca del servidor evita que la hoja vuelva a abrirse sola (ADR-010).
   omitir.onclick = () => {
     if (ocupada) return;
-    marcarEncuestaOmitida(almacenSesion(), perfil.id);
     cerrar(false);
   };
 

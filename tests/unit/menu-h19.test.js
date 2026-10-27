@@ -35,14 +35,7 @@ test('H19 TDD: cancela compartir y copia solo cuando compartir no está disponib
   await assert.rejects(compartirCuenta({ nombre: 'Sin número' }, {}), /número/i);
 });
 
-// H21 sustituye la página de la encuesta por la hoja sobre Para ti (ADR-010): la entrada ya no redirige.
-test('H21 TDD: la entrada de menú abre la hoja con la encuesta pendiente, salvo si se omitió en esta sesión', async () => {
-  const { encuestaAlEntrar } = await import('../../public/js/menu-modelo.js');
-  assert.equal(encuestaAlEntrar('?entrada=menu', { completed: false }, false), true);
-  assert.equal(encuestaAlEntrar('?entrada=menu', { completed: true }, false), false);
-  assert.equal(encuestaAlEntrar('?entrada=menu', { completed: false }, true), false);
-  assert.equal(encuestaAlEntrar('', { completed: false }, false), false);
-});
+// H21: qué ofrecer de la encuesta al entrar a Promociones vive en encuesta-modelo.js (ofertaEncuesta, ADR-010).
 
 test('H19 TDD: saldos separan enteros y centavos elevados, conservando cero, moneda y ocultación', async () => {
   const { partesSaldo } = await import('../../public/js/menu-modelo.js');

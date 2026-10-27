@@ -101,7 +101,14 @@
       <section id="panel-lista" class="pr-panel" role="tabpanel" aria-labelledby="tab-para-ti">
       <!-- Solo los filtros activos, como píldoras que se quitan con un toque. -->
       <div id="filtros-activos" class="pr-pildoras" role="group" aria-label="Filtros activos" hidden></div>
-      <p id="survey-notice" class="note survey-notice" role="status" hidden>Puedes cambiar tus intereses en Mis preferencias.</p>
+      <!-- H21 (ADR-010): aviso discreto tras la primera vez; cerrarlo una vez lo guarda en el servidor y no vuelve. -->
+      <aside id="encuesta-aviso" class="pr-encuesta-aviso" aria-labelledby="encuesta-aviso-titulo" hidden>
+        <p id="encuesta-aviso-titulo" class="pr-encuesta-aviso__titulo">Personaliza tus promociones en 3 pasos</p>
+        <p class="pr-encuesta-aviso__texto">Elige lo que te interesa y verás primero lo que más te sirve.</p>
+        <button id="encuesta-aviso-empezar" type="button" class="pr-encuesta-aviso__empezar">Empezar</button>
+        <button id="encuesta-aviso-cerrar" type="button" class="pr-encuesta-aviso__cerrar" aria-label="Cerrar aviso"></button>
+      </aside>
+      <p id="survey-notice" class="pr-encuesta-listo" role="status" hidden>Puedes cambiar tus intereses cuando quieras en <a href="/preferencias.html">Mis preferencias</a>.</p>
       <p id="pr-conteo" class="pr-conteo" aria-live="polite"></p>
       <p id="saved-status" class="error" role="alert"></p>
       <div id="promotions-loading" class="pr-esqueleto" role="status" aria-label="Cargando promociones" hidden>
@@ -187,7 +194,12 @@
     <!-- H21: encuesta en tres pasos sobre la lista real (ADR-010). Solo se cierra con Omitir o Listo. -->
     <section id="survey-sheet" class="survey-sheet" role="dialog" aria-modal="true" aria-labelledby="survey-title" hidden>
       <div class="survey-head">
-        <p id="survey-step" class="survey-step"></p>
+        <div class="survey-head__fila">
+          <ol class="survey-progreso" aria-hidden="true"><li></li><li></li><li></li></ol>
+          <p id="survey-step" class="survey-step"></p>
+          <!-- Lo que ya cambia en la lista (P1); la región en vivo lo anuncia, aquí solo se ve. -->
+          <p id="survey-cuenta" class="survey-cuenta" aria-hidden="true"></p>
+        </div>
         <h2 id="survey-title" tabindex="-1"></h2>
         <p id="survey-subtitle" class="survey-subtitle" hidden></p>
       </div>
