@@ -6,7 +6,7 @@ import * as filtro from '../../public/js/filtro-categoria.js';
 import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
-import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
+import { encuestaAlEntrar } from '../../public/js/menu-modelo.js';
 import { textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarDias } from '../../public/js/promocion-vista.js';
 import * as pestanas from '../../public/js/pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
@@ -100,7 +100,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     almacenSesion: () => sesion,
     cardName,
     revelarPagina: alRevelar,
-    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
+    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), encuestaAlEntrar,
     matchMedia: () => ({ matches: true }),
     // H8: Cerca de ti y el bloque Dónde tienen sus propias pruebas; aquí solo se registran sus llamadas.
     crearCerca: () => ({ mostrar() {}, ocultar() {} }),
@@ -137,11 +137,15 @@ export async function abrirListado(opciones = {}) {
   const aviso = { mostrados: [], mostrar(datos) { this.mostrados.push(datos); }, cerrar() {} };
   const franja = { montajes: [], paradas: 0 };
   const pedidas = { categorias: 0, tarjetas: 0, aperturas: 0 };
+  // H21: la hoja de la encuesta se sustituye por un registro de sus aperturas.
+  const hojas = [];
   const categorias = opciones.categorias ?? (() => CATEGORIAS);
   const tarjetas = opciones.tarjetas ?? (() => TARJETAS[perfil] ?? []);
   const responder = opciones.responder ?? (url => PROMOS[parametro(url, 'categoria') ?? 'todas']);
   Object.assign(nav.contexto, {
     registrarAperturaPromociones: async () => { pedidas.aperturas++; },
+    encuestaOmitida: () => Boolean(opciones.omitida),
+    abrirEncuestaHoja: datos => { hojas.push(datos); },
     crearAviso: () => aviso,
     diapositivasFranja, filtrosActivos, textoBotonFiltros,
     montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },
@@ -178,7 +182,7 @@ export async function abrirListado(opciones = {}) {
   };
   const marcados = lista => lista.filter(boton => boton.attributes['aria-checked'] === 'true').map(boton => boton.textContent);
   return {
-    ...nav, cards, consultas, pedidas, chips, aviso, franja,
+    ...nav, cards, consultas, pedidas, chips, aviso, franja, hojas,
     obtener: obtenerConFlush,
     activo: () => pulsados(chips()),
     chip: nombre => chips().find(chip => chip.textContent === nombre),

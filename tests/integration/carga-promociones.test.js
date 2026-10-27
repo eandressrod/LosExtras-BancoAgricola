@@ -39,13 +39,39 @@ test('una respuesta antigua no retira el aro de la selección más reciente', as
   assert.equal(p.obtener('#promotions-loading').hidden, true);
 });
 
-test('encuesta pendiente decide el destino sin revelar ni consultar el catálogo de Promociones', async () => {
+// H21 (ADR-010): la encuesta es una hoja sobre la lista real; la entrada ya no redirige a encuesta.html.
+test('H21 encuesta pendiente abre la hoja sobre la lista cargada, con esa lista y las categorías vigentes', async () => {
   let revelaciones=0;
-  const p=await abrirListado({search:'?entrada=menu',alRevelar:()=>revelaciones++,preferencias:()=>{
-    assert.equal(revelaciones,0);return {completed:false};
-  }});
-  assert.equal(p.contexto.location.destino,'/encuesta.html');assert.equal(revelaciones,0);
-  assert.equal(p.pedidas.categorias,0);assert.equal(p.pedidas.tarjetas,0);assert.equal(p.consultas.length,0);
+  const p=await abrirListado({search:'?entrada=menu',alRevelar:()=>revelaciones++,preferencias:()=>({completed:false})});
+  assert.equal(p.contexto.location.destino,undefined);assert.equal(revelaciones,1);
+  assert.equal(p.enlaces().length,3,'la lista real queda detrás de la hoja');
+  assert.equal(p.hojas.length,1);
+  const [hoja]=p.hojas;
+  // Desde SCRUM-133 Para ti usa todas las tarjetas propias: la hoja trabaja con la misma lista que se ve detrás.
+  assert.equal(hoja.perfil.id,'A');assert.deepEqual(hoja.lista.map(promo=>'promo-'+promo.id),p.enlaces().map(enlace=>enlace.id));assert.equal(hoja.categorias.length,3);
+  assert.equal(typeof hoja.mostrarVistaPrevia,'function');assert.equal(typeof hoja.alCerrar,'function');
+});
+
+test('H21 la hoja no se abre si la encuesta se completó o ya se omitió en esta sesión', async () => {
+  const completada=await abrirListado({search:'?entrada=menu',preferencias:()=>({completed:true})});
+  assert.equal(completada.hojas.length,0);
+  const omitida=await abrirListado({search:'?entrada=menu',preferencias:()=>({completed:false}),omitida:true});
+  assert.equal(omitida.hojas.length,0);
+  const directa=await abrirListado({preferencias:()=>({completed:false})});
+  assert.equal(directa.hojas.length,0);
+});
+
+test('H21 la vista previa pinta las promociones del motor y cerrar la hoja vuelve a pedir Para ti', async () => {
+  const p=await abrirListado({search:'?entrada=menu',preferencias:()=>({completed:false})});
+  const [hoja]=p.hojas;
+  hoja.mostrarVistaPrevia({promociones:[{id:'cine',category:'Entretenimiento'}],contador:'1 promoción para ti'});
+  assert.deepEqual(p.enlaces().map(enlace=>enlace.id),['promo-cine']);
+  assert.equal(p.obtener('#pr-conteo').textContent,'1 promoción para ti');
+  const antes=p.consultas.length;
+  await hoja.alCerrar({terminada:true});
+  assert.equal(p.consultas.length,antes+1);
+  assert.equal(p.enlaces().length,3);
+  assert.equal(p.obtener('#survey-notice').hidden,false);
 });
 
 test('encuesta completada revela solo tras resolver preferencias; fallo ofrece reintento', async () => {

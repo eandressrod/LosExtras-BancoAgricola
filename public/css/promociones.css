@@ -155,3 +155,43 @@
 }
 .pr-acciones-form #cancel-preferences:hover { background: var(--pr-hundido); }
 .pr-acciones-form #cancel-preferences[aria-disabled] { opacity: .5; cursor: progress; }
+
+/* H21: hoja de la encuesta sobre la lista real. Fondo nítido, sin oscurecer; altura fija igual en los tres pasos (ADR-010). */
+.survey-sheet { position: fixed; inset: auto 0 0; z-index: 20; display: flex; flex-direction: column; gap: 8px; width: min(100%, 480px); height: 62dvh; margin: auto; padding: 16px 16px max(12px, env(safe-area-inset-bottom)); border-radius: 20px 20px 0 0; background: var(--surface); box-shadow: 0 -4px 20px rgb(0 0 0 / .12); }
+.survey-sheet--full { height: 100dvh; border-radius: 0; }
+.survey-head { flex-shrink: 0; }
+.survey-step { margin: 0; color: var(--muted); font-size: .85rem; font-weight: 600; }
+.survey-head h2 { margin: 2px 0 0; font-size: 1.2rem; }
+.survey-head h2:focus { outline: none; }
+.survey-subtitle { margin: 2px 0 0; font-weight: 600; }
+.survey-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.survey-body > * + * { margin-top: 8px; }
+.survey-grid { display: grid; gap: 8px; }
+.survey-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.survey-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.survey-grid--extras { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+/* Mismo tamaño y tratamiento para todas las opciones; marcada = check + borde de 2 px + fondo tenue, nunca solo color. */
+.survey-option { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 64px; padding: 8px 6px; border: 1px solid #c9c9c9; border-radius: 14px; background: var(--surface); font-size: .8rem; font-weight: 600; line-height: 1.2; hyphens: auto; }
+.survey-option:hover { background: #f0f0f0; }
+.survey-option img { width: 32px; height: 32px; object-fit: contain; }
+.survey-option--merchant { flex-direction: row; justify-content: flex-start; min-height: 56px; padding-inline: 10px; text-align: left; }
+.survey-option--link, .survey-option--search { min-height: 48px; border-style: dashed; }
+.survey-option[aria-checked="true"], .survey-option[aria-checked="true"]:hover { padding: 7px 5px; border: 2px solid var(--text); background: #fffbea; }
+.survey-option--merchant[aria-checked="true"] { padding-inline: 9px; }
+.survey-option[aria-checked="true"]::after { content: "✓"; content: "✓" / ""; position: absolute; top: 4px; right: 8px; font-weight: 800; }
+.survey-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.survey-row + .survey-row { margin-top: 10px; }
+.survey-row__label { flex-basis: 100%; margin: 0; font-size: .9rem; font-weight: 600; }
+.survey-chip { flex-direction: row; min-height: 48px; padding: 6px 14px; border-radius: 999px; }
+.survey-chip[aria-checked="true"], .survey-chip[aria-checked="true"]:hover { padding: 5px 30px 5px 13px; }
+.survey-chip[aria-checked="true"]::after { top: 50%; right: 12px; transform: translateY(-50%); }
+.survey-search { display: grid; gap: 8px; }
+.survey-actions { display: flex; flex-shrink: 0; align-items: center; gap: 4px; }
+.survey-link { min-height: 48px; padding: 10px 12px; border-color: transparent; background: transparent; text-decoration: underline; }
+.survey-link:hover { background: #f0f0f0; }
+.survey-link[aria-disabled="true"] { color: var(--muted); text-decoration: none; cursor: default; }
+.survey-primary { flex: 1; min-height: 48px; }
+.survey-sheet .error { margin: 0; flex-shrink: 0; }
+.survey-notice { margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--primary); background: #fffbea; }
+/* Deja ver detrás el contador y las dos primeras tarjetas: la lista termina por encima de la hoja. */
+body.promotions-page:has(.survey-sheet:not([hidden])) > main { padding-bottom: 62dvh; }

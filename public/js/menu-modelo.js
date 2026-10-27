@@ -1,5 +1,6 @@
-export function destinoEntradaPromociones(search, preferencias) {
-  return new URLSearchParams(search).get('entrada') === 'menu' && !preferencias.completed ? '/encuesta.html' : null;
+/** H21 (ADR-010): al entrar desde el menú con la encuesta pendiente se abre la hoja, salvo si ya se omitió en esta sesión. */
+export function encuestaAlEntrar(search, preferencias, omitida) {
+  return new URLSearchParams(search).get('entrada') === 'menu' && !preferencias.completed && !omitida;
 }
 
 export function fechaMensaje(valor) {
