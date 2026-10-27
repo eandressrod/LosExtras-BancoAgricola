@@ -61,13 +61,14 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 ### Franja de avisos (carrusel)
 
 - **Qué muestra:** los avisos que elige `diapositivasFranja`, de 0 a 5, en este orden de prioridad:
-  1. encuesta pendiente;
-  2. vence pronto;
-  3. con la que más ahorras hoy;
-  4. hoy toca;
-  5. aviso de la semana;
-  6. tus guardadas;
-  7. por qué este orden.
+  1. vence pronto;
+  2. con la que más ahorras hoy;
+  3. hoy toca;
+  4. aviso de la semana;
+  5. tus guardadas;
+  6. por qué este orden.
+
+  La encuesta no va en la franja: se ofrece con su hoja y con el aviso de la lista, sin repetirse (ADR-010).
 - **Qué no muestra:** nunca repite una tarjeta de la lista y solo usa datos reales. «Con la que más ahorras» compara topes de lo que aplica hoy y, con orden personalizado, prefiere los intereses declarados.
 - **Forma:**
   - diapositiva central al 82 % del ancho, con las vecinas asomando a 0.9 de escala y atenuadas;
@@ -80,7 +81,7 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
   - al arrastrar o tocar una vecina se detiene;
   - con movimiento reducido empieza detenida.
 - **Teclado:** las flechas navegan. La región en vivo está en `off` mientras avanza sola y en `polite` cuando está detenida.
-- **Acciones:** los avisos de promoción desplazan la lista hasta la tarjeta y la resaltan. El aviso semanal abre el detalle. Los demás llevan a Guardadas, a Mis preferencias o a la encuesta.
+- **Acciones:** los avisos de promoción desplazan la lista hasta la tarjeta y la resaltan. El aviso semanal abre el detalle. Los demás llevan a Guardadas o a Mis preferencias.
 
 ### Pestañas (`.pr-pestanas`)
 
@@ -147,6 +148,16 @@ aviso.mostrar({ texto: 'Promoción guardada.', alDeshacer: () => … });
 - **Duración:** se retira a los 6 s y se detiene con el foco o el puntero dentro (WCAG 2.2.1).
 - **Deshacer:** se ejecuta una sola vez, devuelve el foco a la tarjeta y no abre otro aviso.
 
+### Encuesta (H21, ADR-010)
+
+- **Hoja** (`#survey-sheet`): fija abajo con el 62 % de alto en todas las páginas, sin velo ni asa. El fondo queda inerte y el contador queda visible bajo las pestañas. Mosaicos blancos con el icono teñido del acento de su categoría; marcado = ✓ en círculo, borde de 2 px y fondo amarillo suave. Pastillas en el paso 3. Botón principal amarillo a todo lo ancho, con «Atrás» y «Omitir» a la vista.
+- **Cuándo se ofrece** (`ofertaEncuesta`, marcas del servidor): la primera vez con la encuesta pendiente se abre la hoja y se guarda `hoja-mostrada`. Después aparece el aviso de la lista (`#encuesta-aviso`), con «Empezar» y cierre; cerrarlo guarda `aviso-cerrado` y no vuelve. «Personalizar en 3 pasos» de Mis preferencias (`?encuesta=1`) la abre siempre.
+- **Opciones:** salen de todo lo vigente (`/api/para-ti?explorar=1`), no de la lista ya recortada por intereses. Con letra grande (escala ≥ 1,3) hay menos opciones (`cupoOpciones`), sin cortar texto.
+- **Vista previa:** las tarjetas se desplazan en 200 ms, animando solo posición y opacidad (`js/movimiento-lista.js`). Si nada cambia no hay animación, y con movimiento reducido el cambio es instantáneo.
+- **Cabecera:** tres segmentos (`.survey-progreso`) junto a «Paso n de 3», y la cuenta en vivo de la lista (`#survey-cuenta`), que da un pequeño salto al cambiar. Debajo, una línea de ayuda por página («Elige todas las que quieras», «Elige una · 1 de 3»).
+- **Detalles:** las pastillas del paso 3 llevan un icono según su valor. Solo la opción tocada da un pequeño salto al marcarse, el contenido entra deslizándose al cambiar de página, y el botón principal lleva una flecha en «Siguiente» y ✓ en «Listo». Con movimiento reducido no hay ninguna de estas animaciones. Con letra grande las categorías pasan a dos columnas.
+- **Al terminar:** «Listo» deja la nota `.pr-encuesta-listo`, que dice dónde editar los intereses.
+
 ### Hoja inferior (`.pr-hoja`)
 
 - **Uso:** `<dialog class="pr-hoja">` abierto con `showModal()`, con asa, título, cuerpo desplazable y acciones.
@@ -175,6 +186,5 @@ aviso.mostrar({ texto: 'Promoción guardada.', alDeshacer: () => … });
 ## Pendientes
 
 - Probar con NVDA o VoiceOver el anuncio del aviso y del carrusel.
-- Que la encuesta (H21) use `.pr-hoja` y lleve su diapositiva de la franja a la hoja en lugar de a `/encuesta.html`.
 - El «aviso del banco» de la propuesta v4 necesita textos aprobados por el PO; no se incluyó.
 - El mapa (H8) no está en esta subtarea.

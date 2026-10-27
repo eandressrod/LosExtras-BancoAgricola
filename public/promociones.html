@@ -194,7 +194,12 @@
     <!-- H21: encuesta en tres pasos sobre la lista real (ADR-010). Solo se cierra con Omitir o Listo. -->
     <section id="survey-sheet" class="survey-sheet" role="dialog" aria-modal="true" aria-labelledby="survey-title" hidden>
       <div class="survey-head">
-        <p id="survey-step" class="survey-step"></p>
+        <div class="survey-head__fila">
+          <ol class="survey-progreso" aria-hidden="true"><li></li><li></li><li></li></ol>
+          <p id="survey-step" class="survey-step"></p>
+          <!-- Lo que ya cambia en la lista (P1); la región en vivo lo anuncia, aquí solo se ve. -->
+          <p id="survey-cuenta" class="survey-cuenta" aria-hidden="true"></p>
+        </div>
         <h2 id="survey-title" tabindex="-1"></h2>
         <p id="survey-subtitle" class="survey-subtitle" hidden></p>
       </div>
