@@ -222,3 +222,13 @@ export function ofertaEncuesta({ pendiente, pedida = false, hojaMostrada = false
   if (!hojaMostrada) return 'hoja';
   return avisoCerrado ? null : 'aviso';
 }
+
+/**
+ * CDA 10: con letra grande caben menos opciones sin cortar texto ni desplazar. La escala es la letra raíz entre 16 px.
+ * Con letra grande las categorías pasan a dos columnas para que su nombre quepa entero; los cupos dejan filas completas
+ * contando «Buscar».
+ */
+export function cupoOpciones(escala) {
+  if (!(escala >= 1.3)) return { categorias: MAXIMO_CATEGORIAS, comercios: MAXIMO_OPCIONES, columnas: 3 };
+  return escala < 1.6 ? { categorias: 3, comercios: 4, columnas: 2 } : { categorias: 1, comercios: 2, columnas: 2 };
+}

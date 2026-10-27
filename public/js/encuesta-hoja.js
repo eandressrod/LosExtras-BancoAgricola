@@ -7,7 +7,7 @@ import { getJSON } from './comun.js';
 import { ordenarParaTi } from './motor/index.js';
 import {
   opcionesIntereses, categoriasAfinar, opcionesAfinar, alternar, seleccionVacia, textoBotonPrincipal, pasosEncuesta,
-  senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia
+  senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia, cupoOpciones
 } from './encuesta-modelo.js';
 
 const ESPERA_VISTA_PREVIA_MS = 250;
@@ -51,6 +51,9 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
   const omitir = hoja.querySelector('#survey-skip');
   const principal = hoja.querySelector('#survey-next');
   const fondo = [document.querySelector('body > header'), document.querySelector('body > main')].filter(Boolean);
+  // CDA 10: con letra grande caben menos opciones; la escala se mide una vez al abrir.
+  const cupo = cupoOpciones(parseFloat(getComputedStyle(document.documentElement).fontSize) / 16);
+  hoja.dataset.columnas = String(cupo.columnas);
 
   let ofertas = [];
   let activas = [];
@@ -199,10 +202,10 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
       alPulsar: () => { buscando = true; pintar(); } });
     buscar.removeAttribute('aria-checked');
     // Las elegidas por búsqueda que no están entre las 8 también se ven marcadas.
-    const visibles = opcionesIntereses(ofertas, categorias);
+    const visibles = opcionesIntereses(ofertas, categorias, cupo.categorias);
     const extra = categorias.filter(c => seleccion.categorias.includes(c.id) && !visibles.some(v => v.id === c.id))
       .map(c => ({ id: c.id, nombre: c.nombre, icono: c.icono_url }));
-    return [rejilla('survey-grid--3', [...visibles.slice(0, 8 - extra.length), ...extra].map(tile).concat(buscar))];
+    return [rejilla('survey-grid--3', [...visibles.slice(0, cupo.categorias - extra.length), ...extra].map(tile).concat(buscar))];
   }
 
   function paginaAfinar(categoria) {
@@ -210,7 +213,7 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     const tile = opcion => crearOpcion({ texto: opcion.nombre, imagen: opcion.imagen, rol: 'checkbox',
       marcada: marcadas.includes(claveOpcion(opcion)), alPulsar: () => cambiar('afinar', claveOpcion(opcion), categoria),
       clase: opcion.ambito === 'comercio' ? 'survey-option--merchant' : '' });
-    const { modo, opciones } = opcionesAfinar(categoria, ofertas, perfil.id);
+    const { modo, opciones } = opcionesAfinar(categoria, ofertas, perfil.id, cupo.comercios);
     const todas = candidatasDe(categoria);
     if (buscando) {
       return [campoBusqueda('Buscar comercio', texto => {
@@ -228,7 +231,7 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     }
     extras.push(crearOpcion({ texto: 'Ninguno de estos', rol: 'checkbox', marcada: marcadas.includes('ninguno'),
       clase: 'survey-option--link', alPulsar: () => cambiar('afinar', 'ninguno', categoria) }));
-    return [rejilla('survey-grid--2', [...opciones.slice(0, 6 - elegidasFuera.length), ...elegidasFuera].map(tile)),
+    return [rejilla('survey-grid--2', [...opciones.slice(0, cupo.comercios - elegidasFuera.length), ...elegidasFuera].map(tile)),
       rejilla('survey-grid--extras', extras)];
   }
 

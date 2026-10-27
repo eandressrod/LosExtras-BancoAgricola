@@ -470,6 +470,8 @@ button.pr-marcador--sucursal:focus-visible { outline: 3px solid var(--pr-tinta);
 .pr .promo-item:nth-child(3) { animation-delay: 140ms; }
 .pr .promo-item:nth-child(4) { animation-delay: 210ms; }
 .pr .promo-item:nth-child(n + 5) { animation-delay: 260ms; }
+/* H21: en la vista previa de la encuesta las tarjetas se desplazan (js/movimiento-lista.js), sin animación de entrada. */
+.pr .promo-list[data-previa] .promo-item { animation: none; }
 .pr .promo-card {
   display: block; overflow: hidden; border: 0; border-radius: var(--pr-radio-tarjeta); background: var(--pr-superficie); color: var(--pr-tinta);
   text-decoration: none; box-shadow: var(--pr-sombra-tarjeta); transition: transform var(--pr-medio) var(--pr-curva), box-shadow var(--pr-medio);

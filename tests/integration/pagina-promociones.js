@@ -149,6 +149,7 @@ export async function abrirListado(opciones = {}) {
     registrarAperturaPromociones: async () => { pedidas.aperturas++; return { promocionesAbiertas: true, hojaMostrada: true, avisoCerrado: true, ...opciones.marcas }; },
     marcarEncuesta: async marca => { marcasEnviadas.push(marca); },
     abrirEncuestaHoja: datos => { hojas.push(datos); },
+    repintarConMovimiento: (_lista, _id, pintar) => pintar(),
     crearAviso: () => aviso,
     diapositivasFranja, filtrosActivos, textoBotonFiltros,
     montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },

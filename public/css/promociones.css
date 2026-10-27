@@ -168,6 +168,8 @@
 .survey-body > * + * { margin-top: 8px; }
 .survey-grid { display: grid; gap: 8px; }
 .survey-grid--3 { grid-template-columns: repeat(3, 1fr); }
+/* Letra grande (cupoOpciones): dos columnas para que los nombres quepan enteros. */
+.survey-sheet[data-columnas="2"] .survey-grid--3 { grid-template-columns: repeat(2, 1fr); }
 .survey-grid--2 { grid-template-columns: repeat(2, 1fr); }
 .survey-grid--extras { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
 /* Mismo tamaño y tratamiento para todas las opciones; marcada = check + borde de 2 px + fondo tenue, nunca solo color. */
