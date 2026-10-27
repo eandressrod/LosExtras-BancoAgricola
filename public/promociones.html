@@ -67,12 +67,37 @@
         <button id="tab-cerca" type="button" role="tab" class="pr-pestana" data-seccion="cerca" aria-controls="panel-cerca" aria-selected="false" tabindex="-1">Cerca de ti</button>
         <button id="tab-explorar" type="button" role="tab" class="pr-pestana" data-seccion="explorar" aria-controls="panel-lista" aria-selected="false" tabindex="-1">Explorar</button>
       </div>
-      <!-- H8 monta aquí el mapa de Cerca de ti: primero la zona, con el GPS reservado. -->
+      <!-- H8 (js/cerca/pantalla.js): origen por zona o ubicación, mapa ampliable y lista ordenada por cercanía. -->
       <section id="panel-cerca" class="pr-panel pr-cerca" role="tabpanel" aria-labelledby="tab-cerca" hidden>
+        <div class="pr-origen">
+          <p id="cerca-origen" class="pr-origen__texto" role="status"></p>
+          <div class="pr-origen__acciones">
+            <button id="cerca-zona" type="button" class="pr-origen__boton" data-icono="zona">Elegir zona</button>
+            <button id="cerca-ubicacion" type="button" class="pr-origen__boton" data-icono="ubicacion">Usar mi ubicación</button>
+            <button id="cerca-seguir" type="button" class="pr-origen__boton" data-icono="seguir" aria-pressed="false" hidden>Seguir mi ubicación</button>
+          </div>
+        </div>
+        <div id="cerca-pregunta" class="pr-zonas-pregunta" hidden>
+          <h2 id="cerca-pregunta-titulo">¿Qué zona te queda mejor?</h2>
+          <div class="pr-zonas" role="group" aria-labelledby="cerca-pregunta-titulo"></div>
+        </div>
         <div id="mapa-cerca" class="pr-mapa" data-mapa="cerca">
           <p class="pr-mapa__rotulo">Mapa de comercios cerca de ti</p>
+          <button id="cerca-ampliar" type="button" class="pr-mapa__ampliar" aria-pressed="false" hidden>Ampliar mapa</button>
         </div>
+        <p id="cerca-conteo" class="pr-conteo" role="status"></p>
+        <section class="pr-estado">
+          <p id="cerca-estado" class="note" role="status"></p>
+          <button id="cerca-reintentar" type="button" class="secondary" hidden>Reintentar</button>
+        </section>
+        <ol id="cerca-lista" class="pr-cerca__lista" aria-label="Comercios cerca"></ol>
       </section>
+      <dialog id="zonas" class="pr-hoja" aria-labelledby="zonas-titulo">
+        <div class="pr-hoja__asa" aria-hidden="true"></div>
+        <h2 id="zonas-titulo" class="pr-hoja__titulo">¿Qué zona te queda mejor?</h2>
+        <div class="pr-hoja__cuerpo"><div class="pr-zonas" role="group" aria-labelledby="zonas-titulo"></div></div>
+        <div class="pr-hoja__acciones"><button id="cerrar-zonas" type="button">Cerrar</button></div>
+      </dialog>
       <section id="panel-lista" class="pr-panel" role="tabpanel" aria-labelledby="tab-para-ti">
       <!-- Solo los filtros activos, como píldoras que se quitan con un toque. -->
       <div id="filtros-activos" class="pr-pildoras" role="group" aria-label="Filtros activos" hidden></div>

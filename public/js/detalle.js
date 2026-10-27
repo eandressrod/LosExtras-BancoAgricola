@@ -3,6 +3,7 @@ import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, m
 import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { conMinimoCarga } from './carga-tiempo.js';
+import { mostrarDonde } from './cerca/donde.js';
 
 const profile = await requireSession();
 if (profile) {
@@ -69,6 +70,8 @@ if (profile) {
       // Dónde: el mapa (H8) solo aplica a promociones que se usan en tienda.
       const enTienda = Boolean(promotion.channels?.includes('presencial'));
       document.querySelector('#donde').hidden = !enTienda;
+      // H8: distancia, mapa reducido y enlaces; sin sucursales presenciales no hay distancia.
+      if (enTienda) mostrarDonde(promotion, profile);
       const verMapa = document.querySelector('#ver-mapa');
       verMapa.hidden = !enTienda;
       verMapa.onclick = evento => {
