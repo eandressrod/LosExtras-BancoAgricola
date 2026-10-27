@@ -84,25 +84,21 @@ function orden(promociones, estrategia) {
 }
 
 /**
- * @param {{promociones: object[], hoy: string, estrategia: 'base'|'personalizada', guardadas?: string[], encuestaPendiente?: boolean}} entrada
+ * La encuesta no va en la franja: se ofrece con la hoja y el aviso de la lista, sin repetirse (ADR-010).
+ * @param {{promociones: object[], hoy: string, estrategia: 'base'|'personalizada', guardadas?: string[]}} entrada
  * @returns {Array<{tipo: string, titulo: string, detalle: string, accion: object, logoUrl?: string}>} de 0 a 5, en orden de prioridad
  */
-export function diapositivasFranja({ promociones, hoy, estrategia, guardadas: ids = [], encuestaPendiente = false }) {
+export function diapositivasFranja({ promociones, hoy, estrategia, guardadas: ids = [] }) {
   if (!promociones.length) return [];
   const dia = diaDeLaSemana(hoy);
   const personal = estrategia === 'personalizada';
   const deAhorro = ahorro(promociones, personal);
-  const encuesta = encuestaPendiente && {
-    tipo: 'encuesta', titulo: 'Personaliza tus promociones', detalle: 'Elige tus intereses en 3 pasos',
-    accion: { tipo: 'ir', destino: '/encuesta.html', etiqueta: 'Empezar' }
-  };
   return [
-    encuesta,
     vence(promociones, hoy),
     deAhorro,
     hoyToca(promociones, dia, deAhorro?.accion.id, personal),
     semana(promociones, dia, personal),
     guardadas(ids),
-    !(encuestaPendiente && !personal) && orden(promociones, estrategia)
+    orden(promociones, estrategia)
   ].filter(Boolean).slice(0, MAXIMO);
 }

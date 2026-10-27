@@ -3,11 +3,11 @@
 //
 // Cada página se confirma con el botón principal y entonces escribe sus señales con origen encuesta.
 // Antes de confirmar, la selección solo alimenta la vista previa, calculada en el navegador con el motor de H22.
-import { getJSON, almacenSesion } from './comun.js';
+import { getJSON } from './comun.js';
 import { ordenarParaTi } from './motor/index.js';
 import {
   opcionesIntereses, categoriasAfinar, opcionesAfinar, alternar, seleccionVacia, textoBotonPrincipal, pasosEncuesta,
-  senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia, marcarEncuestaOmitida
+  senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia
 } from './encuesta-modelo.js';
 
 const ESPERA_VISTA_PREVIA_MS = 250;
@@ -352,10 +352,9 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
 
   principal.onclick = confirmar;
   atras.onclick = () => { if (indice > 0 && !ocupada) irA(indice - 1); };
-  // «Omitir» conserva lo ya confirmado y no vuelve a abrir la hoja en esta sesión.
+  // «Omitir» conserva lo ya confirmado y cierra; la marca del servidor evita que la hoja vuelva a abrirse sola (ADR-010).
   omitir.onclick = () => {
     if (ocupada) return;
-    marcarEncuestaOmitida(almacenSesion(), perfil.id);
     cerrar(false);
   };
 
