@@ -85,7 +85,7 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 ### Pestañas (`.pr-pestanas`)
 
 - **Dónde:** bajo la franja de avisos, que queda arriba y compartida. Se quedan fijas arriba al desplazar la lista.
-- **Secciones:** Para ti (orden del motor con las señales y «Hoy busco»), Cerca de ti (espacio `#mapa-cerca` donde H8 monta el mapa) y Explorar (`/api/para-ti?explorar=1`: todo lo vigente de las tarjetas propias, en la estrategia base del motor y sin intención del día). Para ti y Explorar comparten `#panel-lista`; la tira «Hoy busco» solo se ve en Para ti.
+- **Secciones:** Para ti (orden del motor con las señales y «Hoy busco»), Cerca de ti (espacio `#mapa-cerca` donde H8 monta el mapa) y Explorar (`/api/para-ti?explorar=1`: todo lo vigente de las tarjetas propias, sin recortar por intereses ni usar la intención del día; lo de interés va primero). Para ti y Explorar comparten `#panel-lista`; la tira «Hoy busco» solo se ve en Para ti.
 - **Forma:** tres pestañas de igual ancho (`role="tab"`) con un indicador amarillo que se desliza a la elegida. El conteo queda pequeño bajo las pestañas.
 - **Uso:** toque, flechas, Inicio y Fin, o deslizar a los lados sobre la lista o el mapa (al menos 56 px y más horizontal que vertical). La sección elegida se recuerda por perfil en la pestaña del navegador, para volver del detalle a la misma.
 

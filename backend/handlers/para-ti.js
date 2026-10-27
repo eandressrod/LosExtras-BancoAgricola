@@ -47,8 +47,8 @@ export function crearHandlerParaTi(repositorios = {
       const alcance = consulta.todas ? { tarjetas: consulta.tarjetas, predeterminadaId: consulta.tarjeta.id } : consulta.tarjeta.tipoTarjeta;
       // Las preferencias no filtran aquí: el motor decide el alcance y el orden a partir de las señales y la intención del día.
       const ofertas = filtrarPromociones(catalogo, alcance, [], ahora);
-      // Explorar: sin señales ni intención, el motor responde con su estrategia base (todo lo elegible, sin razones).
-      if (seccion.explorar) return responderJson(ordenarParaTi({ ofertas, filtros: consulta.filtros }));
+      // Explorar: todo lo elegible, sin recortar por intereses ni intención del día; las señales siguen ordenando.
+      if (seccion.explorar) return responderJson(ordenarParaTi({ ofertas, senales, filtros: consulta.filtros, alcance: 'todo' }));
       const reglas = intencion.intencion ? { intencion: reglaIntencion(intencion.intencion) } : {};
       return responderJson(ordenarParaTi({ ofertas, senales, filtros: consulta.filtros, reglas }));
     } catch {

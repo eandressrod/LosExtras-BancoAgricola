@@ -336,7 +336,7 @@ Los parámetros y su versión están en `config.js`; cambiar un valor exige camb
 
 | Endpoint | Método | Contrato |
 | --- | --- | --- |
-| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`); `tarjeta` es opcional (ver «Todas las tarjetas»). Con `explorar=1` (sección Explorar) ignora señales e intención y responde con la estrategia base. Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
+| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`); `tarjeta` es opcional (ver «Todas las tarjetas»). Con `explorar=1` (sección Explorar) no recorta por intereses (`alcance: 'todo'` del motor) ni usa la intención del día; las señales siguen ordenando, así que lo de interés va primero. Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
 | `/api/senales` | GET | `{senales}`: las activas del dueño de la sesión. |
 | `/api/senales` | POST | `{clase, ambito, valor, origen}` crea la señal o reactiva la existente; responde `{senal}`. Valida el vocabulario y que el valor exista en el catálogo. |
 | `/api/senales` | PATCH | `{id, activa}` desactiva (quitar) o reactiva (deshacer); 404 si la señal no es del usuario. |
