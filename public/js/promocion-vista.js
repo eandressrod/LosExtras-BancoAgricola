@@ -173,6 +173,24 @@ export function mostrarDias(elemento, promo) {
 
 const NOMBRE_TARJETA = { basica: 'Básica', black: 'Black' };
 
+/**
+ * Con qué tarjetas propias aplica la promoción. `totalTarjetas` es cuántas tiene el perfil: con más de una se dice si
+ * aplica a todas o solo a una. `tarjeta` elige la mini tarjeta del pie ('basica', 'black' o 'ambas').
+ */
+export function textoAplica(promo, totalTarjetas = 1) {
+  const propios = promo.mejorBeneficio ? [promo.mejorBeneficio, ...(promo.otrosBeneficios ?? [])] : [];
+  if (!propios.length) {
+    const tipo = promo.applicableCard === 'black' ? 'black' : 'basica';
+    return { texto: 'Aplica a tu tarjeta ' + NOMBRE_TARJETA[tipo], tarjeta: tipo };
+  }
+  const tipos = [...new Set(propios.map(beneficio => beneficio.tipoTarjeta))];
+  if (tipos.length > 1) return { texto: 'Aplica a tus tarjetas ' + tipos.map(tipo => NOMBRE_TARJETA[tipo] ?? tipo).join(' y '), tarjeta: 'ambas' };
+  const [tipo] = tipos;
+  const nombre = NOMBRE_TARJETA[tipo] ?? tipo;
+  if (propios.length > 1) return { texto: `Aplica a tus ${propios.length} tarjetas ${nombre}`, tarjeta: tipo };
+  return { texto: (totalTarjetas > 1 ? 'Solo con tu tarjeta ' : 'Aplica a tu tarjeta ') + nombre, tarjeta: tipo };
+}
+
 /** Todas las tarjetas (SCRUM-133): menciona otra tarjeta propia solo si su beneficio es distinto al mejor. */
 export function textoOtrasTarjetas(promo) {
   const mejor = promo.mejorBeneficio;

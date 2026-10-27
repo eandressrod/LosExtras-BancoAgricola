@@ -562,6 +562,10 @@ button.pr-marcador--sucursal:focus-visible { outline: 3px solid var(--pr-tinta);
   content: ""; flex: none; width: 24px; height: 16px; border-radius: 4px; box-shadow: 0 1px 2px rgb(0 0 0 / .25);
   background: linear-gradient(135deg, #ffe866, var(--pr-amarillo) 55%, var(--pr-amarillo-hondo));
 }
+.pr .promo-applicability[data-tarjeta="ambas"]::before {
+  width: 30px; box-shadow: none;
+  background: linear-gradient(135deg, #4a4a4a, #1c1c1c) 8px 0 / 22px 14px no-repeat, linear-gradient(135deg, #ffe866, var(--pr-amarillo)) 0 3px / 22px 14px no-repeat;
+}
 .pr .promo-applicability[data-tarjeta="black"]::before { background: linear-gradient(135deg, #4a4a4a, #1c1c1c 55%, #050505); box-shadow: inset 0 0 0 1px rgb(253 218 36 / .5); }
 /* «Ver promoción»: flecha (::before, máscara) sobre un círculo amarillo (::after). */
 .pr .promo-open { position: relative; display: inline-flex; flex: none; align-items: center; gap: 7px; min-height: 0; margin: 0; padding: 0; border: 0; font-size: .82rem; font-weight: 700; }
