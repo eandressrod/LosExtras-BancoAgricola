@@ -1,5 +1,4 @@
 import { actualizarSesion, iniciarInactividad, avisarCierre, expirarSesion } from '../pwa/inactividad.js';
-import { conMinimoCarga } from './carga-tiempo.js';
 import { leerSegundoPlano, limpiarSegundoPlano, vencioSegundoPlano } from '../pwa/inactividad-modelo.js';
 import { olvidarInstantaneas } from './instantanea.js';
 import { limpiarEleccion } from './cerca/origen.js';
@@ -72,7 +71,8 @@ export function volverAlLogin() {
 
 /** Perfil de la sesión activa, null si no hay sesión; lanza un error si no se pudo verificar. */
 export async function fetchSession() {
-  const response = await conMinimoCarga(() => fetch('/api/auth/sesion', { cache: 'no-store' }));
+  // Sin espera mínima: solo el login la pide, envolviendo esta función (login.js).
+  const response = await fetch('/api/auth/sesion', { cache: 'no-store' });
   if (!response.ok) throw new Error('No se pudo verificar la sesión.');
   const data = await response.json();
   if (!data.perfil) return null;
@@ -89,9 +89,20 @@ export async function fetchSession() {
 }
 
 /** Protege una página: sin sesión vuelve al login; con sesión muestra el perfil y la página. */
+/** Al volver con Atrás, la página restaurada solo se recarga si la sesión terminó o es de otro perfil. */
+export function recargarAlVolver(anterior, actual) {
+  return !anterior || !actual || anterior.id !== actual.id;
+}
+
 export async function requireSession({ revelar = true } = {}) {
-  // Al volver con Atrás, el navegador puede restaurar la página de otro perfil: se verifica de nuevo.
-  addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
+  // Al volver con Atrás, el navegador puede restaurar la página de otro perfil: se verifica la sesión y, si sigue siendo
+  // del mismo, la página se muestra tal como estaba, sin volver a cargarla.
+  addEventListener('pageshow', async event => {
+    if (!event.persisted) return;
+    let actual = null;
+    try { actual = await fetchSession(); } catch { /* Sin verificación, se recarga. */ }
+    if (recargarAlVolver(profile, actual)) location.reload();
+  });
   let profile;
   try {
     profile = await fetchSession();

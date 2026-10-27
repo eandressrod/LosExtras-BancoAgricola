@@ -2,7 +2,6 @@ import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
 import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias, mostrarPasos, mostrarRestricciones } from './promocion-vista.js';
 import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
-import { conMinimoCarga } from './carga-tiempo.js';
 import { mostrarDonde } from './cerca/donde.js';
 
 const profile = await requireSession();
@@ -39,7 +38,7 @@ if (profile) {
     if (!id) { status.textContent = 'Selecciona una promoción desde el listado.'; return; }
     status.textContent = 'Cargando detalle…';
     try {
-      const promotion = await conMinimoCarga(() => getJSON(conTarjeta('/api/promocion?id=' + encodeURIComponent(id), tarjetaId)));
+      const promotion = await getJSON(conTarjeta('/api/promocion?id=' + encodeURIComponent(id), tarjetaId));
       document.querySelector('h1').textContent = promotion.merchant;
       document.title = promotion.merchant + ' · Promoción';
       document.querySelector('#benefit').textContent = promotion.benefit;
