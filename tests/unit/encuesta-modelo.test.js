@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   opcionesIntereses, categoriasAfinar, opcionesAfinar, ordenSorteado, alternar, seleccionVacia, textoBotonPrincipal,
-  senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia,
+  pasosEncuesta, senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia,
   encuestaOmitida, marcarEncuestaOmitida, olvidarEncuestasOmitidas
 } from '../../public/js/encuesta-modelo.js';
 
@@ -130,12 +130,19 @@ test('H21 reglas de selección: multiselección libre, una opción en canal y de
   assert.deepEqual(alternar(s, 'beneficio', 'descuento').beneficio, ['2x1-combo']);
 });
 
-test('H21 el botón principal nunca se deshabilita: Saltar este paso, Siguiente o Listo', () => {
-  assert.equal(textoBotonPrincipal(1, false), 'Saltar este paso');
-  assert.equal(textoBotonPrincipal(1, true), 'Siguiente');
-  assert.equal(textoBotonPrincipal(2, true), 'Siguiente');
-  assert.equal(textoBotonPrincipal(3, false), 'Listo');
-  assert.equal(textoBotonPrincipal(3, true), 'Listo');
+test('H21 el botón principal nunca se deshabilita: Saltar este paso, Siguiente o Listo solo en la última página', () => {
+  assert.equal(textoBotonPrincipal(false, false), 'Saltar este paso');
+  assert.equal(textoBotonPrincipal(false, true), 'Siguiente');
+  assert.equal(textoBotonPrincipal(true, false), 'Listo');
+  assert.equal(textoBotonPrincipal(true, true), 'Listo');
+});
+
+// P3: una pregunta por pantalla. El paso 3 se divide en una página por criterio, como el paso 2 por categoría.
+test('H21 páginas de la encuesta: intereses, una por categoría que se afina y una por cada pregunta del paso 3', () => {
+  const criterios = [{ pagina: 3, criterio: 'canal' }, { pagina: 3, criterio: 'beneficio' }, { pagina: 3, criterio: 'descubrir' }];
+  assert.deepEqual(pasosEncuesta([]), [{ pagina: 1 }, ...criterios]);
+  assert.deepEqual(pasosEncuesta(['Restaurantes', 'Salud']),
+    [{ pagina: 1 }, { pagina: 2, categoria: 'Restaurantes' }, { pagina: 2, categoria: 'Salud' }, ...criterios]);
 });
 
 test('H21 señales por página con origen encuesta; «Ninguno de estos» no escribe y la indiferencia se declara', () => {
@@ -157,6 +164,10 @@ test('H21 señales por página con origen encuesta; «Ninguno de estos» no escr
     { clase: 'criterio', ambito: 'descubrir', valor: 'mezcla', origen: 'encuesta' }
   ]);
   assert.deepEqual(senalesDePagina(3, seleccionVacia()), []);
+  // Cada página del paso 3 confirma solo su pregunta.
+  assert.deepEqual(senalesDePagina(3, s, 'canal'), [{ clase: 'criterio', ambito: 'canal', valor: 'indiferente', origen: 'encuesta' }]);
+  assert.deepEqual(senalesDePagina(3, s, 'beneficio'), [{ clase: 'criterio', ambito: 'beneficio', valor: 'indiferente', origen: 'encuesta' }]);
+  assert.deepEqual(senalesDePagina(3, s, 'descubrir'), [{ clase: 'criterio', ambito: 'descubrir', valor: 'mezcla', origen: 'encuesta' }]);
 });
 
 test('H21 al confirmar una página se activa lo nuevo y se desactiva solo lo que dejó de elegirse en esa página', () => {

@@ -6,13 +6,13 @@
 import { getJSON, almacenSesion } from './comun.js';
 import { ordenarParaTi } from './motor/index.js';
 import {
-  opcionesIntereses, categoriasAfinar, opcionesAfinar, alternar, seleccionVacia, textoBotonPrincipal, senalesDePagina,
-  cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia, marcarEncuestaOmitida
+  opcionesIntereses, categoriasAfinar, opcionesAfinar, alternar, seleccionVacia, textoBotonPrincipal, pasosEncuesta,
+  senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia, marcarEncuestaOmitida
 } from './encuesta-modelo.js';
 
 const ESPERA_VISTA_PREVIA_MS = 250;
 const ERROR_GUARDAR = 'No se pudieron guardar tus intereses. Intenta de nuevo.';
-const CRITERIOS = ['canal', 'beneficio', 'descubrir'];
+// Paso 3: una página por pregunta (P3), en este orden.
 const FILAS_CRITERIOS = [
   { fila: 'canal', pregunta: '¿Cómo aprovechas tus promos?', rol: 'radio', opciones: [
     ['presencial', 'En el local'], ['delivery', 'A domicilio'], ['en-linea', 'En línea'], ['indiferente', 'De todo un poco']] },
@@ -55,7 +55,7 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
   let ofertas = [];
   let activas = [];
   let seleccion = seleccionVacia();
-  let pasos = [{ pagina: 1 }];
+  let pasos = pasosEncuesta([]);
   let indice = 0;
   let buscando = false;
   let ocupada = false;
@@ -63,17 +63,20 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
   let temporizador = null;
 
   const actual = () => pasos[indice];
+  const ultima = () => indice === pasos.length - 1;
+  // Lo que distingue a la página dentro de su paso: la categoría que se afina o la pregunta del paso 3.
+  const detalle = paso => paso.categoria ?? paso.criterio;
   const candidatasDe = categoria => opcionesAfinar(categoria, ofertas, perfil.id, Infinity).opciones;
   const claveOpcion = opcion => `${opcion.ambito}:${opcion.id}`;
 
   /** Señales activas que pertenecen a la página: solo esas se desactivan al confirmarla. */
-  function alcance({ pagina, categoria }) {
+  function alcance({ pagina, categoria, criterio }) {
     if (pagina === 1) return senal => senal.clase === 'interes' && senal.ambito === 'categoria';
     if (pagina === 2) {
       const claves = new Set(candidatasDe(categoria).map(claveOpcion));
       return senal => senal.clase === 'interes' && claves.has(`${senal.ambito}:${senal.valor}`);
     }
-    return senal => senal.clase === 'criterio' && CRITERIOS.includes(senal.ambito);
+    return senal => senal.clase === 'criterio' && senal.ambito === criterio;
   }
 
   // Lo que la persona ya confirmó antes aparece marcado; nada se marca por defecto.
@@ -93,16 +96,16 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
   }
 
   function haySeleccion() {
-    const { pagina, categoria } = actual();
+    const { pagina, categoria, criterio } = actual();
     if (pagina === 1) return seleccion.categorias.length > 0;
     if (pagina === 2) return (seleccion.afinar[categoria] ?? []).length > 0;
-    return Boolean(seleccion.canal || seleccion.beneficio.length || seleccion.descubrir);
+    return [seleccion[criterio]].flat().filter(Boolean).length > 0;
   }
 
   // Vista previa: lo ya guardado fuera de esta página más la selección provisional de la página.
   function calcularVistaPrevia() {
     const enPagina = alcance(actual());
-    const provisionales = [...activas.filter(senal => !enPagina(senal)), ...senalesDePagina(actual().pagina, seleccion, actual().categoria)];
+    const provisionales = [...activas.filter(senal => !enPagina(senal)), ...senalesDePagina(actual().pagina, seleccion, detalle(actual()))];
     const { promociones } = ordenarParaTi({ ofertas, senales: provisionales });
     const anuncio = anuncioVistaPrevia(previa, promociones);
     const igual = previa.length === promociones.length && previa.every((promo, i) => promo.id === promociones[i].id);
@@ -229,8 +232,8 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
       rejilla('survey-grid--extras', extras)];
   }
 
-  function paginaCriterios() {
-    return FILAS_CRITERIOS.map(({ fila, pregunta, ayuda, rol, opciones }) => {
+  function paginaCriterios(criterio) {
+    return FILAS_CRITERIOS.filter(({ fila }) => fila === criterio).map(({ fila, pregunta, ayuda, rol, opciones }) => {
       const grupo = document.createElement('div');
       grupo.className = 'survey-row';
       grupo.setAttribute('role', rol === 'radio' ? 'radiogroup' : 'group');
@@ -255,18 +258,18 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
   }
 
   function pintar() {
-    const { pagina, categoria } = actual();
-    const posicion = pasos.filter(p => p.pagina === 2);
+    const { pagina, categoria, criterio } = actual();
+    const posicion = pasos.filter(p => p.pagina === pagina);
     paso.textContent = `Paso ${pagina} de 3`;
     titulo.textContent = pagina === 1 ? '¿Qué te interesa?' : pagina === 2 ? '¿Cuáles te gustan?' : '¿Cómo las prefieres?';
-    subtitulo.hidden = pagina !== 2;
-    if (pagina === 2) {
-      const nombre = categorias.find(c => c.id === categoria)?.nombre ?? categoria;
-      subtitulo.textContent = `${nombre} · ${posicion.findIndex(p => p.categoria === categoria) + 1} de ${posicion.length}`;
-    }
+    subtitulo.hidden = pagina === 1;
+    // Los pasos 2 y 3 tienen varias páginas: «Restaurantes · 1 de 2» o «1 de 3».
+    const enPaso = `${posicion.findIndex(p => detalle(p) === detalle(actual())) + 1} de ${posicion.length}`;
+    if (pagina === 2) subtitulo.textContent = `${categorias.find(c => c.id === categoria)?.nombre ?? categoria} · ${enPaso}`;
+    if (pagina === 3) subtitulo.textContent = enPaso;
     hoja.classList.toggle('survey-sheet--full', buscando);
-    cuerpo.replaceChildren(...(pagina === 1 ? paginaIntereses() : pagina === 2 ? paginaAfinar(categoria) : paginaCriterios()));
-    principal.textContent = textoBotonPrincipal(pagina, haySeleccion());
+    cuerpo.replaceChildren(...(pagina === 1 ? paginaIntereses() : pagina === 2 ? paginaAfinar(categoria) : paginaCriterios(criterio)));
+    principal.textContent = textoBotonPrincipal(ultima(), haySeleccion());
     atras.setAttribute('aria-disabled', String(indice === 0));
     principal.disabled = ocupada;
     omitir.disabled = ocupada;
@@ -282,7 +285,7 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
 
   async function escribirPagina() {
     const pagina = actual();
-    const deseadas = senalesDePagina(pagina.pagina, seleccion, pagina.categoria);
+    const deseadas = senalesDePagina(pagina.pagina, seleccion, detalle(pagina));
     const { activar, desactivar } = cambiosSenales(activas, deseadas, alcance(pagina));
     const creadas = await Promise.all(activar.map(nueva => enviar('/api/senales', 'POST', nueva)));
     await Promise.all(desactivar.map(id => enviar('/api/senales', 'PATCH', { id, activa: false })));
@@ -304,7 +307,7 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
     try {
       await escribirPagina();
       const { pagina } = actual();
-      if (pagina === 3) {
+      if (ultima()) {
         // Solo «Listo» marca la encuesta como completada; sin categorías queda pendiente (ADR-010).
         const elegidas = activas.filter(s => s.clase === 'interes' && s.ambito === 'categoria').map(s => s.valor);
         if (elegidas.length) await enviar('/api/preferencias', 'POST', { categorias: elegidas });
@@ -313,7 +316,7 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
         return;
       }
       if (pagina === 1) {
-        pasos = [{ pagina: 1 }, ...categoriasAfinar(seleccion.categorias, ofertas).map(categoria => ({ pagina: 2, categoria })), { pagina: 3 }];
+        pasos = pasosEncuesta(categoriasAfinar(seleccion.categorias, ofertas));
       }
       ocupada = false;
       irA(indice + 1);
