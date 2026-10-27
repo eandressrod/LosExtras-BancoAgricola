@@ -11,7 +11,8 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 | `public/js/franja.js` | Qué avisos muestra el carrusel (función pura). |
 | `public/js/carrusel.js` | Reproductor del carrusel (`crearReproductor`) y su dibujo (`montarCarrusel`). |
 | `public/js/aviso-deshacer.js` | Aviso con «Deshacer». |
-| `public/js/promocion-vista.js` | Textos y piezas de la tarjeta: `textoVencePronto`, `tiraDias`, `mostrarDias`, `hoyEnElSalvador`, `diaDeLaSemana`, `textoOtrasTarjetas`. |
+| `public/js/promocion-vista.js` | Textos y piezas de la tarjeta y del detalle: `textoVencePronto`, `formaDias`, `textoDias`, `estadoDias`, `mostrarDias`, `pasosDeUso`, `mostrarPasos`, `restriccionesDe`, `mostrarRestricciones`, `hoyEnElSalvador`, `diaDeLaSemana`, `textoOtrasTarjetas`. |
+| `public/js/pestanas.js` | Pestañas Para ti · Cerca de ti · Explorar: orden, gesto de deslizar, sección recordada y consulta de Explorar. |
 | `public/js/filtros-activos.js` | Píldoras de los filtros activos y nombre accesible del botón Filtros. |
 
 **Regla para las demás historias** (H20, H21, H23 y H25): usar estas clases y tokens sin escribir estilos propios. Un estado nuevo se añade aquí y en el CSS del sistema.
@@ -53,7 +54,6 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 ### Cabecera de la sección (`.pr-hero`)
 
 - **Barra** (`.pr-hero__barra`): título grande; iconos `.pr-icono` de Guardadas (con `.pr-contador` de guardadas) y de Mis preferencias. El de la página actual lleva `aria-current`. En Guardadas y Mis preferencias, la flecha de volver lleva a Para ti.
-- **Secciones** (`.pr-secciones`): Para ti | Cerca de ti. Mientras solo haya una sección visible no se dibuja; H8 muestra «Cerca de ti» cuando exista su pantalla.
 - **Fila de búsqueda** (`.pr-buscador`): campo blanco con lupa y botón **Filtros** (`.pr-boton-filtros`), que muestra cuántos filtros hay activos y tiene un nombre accesible («Filtros, 2 activos»).
 - **Hoy busco (H25)** (`.pr-hoy`): tira deslizable bajo la búsqueda (comentario 10035 de SCRUM-118). Cada chip (`.pr-hoy__chip`, `role="radio"`) es una pastilla translúcida con icono y una palabra; su nombre accesible es el nombre completo de la ocasión y contiene esa palabra. Marcado: relleno oscuro, icono ✓ y `aria-checked`. Altura visible de 32 px y área táctil de 44 px. Con un chip activo, «Primero: …» (`.pr-hoy__estado`) aparece en la propia cabecera. La tira está oculta hasta que la página tiene tarjetas con las que consultar.
 - **Fondo:** amarillo de la marca con aros de fondo. Ya no cambia con la tarjeta.
@@ -82,6 +82,13 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 - **Teclado:** las flechas navegan. La región en vivo está en `off` mientras avanza sola y en `polite` cuando está detenida.
 - **Acciones:** los avisos de promoción desplazan la lista hasta la tarjeta y la resaltan. El aviso semanal abre el detalle. Los demás llevan a Guardadas, a Mis preferencias o a la encuesta.
 
+### Pestañas (`.pr-pestanas`)
+
+- **Dónde:** bajo la franja de avisos, que queda arriba y compartida. Se quedan fijas arriba al desplazar la lista.
+- **Secciones:** Para ti (orden del motor con las señales y «Hoy busco»), Cerca de ti (espacio `#mapa-cerca` donde H8 monta el mapa) y Explorar (`/api/para-ti?explorar=1`: todo lo vigente de las tarjetas propias, sin recortar por intereses ni usar la intención del día; lo de interés va primero). Para ti y Explorar comparten `#panel-lista`; la tira «Hoy busco» solo se ve en Para ti.
+- **Forma:** tres pestañas de igual ancho (`role="tab"`) con un indicador amarillo que se desliza a la elegida. El conteo queda pequeño bajo las pestañas.
+- **Uso:** toque, flechas, Inicio y Fin, o deslizar a los lados sobre la lista o el mapa (al menos 56 px y más horizontal que vertical). La sección elegida se recuerda por perfil en la pestaña del navegador, para volver del detalle a la misma.
+
 ### Hoja Filtros y píldoras
 
 - **Hoja** (`<dialog id="filtros" class="pr-hoja">`): se abre con el botón Filtros y se cierra con «Listo», Esc o tocando fuera. Los cambios se aplican al tocarlos. Contiene tres grupos:
@@ -95,7 +102,7 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 ```html
 <article class="promo-item" data-categoria="Compras" data-exclusiva="si">
   <a class="promo-card">…foto, logo, insignia, beneficio sobre la foto…
-    <div class="promo-content">comercio · categoría · razón · descripción · tira de días · vigencia · avisos · condiciones · pie</div>
+    <div class="promo-content">comercio · categoría · razón · descripción · días con reloj · vigencia · avisos · condiciones · pie</div>
   </a>
   <button class="guardar-promo" data-guardada="no">Guardar</button>   <!-- hermano del enlace (SCRUM-110) -->
   <p class="error guardar-error" role="alert"></p>
@@ -107,8 +114,7 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 | Normal | Sombra suave; al pasar el puntero, sube 3 px y la foto se acerca. |
 | Foco | Contorno oscuro de 3 px. |
 | Con razón del motor | Píldora amarilla suave con destello: «Porque elegiste…». |
-| Días fijos | Tira L M M J V S D: válidos en oscuro, no válidos tachados y hoy con aro amarillo. Las condiciones ya no repiten los días. |
-| Disponible hoy | Línea verde con ✓. |
+| Días (`.promo-cuando`) | Pastilla con reloj y una frase de los días (`estadoDias`). Verde si aplica hoy («Disponible hoy · sábados y domingos»), roja si está vigente pero hoy no es uno de sus días («Disponible los miércoles») y gris fuera de vigencia. Las condiciones no repiten los días. |
 | Vence pronto (≤ 7 días) | Píldora naranja suave con reloj: «Vence en N días». |
 | Vencida durante la visita | Píldora roja «Vencida» y foto en gris. |
 | Beneficio | Etiqueta de precio color sandía, con orificio y ligera inclinación, sobre la foto; el degradado de la foto es suave. |
@@ -148,11 +154,11 @@ aviso.mostrar({ texto: 'Promoción guardada.', alDeshacer: () => … });
 
 ## Pantallas
 
-- **Para ti:** cabecera con iconos, fila de búsqueda y Filtros, franja de avisos, píldoras activas, conteo («17 promociones») y lista.
+- **Promociones:** cabecera con iconos, fila de búsqueda y Filtros, franja de avisos, pestañas, píldoras activas, conteo («17 promociones») y lista o mapa.
 - **Detalle:**
   - foto cuadrada a sangre con «Volver» y Guardar flotantes;
   - comercio y beneficio sobre la foto;
-  - hoja con la categoría, la descripción y los bloques «Cuándo» (tira, vigencia, vence pronto, disponible hoy), «Con tu tarjeta» (con la otra tarjeta si cambia el beneficio) y «Condiciones».
+  - hoja con la categoría, la descripción y los bloques «Cómo usarla» (`.pr-pasos`: comercio y canal, días, tarjeta, compra mínima y tope, y al final las instrucciones de la promoción como nota; debajo, «Restricciones» con las de la tarjeta y las generales de la promoción, que «Condiciones» ya no repite; «Ver en el mapa» lleva a «Dónde»), «Cuándo» (días con reloj, vigencia, vence pronto), «Con tu tarjeta» (con la otra tarjeta si cambia el beneficio), «Condiciones» y «Dónde» (`#mapa-detalle`, donde H8 monta el mapa; solo con canal presencial).
 - **Guardadas:** misma cabecera y misma tarjeta. Busca entre las guardadas y muestra los vacíos en `.pr-estado--lista`.
 - **Mis preferencias:**
   - fichas en dos columnas con el icono y el acento de cada categoría, y ✓ al marcarlas;
