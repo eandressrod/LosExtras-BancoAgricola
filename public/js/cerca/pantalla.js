@@ -52,7 +52,9 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
   let origen = null;
   let promociones = null;
   let consultaCargada = null;
-  let resultado = { resultados: [], fueraDelRadio: false };
+  let resultado = { cerca: [], lejos: [] };
+  // Las dos secciones seguidas: primero lo de 3 km o menos y luego lo que está más lejos.
+  const todos = () => [...resultado.cerca, ...resultado.lejos];
   let preparacion = null;
   let visible = false;
   let ml = null;
@@ -131,19 +133,33 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
   }
 
   function calcular() {
-    resultado = origen && promociones ? resultadosCerca(promociones, origen) : { resultados: [], fueraDelRadio: false };
+    resultado = origen && promociones ? resultadosCerca(promociones, origen) : { cerca: [], lejos: [] };
     pintarLista();
     pintarMarcadores();
   }
 
   function pintarLista() {
     if (!promociones) return;
-    lista.replaceChildren(...resultado.resultados.map(crearElemento));
+    const { cerca, lejos } = resultado;
+    lista.replaceChildren(
+      ...(cerca.length ? [encabezado('A 3 km o menos', cerca.length), ...cerca.map(crearElemento)] : []),
+      ...(lejos.length ? [encabezado('Más lejos', lejos.length), ...lejos.map(crearElemento)] : [])
+    );
     if (!origen) return ponerEstado('');
-    if (!resultado.resultados.length) return ponerEstado('No hay promociones con tienda para tus tarjetas.', 'vacio');
-    if (resultado.fueraDelRadio) return ponerEstado('No hay comercios con tus promociones a 3 km o menos. Estos son los más cercanos.');
-    const total = resultado.resultados.length;
-    ponerEstado(total === 1 ? '1 promoción a 3 km o menos' : `${total} promociones a 3 km o menos`);
+    if (!cerca.length && !lejos.length) return ponerEstado('Hoy no hay promociones en tienda para tus tarjetas.', 'vacio');
+    if (!cerca.length) return ponerEstado('No hay comercios con tus promociones a 3 km o menos. Estos son los más cercanos.');
+    const total = cerca.length + lejos.length;
+    ponerEstado(total === 1 ? '1 promoción para usar hoy' : `${total} promociones para usar hoy`);
+  }
+
+  // Encabezado de sección dentro de la lista; no es un comercio, así que no lleva acciones.
+  function encabezado(texto, cuantas) {
+    const item = elemento('li', 'pr-cerca__seccion');
+    item.setAttribute('role', 'presentation');
+    const titulo = elemento('h3', 'pr-cerca__seccion-titulo', texto);
+    titulo.append(elemento('span', 'pr-cerca__seccion-cuenta', String(cuantas)));
+    item.append(titulo);
+    return item;
   }
 
   function crearElemento({ promocion, sucursal, metros }) {
@@ -161,7 +177,6 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
       elemento('span', 'pr-cerca__beneficio', promocion.benefit),
       elemento('span', 'pr-cerca__sucursal', `${sucursal.name} · ${textoDistancia(metros)}`)
     );
-    if (resultado.fueraDelRadio) textos.append(elemento('span', 'pr-cerca__fuera', 'Fuera de 3 km'));
     elegir.append(logo, textos);
     elegir.addEventListener('click', () => {
       seleccionar(sucursal.id);
@@ -180,7 +195,7 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
     for (const marcador of marcadores) marcador.remove();
     marcadores = [];
     const sucursales = new Map();
-    const fuente = origen ? resultado.resultados.map(r => r.sucursal) : (promociones ?? []).flatMap(p => p.branches ?? []);
+    const fuente = origen ? todos().map(r => r.sucursal) : (promociones ?? []).flatMap(p => p.branches ?? []);
     for (const sucursal of fuente) sucursales.set(sucursal.id, sucursal);
     const enfocada = seleccion && sucursalPorId(seleccion);
     if (enfocada) sucursales.set(enfocada.id, enfocada);
@@ -240,7 +255,7 @@ export function crearCerca({ perfil, consulta, urlDetalle, enfocarSucursal = nul
 
   function encuadrarOrigen(animar = true) {
     if (!mapa || !origen) return;
-    const cercanas = resultado.resultados.slice(0, 5).map(r => posicionDe(r.sucursal));
+    const cercanas = todos().slice(0, 5).map(r => posicionDe(r.sucursal));
     encuadrar(mapa, [origen, ...cercanas], { margen: MARGEN_ENCUADRE, zoom: 15, animar });
   }
 

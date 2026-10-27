@@ -1,8 +1,7 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
-import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias, mostrarPasos, mostrarRestricciones } from './promocion-vista.js';
+import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias, mostrarPasos, mostrarRestricciones } from './promocion-vista.js';
 import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
-import { conMinimoCarga } from './carga-tiempo.js';
 import { mostrarDonde } from './cerca/donde.js';
 
 const profile = await requireSession();
@@ -39,14 +38,16 @@ if (profile) {
     if (!id) { status.textContent = 'Selecciona una promoción desde el listado.'; return; }
     status.textContent = 'Cargando detalle…';
     try {
-      const promotion = await conMinimoCarga(() => getJSON(conTarjeta('/api/promocion?id=' + encodeURIComponent(id), tarjetaId)));
+      const promotion = await getJSON(conTarjeta('/api/promocion?id=' + encodeURIComponent(id), tarjetaId));
       document.querySelector('h1').textContent = promotion.merchant;
       document.title = promotion.merchant + ' · Promoción';
       document.querySelector('#benefit').textContent = promotion.benefit;
       document.querySelector('#description').textContent = promotion.detailDescription || promotion.description;
       const aplica = document.querySelector('#payment');
-      aplica.textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
-      aplica.dataset.tarjeta = promotion.applicableCard === 'black' ? 'black' : 'basica';
+      // Con cuáles de las tarjetas propias aplica (sale de sus beneficios; el listado añade «Solo con…»).
+      const { texto: textoTarjetas, tarjeta } = textoAplica(promotion);
+      aplica.textContent = textoTarjetas;
+      aplica.dataset.tarjeta = tarjeta;
       // Todas las tarjetas (SCRUM-133): la otra tarjeta propia solo se menciona si su beneficio cambia.
       const otras = document.querySelector('#otras-tarjetas');
       otras.textContent = textoOtrasTarjetas(promotion);

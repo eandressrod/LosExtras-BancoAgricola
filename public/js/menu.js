@@ -101,7 +101,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       // La cubierta de acceso permanece inmóvil mientras se preparan los datos.
       if (!document.documentElement?.dataset.entradaMenu) revelarPagina();
       get('btn-perfil').disabled = false;
-      datos = await conMinimoCarga(() => getJSON('/api/menu'));
+      // Solo la pantalla de carga tras el login (o al retomar) conserva su tiempo mínimo; volver al menú es inmediato.
+      const conPantallaDeCarga = ['carga', 'fade'].includes(document.documentElement?.dataset.entradaMenu);
+      datos = await (conPantallaDeCarga ? conMinimoCarga(() => getJSON('/api/menu')) : getJSON('/api/menu'));
       // Compatibilidad con respuestas anteriores: Cuentas nunca presenta tarjetas.
       datos.cuentas = datos.cuentas.filter(cuenta => !/tarjeta/i.test(cuenta.tipo));
       encabezado(); controles(true);
@@ -215,7 +217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     modal('Mensajería', true, 'entrada'); const lectura = lecturaDialogo;
     dialogBody.appendChild(indicadorCarga());
     try {
-      const mensajes = await conMinimoCarga(() => getJSON('/api/mensajes')); if (lectura !== lecturaDialogo || !dialog.open) return;
+      const mensajes = await getJSON('/api/mensajes'); if (lectura !== lecturaDialogo || !dialog.open) return;
       dialogBody.replaceChildren();
       if (!mensajes.length) dialogBody.appendChild(elemento('p','inbox-empty','No hay mensajes'));
       const listado = elemento('div','inbox-list');
@@ -275,7 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         finally { regresando = false; }
       });
       if (recargarCuentas) {
-        await conMinimoCarga(async () => cambiarPestana('cuentas'));
+        await cambiarPestana('cuentas');
         get('panel-productos').scrollTop = 0;
         get('menu-loading').hidden = true; get('menu-content').hidden = false; controles(true);
       }

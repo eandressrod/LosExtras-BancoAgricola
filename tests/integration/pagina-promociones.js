@@ -7,7 +7,7 @@ import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
 import { ofertaEncuesta } from '../../public/js/encuesta-modelo.js';
-import { textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarDias } from '../../public/js/promocion-vista.js';
+import { textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarDias } from '../../public/js/promocion-vista.js';
 import * as pestanas from '../../public/js/pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
 import { diapositivasFranja } from '../../public/js/franja.js';
@@ -38,7 +38,7 @@ const fuente = async archivo => {
   return sinMultilinea.replace(/^import[^\n]+\n/gm, '');
 };
 const vista = {
-  textoVigencia: () => '', textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarDias,
+  textoVigencia: () => '', textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarDias,
   mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarPasos: () => {}, mostrarRestricciones: () => {}
 };
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
@@ -257,6 +257,7 @@ export async function abrirGuardadas(opciones = {}) {
     marcarBoton: () => {},
     alPulsarGuardar: () => {},
     textoVigencia: () => '',
+    textoAplica,
     mostrarImagen: () => {},
     mostrarCondiciones: () => {},
     mostrarDias: () => {},
