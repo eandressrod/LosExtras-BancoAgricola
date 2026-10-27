@@ -340,8 +340,11 @@ Los parámetros y su versión están en `config.js`; cambiar un valor exige camb
 | `/api/senales` | GET | `{senales}`: las activas del dueño de la sesión. |
 | `/api/senales` | POST | `{clase, ambito, valor, origen}` crea la señal o reactiva la existente; responde `{senal}`. Valida el vocabulario y que el valor exista en el catálogo. |
 | `/api/senales` | PATCH | `{id, activa}` desactiva (quitar) o reactiva (deshacer); 404 si la señal no es del usuario. |
+| `/api/zonas` | GET | `{zonas: [{id, nombre, latitud, longitud}]}`: lista fija de zonas con su centro, en su orden (H8). |
 
-Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (`backend/http.js`). `/api/promociones` conserva su contrato. Para ti ya no lo usa: consume `/api/para-ti` y conserva el orden de la visita en `sessionStorage` (`public/js/instantanea.js`).
+Las rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (`backend/http.js`). `/api/promociones` conserva su contrato. Para ti ya no lo usa: consume `/api/para-ti` y conserva el orden de la visita en `sessionStorage` (`public/js/instantanea.js`).
+
+**Cerca de ti y Dónde** ([SCRUM-11](https://somos-agilistas.atlassian.net/browse/SCRUM-11), H8; ADR-012). La pestaña Cerca de ti y el bloque «Dónde» del detalle usan `/api/para-ti` (sus promociones traen `branches` y `componentes.R`) y `/api/zonas`; la distancia y el orden D × (0.2 + 0.8 × R / 95) se calculan en el navegador (`public/js/cerca/`). El mapa es MapLibre GL JS 6.16.0, servido desde `public/vendor/maplibre-gl@6.16.0/`, con teselas de OpenFreeMap; el service worker no las intercepta. La posición del dispositivo vive solo en memoria: `sessionStorage` guarda qué se eligió (`{tipo: 'ubicacion'}` o la zona), nunca coordenadas, y se limpia al iniciar o cerrar sesión. La zona elegida se guarda como señal `criterio·zona`. Las coordenadas de `catalogo/catalogo.json` se verificaron contra OpenStreetMap (migración `20261026040041_h8_sucursales_verificadas.sql`, aplicada al proyecto compartido solo con la sentencia de `sucursales`, que es lo único que cambia).
 
 **Todas las tarjetas** ([SCRUM-133](https://somos-agilistas.atlassian.net/browse/SCRUM-133), decisión del 24 de octubre de 2026 en el comentario 10031 de SCRUM-116). Para ti muestra las mejores promociones considerando todas las tarjetas del usuario; filtrar por tarjeta es opcional.
 

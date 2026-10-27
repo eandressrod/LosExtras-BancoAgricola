@@ -16,6 +16,7 @@ import {
   estadoNavegacion, urlConsulta, urlListado, urlDetalle, CHIPS_HOY_BUSCO, textoPrimeroHoyBusco
 } from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
+import { crearCerca } from './cerca/pantalla.js';
 
 let idsGuardados = [];
 let avisoGuardar = null;
@@ -168,6 +169,18 @@ if (profile) {
   let volverDelDetalle = location.hash.startsWith('#promo-');
   // Sección elegida en esta visita; al volver del detalle se abre la misma.
   let seccion = leerSeccion(sesion, profile.id);
+  // H8: el mapa del detalle abre Cerca de ti centrado en su sucursal.
+  const enfocarSucursal = new URLSearchParams(location.search).get('sucursal');
+  if (enfocarSucursal) {
+    seccion = 'cerca';
+    guardarSeccion(sesion, profile.id, seccion);
+  }
+  // Cerca de ti consulta Para ti con los mismos filtros y ordena por cercanía en el navegador.
+  const cerca = crearCerca({
+    perfil: profile, enfocarSucursal,
+    consulta: () => conTarjeta(urlConsulta(categoria, hoy, busqueda, intencion), filtroTarjeta?.id),
+    urlDetalle: id => urlDetalle(id, categoria, hoy, busqueda, intencion)
+  });
   const indicador = document.querySelector('#promotions-loading');
 
   searchInput.value = busqueda ?? '';
@@ -233,6 +246,8 @@ if (profile) {
     panelLista.hidden = seccion === 'cerca';
     panelLista.setAttribute('aria-labelledby', 'tab-' + (seccion === 'explorar' ? 'explorar' : 'para-ti'));
     intentBox.hidden = !tarjetas.length || seccion !== 'para-ti';
+    if (seccion === 'cerca') cerca.mostrar();
+    else cerca.ocultar();
   }
 
   function cambiarSeccion(nueva) {
@@ -258,6 +273,8 @@ if (profile) {
   function escucharDeslizamiento(panel) {
     let inicio = null;
     panel.addEventListener('touchstart', evento => {
+      // Sobre el mapa, arrastrar mueve el mapa, no la sección.
+      if (evento.target.closest?.('.pr-mapa')) { inicio = null; return; }
       const toque = evento.touches[0];
       inicio = evento.touches.length === 1 ? { x: toque.clientX, y: toque.clientY } : null;
     }, { passive: true });
@@ -436,7 +453,7 @@ if (profile) {
   }
 
   async function loadPromotions() {
-    if (seccion === 'cerca') return; // El mapa no usa la lista; se consulta al volver a Para ti o Explorar.
+    if (seccion === 'cerca') return cerca.mostrar(); // Cerca de ti tiene su propia lista; un filtro nuevo la recalcula.
     const turno = ++consultaActual;
     conteo.textContent = '';
     status.textContent = '';
