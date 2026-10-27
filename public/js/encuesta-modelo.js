@@ -140,28 +140,39 @@ export function alternar(seleccion, fila, valor, categoria) {
   return { ...seleccion, [fila]: seleccion[fila] === valor ? null : valor };
 }
 
-/** El botón principal siempre está habilitado; su texto dice qué pasará. */
-export function textoBotonPrincipal(pagina, haySeleccion) {
-  if (pagina === 3) return 'Listo';
+/** El botón principal siempre está habilitado; su texto dice qué pasará. «Listo» solo en la última página. */
+export function textoBotonPrincipal(ultima, haySeleccion) {
+  if (ultima) return 'Listo';
   return haySeleccion ? 'Siguiente' : 'Saltar este paso';
+}
+
+const CRITERIOS = ['canal', 'beneficio', 'descubrir'];
+
+/**
+ * Páginas de la encuesta, una pregunta por pantalla (P3): intereses, una por categoría que se afina
+ * y una por cada pregunta del paso 3.
+ * @param {string[]} categorias categorías que se afinan, en orden (categoriasAfinar)
+ */
+export function pasosEncuesta(categorias) {
+  return [{ pagina: 1 }, ...categorias.map(categoria => ({ pagina: 2, categoria })), ...CRITERIOS.map(criterio => ({ pagina: 3, criterio }))];
 }
 
 const senal = (clase, ambito, valor) => ({ clase, ambito, valor, origen: 'encuesta' });
 
-/** Señales que confirma una página; en la página 2, las de la categoría indicada. «Ninguno de estos» no escribe nada. */
-export function senalesDePagina(pagina, seleccion, categoria) {
+/**
+ * Señales que confirma una página. «Ninguno de estos» no escribe nada.
+ * @param {string} [detalle] en la página 2, la categoría que se afina; en la 3, el criterio (sin él, los tres)
+ */
+export function senalesDePagina(pagina, seleccion, detalle) {
   if (pagina === 1) return seleccion.categorias.map(id => senal('interes', 'categoria', id));
   if (pagina === 2) {
-    return (seleccion.afinar[categoria] ?? []).filter(clave => clave !== NINGUNO).map(clave => {
+    return (seleccion.afinar[detalle] ?? []).filter(clave => clave !== NINGUNO).map(clave => {
       const separador = clave.indexOf(':');
       return senal('interes', clave.slice(0, separador), clave.slice(separador + 1));
     });
   }
-  return [
-    ...(seleccion.canal ? [senal('criterio', 'canal', seleccion.canal)] : []),
-    ...seleccion.beneficio.map(valor => senal('criterio', 'beneficio', valor)),
-    ...(seleccion.descubrir ? [senal('criterio', 'descubrir', seleccion.descubrir)] : [])
-  ];
+  return (detalle ? [detalle] : CRITERIOS).flatMap(criterio => [seleccion[criterio]].flat()
+    .filter(Boolean).map(valor => senal('criterio', criterio, valor)));
 }
 
 const misma = (a, b) => a.clase === b.clase && a.ambito === b.ambito && a.valor === b.valor;
