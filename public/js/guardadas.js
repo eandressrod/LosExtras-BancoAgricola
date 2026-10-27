@@ -51,7 +51,7 @@ function tarjeta(promotion, tarjetaId) {
   badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
   mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
-  mostrarDias(card.querySelector('.promo-dias'), promotion);
+  mostrarDias(card.querySelector('.promo-cuando'), promotion);
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
   const boton = card.querySelector('.guardar-promo');
   marcarBoton(boton, true);

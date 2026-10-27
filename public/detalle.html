@@ -53,12 +53,21 @@
             <span id="category" class="promo-category"></span>
           </div>
           <p id="description" class="detail-description"></p>
+          <!-- Cómo usarla: pasos armados con datos del catálogo; las instrucciones propias de la promoción van al final. -->
+          <section class="pr-bloque pr-uso" aria-labelledby="bloque-uso">
+            <h2 id="bloque-uso">Cómo usarla</h2>
+            <ol id="pasos" class="pr-pasos"></ol>
+            <div class="pr-restricciones">
+              <h3 id="titulo-restricciones">Restricciones</h3>
+              <ul id="restricciones" aria-labelledby="titulo-restricciones" hidden></ul>
+            </div>
+            <a id="ver-mapa" class="pr-ver-mapa" href="#bloque-donde" hidden>Ver en el mapa</a>
+          </section>
           <section class="pr-bloque" aria-labelledby="bloque-cuando">
             <h2 id="bloque-cuando">Cuándo</h2>
-            <ol id="days" class="promo-dias" aria-label="Días válidos" hidden></ol>
+            <p id="days" class="promo-cuando"></p>
             <p id="validity" class="promo-validity"></p>
             <p id="ending" class="promo-ending" hidden></p>
-            <p id="today" class="promo-today" hidden></p>
           </section>
           <section class="pr-bloque" aria-labelledby="bloque-tarjeta">
             <h2 id="bloque-tarjeta">Con tu tarjeta</h2>
@@ -68,6 +77,13 @@
           <section class="pr-bloque" aria-labelledby="bloque-condiciones">
             <h2 id="bloque-condiciones">Condiciones</h2>
             <ul id="conditions" class="promo-conditions"></ul>
+          </section>
+          <!-- H8 monta aquí el mapa del detalle: recorrido aproximado y «Abrir en Waze». Solo con canal presencial. -->
+          <section id="donde" class="pr-bloque" aria-labelledby="bloque-donde" hidden>
+            <h2 id="bloque-donde" tabindex="-1">Dónde</h2>
+            <div id="mapa-detalle" class="pr-mapa pr-mapa--detalle" data-mapa="detalle">
+              <p class="pr-mapa__rotulo">Mapa de la promoción</p>
+            </div>
           </section>
           <p id="guardar-error" class="error" role="alert"></p>
         </div>

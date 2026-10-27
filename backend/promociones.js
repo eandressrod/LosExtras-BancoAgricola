@@ -132,6 +132,18 @@ export function leerDisponibleHoy(parametros) {
 }
 
 /**
+ * Sección Explorar de Promociones: `explorar=1` pide todo lo elegible sin personalizar (estrategia base del motor).
+ * @param {URLSearchParams} parametros
+ * @returns {{ ok: true, explorar: boolean } | { ok: false }}
+ */
+export function leerExplorar(parametros) {
+  const valores = parametros.getAll('explorar');
+  if (valores.length === 0) return { ok: true, explorar: false };
+  if (valores.length === 1 && valores[0] === '1') return { ok: true, explorar: true };
+  return { ok: false };
+}
+
+/**
  * Búsqueda temporal por nombre de comercio de H10. Recorta espacios al inicio/final;
  * vacío o ausente equivale a no filtrar por comercio. No modifica las preferencias.
  * @param {URLSearchParams} parametros
