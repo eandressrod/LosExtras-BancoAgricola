@@ -139,8 +139,11 @@
    marcada = relleno oscuro, icono ✓ y aria-checked. El área táctil llega a 44 px con un pseudoelemento. */
 .pr-hoy__tira {
   display: flex; gap: 6px; margin: 12px -16px 0; padding: 6px 16px; overflow-x: auto; scroll-snap-type: x proximity;
-  scrollbar-width: none; overscroll-behavior-x: contain;
+  scroll-padding-inline: 16px; scrollbar-width: none; overscroll-behavior-x: contain;
+  /* Arranca en el margen de la búsqueda; el borde derecho se desvanece para indicar que hay más chips. */
+  -webkit-mask: linear-gradient(90deg, #000 calc(100% - 44px), transparent); mask: linear-gradient(90deg, #000 calc(100% - 44px), transparent);
 }
+.pr-hoy__tira[data-final] { -webkit-mask: none; mask: none; }
 .pr-hoy__tira::-webkit-scrollbar { display: none; }
 .pr-hoy__chip {
   --ico: var(--pr-i-chispa);
