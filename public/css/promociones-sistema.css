@@ -441,7 +441,11 @@ button.pr-marcador--sucursal:focus-visible { outline: 3px solid var(--pr-tinta);
 .pr-cerca__comercio { font-size: .9rem; font-weight: 700; }
 .pr-cerca__beneficio { font-size: .84rem; }
 .pr-cerca__sucursal { color: var(--pr-texto-3); font-size: .76rem; }
-.pr-cerca__fuera { justify-self: start; margin-top: 2px; padding: 2px 8px; border-radius: 999px; background: var(--pr-naranja-suave); font-size: .7rem; font-weight: 700; }
+/* Secciones de la lista: «A 3 km o menos» arriba y «Más lejos» debajo, con su cuenta. */
+.pr-cerca__seccion { list-style: none; margin: 14px 2px 2px; }
+.pr-cerca__seccion:first-child { margin-top: 4px; }
+.pr-cerca__seccion-titulo { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--pr-texto-2); font-size: .74rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.pr-cerca__seccion-cuenta { padding: 1px 8px; border-radius: 999px; background: var(--pr-hundido); color: var(--pr-tinta); font-size: .7rem; letter-spacing: 0; }
 .pr-cerca__ver, .pr-donde__enlace {
   display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px; border-radius: 14px;
   background: var(--pr-amarillo); color: var(--pr-tinta); font-size: .8rem; font-weight: 700; text-decoration: none; white-space: nowrap;

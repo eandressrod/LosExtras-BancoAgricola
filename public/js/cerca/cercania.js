@@ -4,7 +4,6 @@ export const RADIO_METROS = 3000;
 const SIN_PENALIZACION_METROS = 500;
 const FACTOR_MINIMO = 0.2;
 const R_MAXIMO = 95;
-const MAXIMO_ALTERNATIVAS = 5;
 const RADIO_TIERRA_METROS = 6371000;
 
 const radianes = grados => grados * Math.PI / 180;
@@ -42,19 +41,24 @@ export function sucursalMasCercana(promocion, origen) {
   return mejor;
 }
 
+/** Cerca de ti es inmediato: solo entra lo que se puede usar ahora (vigente, hoy es uno de sus días y no venció en la visita). */
+const usableAhora = promocion => promocion.canUse !== false && promocion.availableToday === true && !promocion.vencida;
+
 /**
- * Ofertas dentro del radio, una vez cada una con su sucursal más cercana, ordenadas por puntaje.
- * Si ninguna cae dentro, devuelve las más cercanas con fueraDelRadio para etiquetarlas.
+ * Ofertas con tienda física, una vez cada una con su sucursal más cercana, en dos grupos: `cerca` (3 km o menos, por
+ * puntaje) y `lejos` (el resto, de la más cercana a la más lejana).
+ * @returns {{ cerca: object[], lejos: object[] }}
  */
 export function resultadosCerca(promociones, origen) {
   const candidatas = promociones
+    .filter(usableAhora)
     .map(promocion => ({ promocion, cercana: sucursalMasCercana(promocion, origen) }))
     .filter(({ cercana }) => cercana)
     .map(({ promocion, cercana }) => ({ promocion, ...cercana, puntaje: puntajeCercania(cercana.metros, promocion.componentes?.R) }));
-  const dentro = candidatas.filter(r => r.metros <= RADIO_METROS);
-  if (dentro.length) return { resultados: dentro.sort((a, b) => b.puntaje - a.puntaje || a.metros - b.metros), fueraDelRadio: false };
-  const cercanas = candidatas.sort((a, b) => a.metros - b.metros).slice(0, MAXIMO_ALTERNATIVAS);
-  return { resultados: cercanas, fueraDelRadio: cercanas.length > 0 };
+  return {
+    cerca: candidatas.filter(r => r.metros <= RADIO_METROS).sort((a, b) => b.puntaje - a.puntaje || a.metros - b.metros),
+    lejos: candidatas.filter(r => r.metros > RADIO_METROS).sort((a, b) => a.metros - b.metros)
+  };
 }
 
 /** «A X km aprox.», con un decimal y al menos 0.1 km. */
