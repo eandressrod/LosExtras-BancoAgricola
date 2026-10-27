@@ -71,7 +71,7 @@ test('H24 una promoción sin canal presencial no informa sucursales y el detalle
   assert.ok(remota, 'el esqueleto tiene una promoción solo a domicilio o en línea para Básica');
   assert.deepEqual(remota.branches, []);
   for (const promo of [remota, lista.find(p => p.branches.length > 1)]) {
-    assert.deepEqual(await json(detalle, '/api/promocion?id=' + promo.id, 'A'), promo, promo.id);
+    assert.deepEqual(await json(detalle, '/api/promocion?id=' + promo.id + '&tarjeta=cta-a-3', 'A'), promo, promo.id);
   }
 });
 

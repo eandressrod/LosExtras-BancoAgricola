@@ -1,6 +1,6 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
-import { textoVigencia, textoDisponibleHoy, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
-import { leerCategoria, leerHoy, leerBusqueda, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
+import { textoVigencia, textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { conMinimoCarga } from './carga-tiempo.js';
 
@@ -10,19 +10,20 @@ if (profile) {
   const id = parametros.get('id');
   // Se lee antes de normalizar la URL: replaceState no debe borrar el origen.
   const desdeGuardadas = parametros.get('desde') === 'guardadas';
-  // H5, H17 y H10: volver al listado conserva los filtros y la búsqueda si esta entrada pertenece al mismo perfil.
+  // H5, H17, H10 y H25: volver al listado conserva los filtros, la búsqueda y el chip si esta entrada pertenece al mismo perfil.
   const categoria = leerCategoria(location.search, history.state, profile.id);
   const hoy = leerHoy(location.search, history.state, profile.id);
   const busqueda = leerBusqueda(location.search, history.state, profile.id);
+  const intencion = leerIntencion(location.search, history.state, profile.id);
   const back = document.querySelector('#back-to-list');
   const retornoGuardadas = '/guardadas.html' + (busqueda ? '?comercio=' + encodeURIComponent(busqueda) : '');
-  const destino = id ? urlDetalle(id, categoria, hoy, busqueda) + (desdeGuardadas ? '&desde=guardadas' : '') : location.href;
+  const destino = id ? urlDetalle(id, categoria, hoy, busqueda, intencion) + (desdeGuardadas ? '&desde=guardadas' : '') : location.href;
   history.replaceState(estadoNavegacion(profile.id, categoria), '', destino);
   if (desdeGuardadas) {
     back.href = retornoGuardadas;
     back.textContent = 'Volver a guardadas';
   } else {
-    back.href = urlListado(categoria, null, hoy, busqueda);
+    back.href = urlListado(categoria, null, hoy, busqueda, intencion);
   }
   // H16: el detalle muestra el beneficio de la tarjeta elegida en "Para ti" (el backend valida que sea propia).
   const tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
@@ -42,7 +43,20 @@ if (profile) {
       document.title = promotion.merchant + ' · Promoción';
       document.querySelector('#benefit').textContent = promotion.benefit;
       document.querySelector('#description').textContent = promotion.detailDescription || promotion.description;
-      document.querySelector('#payment').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+      const aplica = document.querySelector('#payment');
+      aplica.textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+      aplica.dataset.tarjeta = promotion.applicableCard === 'black' ? 'black' : 'basica';
+      // Todas las tarjetas (SCRUM-133): la otra tarjeta propia solo se menciona si su beneficio cambia.
+      const otras = document.querySelector('#otras-tarjetas');
+      otras.textContent = textoOtrasTarjetas(promotion);
+      otras.hidden = !otras.textContent;
+      // Sistema visual: la categoría lleva su acento.
+      const categoriaPromo = document.querySelector('#category');
+      categoriaPromo.textContent = promotion.categoryName || promotion.category || '';
+      categoriaPromo.dataset.categoria = promotion.category ?? '';
+      const vence = document.querySelector('#ending');
+      vence.textContent = textoVencePronto(promotion, hoyEnElSalvador());
+      vence.hidden = !vence.textContent;
       document.querySelector('#validity').textContent = textoVigencia(promotion);
       const disponible = document.querySelector('#today');
       disponible.textContent = textoDisponibleHoy(promotion);
@@ -50,12 +64,13 @@ if (profile) {
       document.querySelector('#exclusive').hidden = !promotion.exclusive;
       mostrarImagen(document.querySelector('#promotion-image'), promotion.imageUrl, promotion.imageAlt);
       mostrarImagen(document.querySelector('#merchant-logo'), promotion.logoUrl);
-      mostrarCondiciones(document.querySelector('#conditions'), promotion);
+      mostrarDias(document.querySelector('#days'), promotion);
+      mostrarCondiciones(document.querySelector('#conditions'), promotion, { dias: false });
       if (desdeGuardadas) {
         back.href = retornoGuardadas;
         back.textContent = 'Volver a guardadas';
       } else {
-        back.href = urlListado(categoria, promotion.id, hoy, busqueda);
+        back.href = urlListado(categoria, promotion.id, hoy, busqueda, intencion);
         back.textContent = 'Volver al listado';
       }
       const sessionBadge = document.querySelector('#session-profile');

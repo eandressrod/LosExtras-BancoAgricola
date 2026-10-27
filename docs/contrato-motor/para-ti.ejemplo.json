@@ -7,9 +7,9 @@
       "id": "pizza-hut-miercoles",
       "merchant": "Pizza Hut",
       "category": "Restaurantes",
-      "benefit": "2×1 en pizzas grandes",
+      "benefit": "2×1 en pizzas grandes y bebida incluida",
       "description": "Los miércoles, pide una pizza grande y llévate otra igual.",
-      "payment": "Tarjeta Básica",
+      "payment": "Tarjeta Black",
       "restrictions": "",
       "imageUrl": "/recursos/promociones/pizza-hut-miercoles.webp",
       "imageAlt": "Caja de pizza de Pizza Hut con su logo",
@@ -109,7 +109,7 @@
       ],
       "categoryName": "Restaurantes",
       "logoUrl": "/recursos/comercios/pizza-hut.png",
-      "applicableCard": "basica",
+      "applicableCard": "black",
       "exclusive": false,
       "minimumPurchase": null,
       "discountCap": null,
@@ -117,6 +117,18 @@
       "upcoming": false,
       "canUse": true,
       "availableToday": true,
+      "mejorBeneficio": {
+        "tarjetaId": "cta-a-4",
+        "tipoTarjeta": "black",
+        "texto": "2×1 en pizzas grandes y bebida incluida"
+      },
+      "otrosBeneficios": [
+        {
+          "tarjetaId": "cta-a-3",
+          "tipoTarjeta": "basica",
+          "texto": "2×1 en pizzas grandes"
+        }
+      ],
       "componentes": {
         "C": 1,
         "M": 1,
@@ -144,9 +156,9 @@
       "id": "cine-combo-miercoles",
       "merchant": "Cinemark",
       "category": "Entretenimiento",
-      "benefit": "2×1 en combo mediano",
+      "benefit": "2×1 en combo grande",
       "description": "Los miércoles, lleva dos combos de palomitas por el precio de uno.",
-      "payment": "Tarjeta Básica",
+      "payment": "Tarjeta Black",
       "restrictions": "",
       "imageUrl": "/recursos/promociones/cine-combo-miercoles.webp",
       "imageAlt": "Vestíbulo de un cine Cinemark con su rótulo",
@@ -200,7 +212,7 @@
       "coverage": [],
       "categoryName": "Entretenimiento",
       "logoUrl": "/recursos/comercios/cine.png",
-      "applicableCard": "basica",
+      "applicableCard": "black",
       "exclusive": false,
       "minimumPurchase": null,
       "discountCap": null,
@@ -208,6 +220,18 @@
       "upcoming": false,
       "canUse": true,
       "availableToday": true,
+      "mejorBeneficio": {
+        "tarjetaId": "cta-a-4",
+        "tipoTarjeta": "black",
+        "texto": "2×1 en combo grande"
+      },
+      "otrosBeneficios": [
+        {
+          "tarjetaId": "cta-a-3",
+          "tipoTarjeta": "basica",
+          "texto": "2×1 en combo mediano"
+        }
+      ],
       "componentes": {
         "C": 1,
         "M": 1,
