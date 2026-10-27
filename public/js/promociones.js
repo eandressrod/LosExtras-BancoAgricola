@@ -313,6 +313,11 @@ if (profile) {
     chipsIntencion.push(chip);
   }
 
+  // La tira se desvanece a la derecha mientras quedan chips por ver; al llegar al último se ve completa.
+  function marcarFinalTira() {
+    intentFilter.toggleAttribute?.('data-final', intentFilter.scrollLeft + intentFilter.clientWidth >= intentFilter.scrollWidth - 2);
+  }
+
   // Teclado del grupo de radio: las flechas (con vuelta), Inicio y Fin mueven el foco y marcan ese chip.
   function moverIntencion(chip, evento) {
     const actual = chipsIntencion.indexOf(chip);
@@ -395,6 +400,7 @@ if (profile) {
       return false;
     }
     CHIPS_HOY_BUSCO.forEach(crearChipIntencion);
+    intentFilter.addEventListener('scroll', marcarFinalTira, { passive: true });
     categorias.forEach(crearFiltro);
     categoria = categoriaVigente(pedida, categorias)?.id ?? null;
     mostrarFiltro(urlListado(categoria, null, hoy, busqueda, intencion) + location.hash);

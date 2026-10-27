@@ -39,7 +39,7 @@ const fuente = async archivo => {
 };
 const vista = {
   textoVigencia: () => '', textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, mostrarDias,
-  mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarPasos: () => {}
+  mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarPasos: () => {}, mostrarRestricciones: () => {}
 };
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 

@@ -11,7 +11,7 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 | `public/js/franja.js` | Qué avisos muestra el carrusel (función pura). |
 | `public/js/carrusel.js` | Reproductor del carrusel (`crearReproductor`) y su dibujo (`montarCarrusel`). |
 | `public/js/aviso-deshacer.js` | Aviso con «Deshacer». |
-| `public/js/promocion-vista.js` | Textos y piezas de la tarjeta y del detalle: `textoVencePronto`, `formaDias`, `textoDias`, `estadoDias`, `mostrarDias`, `pasosDeUso`, `mostrarPasos`, `hoyEnElSalvador`, `diaDeLaSemana`, `textoOtrasTarjetas`. |
+| `public/js/promocion-vista.js` | Textos y piezas de la tarjeta y del detalle: `textoVencePronto`, `formaDias`, `textoDias`, `estadoDias`, `mostrarDias`, `pasosDeUso`, `mostrarPasos`, `restriccionesDe`, `mostrarRestricciones`, `hoyEnElSalvador`, `diaDeLaSemana`, `textoOtrasTarjetas`. |
 | `public/js/pestanas.js` | Pestañas Para ti · Cerca de ti · Explorar: orden, gesto de deslizar, sección recordada y consulta de Explorar. |
 | `public/js/filtros-activos.js` | Píldoras de los filtros activos y nombre accesible del botón Filtros. |
 
@@ -85,7 +85,7 @@ Subtarea 1 de H22 ([SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRU
 ### Pestañas (`.pr-pestanas`)
 
 - **Dónde:** bajo la franja de avisos, que queda arriba y compartida. Se quedan fijas arriba al desplazar la lista.
-- **Secciones:** Para ti (orden del motor con las señales y «Hoy busco»), Cerca de ti (espacio `#mapa-cerca` donde H8 monta el mapa) y Explorar (`/api/para-ti?explorar=1`: todo lo vigente de las tarjetas propias, en la estrategia base del motor y sin intención del día). Para ti y Explorar comparten `#panel-lista`; la tira «Hoy busco» solo se ve en Para ti.
+- **Secciones:** Para ti (orden del motor con las señales y «Hoy busco»), Cerca de ti (espacio `#mapa-cerca` donde H8 monta el mapa) y Explorar (`/api/para-ti?explorar=1`: todo lo vigente de las tarjetas propias, sin recortar por intereses ni usar la intención del día; lo de interés va primero). Para ti y Explorar comparten `#panel-lista`; la tira «Hoy busco» solo se ve en Para ti.
 - **Forma:** tres pestañas de igual ancho (`role="tab"`) con un indicador amarillo que se desliza a la elegida. El conteo queda pequeño bajo las pestañas.
 - **Uso:** toque, flechas, Inicio y Fin, o deslizar a los lados sobre la lista o el mapa (al menos 56 px y más horizontal que vertical). La sección elegida se recuerda por perfil en la pestaña del navegador, para volver del detalle a la misma.
 
@@ -158,7 +158,7 @@ aviso.mostrar({ texto: 'Promoción guardada.', alDeshacer: () => … });
 - **Detalle:**
   - foto cuadrada a sangre con «Volver» y Guardar flotantes;
   - comercio y beneficio sobre la foto;
-  - hoja con la categoría, la descripción y los bloques «Cómo usarla» (`.pr-pasos`: comercio y canal, días, tarjeta, compra mínima y tope, y al final las instrucciones de la promoción como nota; «Ver en el mapa» lleva a «Dónde»), «Cuándo» (días con reloj, vigencia, vence pronto), «Con tu tarjeta» (con la otra tarjeta si cambia el beneficio), «Condiciones» y «Dónde» (`#mapa-detalle`, donde H8 monta el mapa; solo con canal presencial).
+  - hoja con la categoría, la descripción y los bloques «Cómo usarla» (`.pr-pasos`: comercio y canal, días, tarjeta, compra mínima y tope, y al final las instrucciones de la promoción como nota; debajo, «Restricciones» con las de la tarjeta y las generales de la promoción, que «Condiciones» ya no repite; «Ver en el mapa» lleva a «Dónde»), «Cuándo» (días con reloj, vigencia, vence pronto), «Con tu tarjeta» (con la otra tarjeta si cambia el beneficio), «Condiciones» y «Dónde» (`#mapa-detalle`, donde H8 monta el mapa; solo con canal presencial).
 - **Guardadas:** misma cabecera y misma tarjeta. Busca entre las guardadas y muestra los vacíos en `.pr-estado--lista`.
 - **Mis preferencias:**
   - fichas en dos columnas con el icono y el acento de cada categoría, y ✓ al marcarlas;

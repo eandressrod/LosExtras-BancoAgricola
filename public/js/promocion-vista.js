@@ -100,7 +100,7 @@ export function pasosDeUso(promo) {
   return pasos;
 }
 
-export function condicionesVisibles(promo, { dias: conDias = true } = {}) {
+export function condicionesVisibles(promo, { dias: conDias = true, restricciones = true } = {}) {
   const condiciones = [];
   if (conDias && promo.usageDays?.length) {
     const diasOrdenados = [...new Set(promo.usageDays)].sort();
@@ -108,8 +108,13 @@ export function condicionesVisibles(promo, { dias: conDias = true } = {}) {
   }
   if (promo.minimumPurchase != null) condiciones.push('Compra mínima: ' + dinero.format(promo.minimumPurchase));
   if (promo.discountCap != null) condiciones.push('Tope de descuento: ' + dinero.format(promo.discountCap));
-  if (promo.restrictions) condiciones.push(promo.restrictions);
+  if (restricciones && promo.restrictions) condiciones.push(promo.restrictions);
   return condiciones;
+}
+
+/** Restricciones de la tarjeta (restrictions) y generales de la promoción (generalRestrictions), sin repetir. */
+export function restriccionesDe(promo) {
+  return [...new Set([promo.restrictions, promo.generalRestrictions].filter(Boolean))];
 }
 
 export function mostrarImagen(img, url, alt = '') {
@@ -129,6 +134,16 @@ export function mostrarCondiciones(lista, promo, opciones) {
     item.textContent = texto;
     lista.append(item);
   }
+  lista.hidden = lista.children.length === 0;
+}
+
+/** Detalle: lista de restricciones de «Cómo usarla»; se oculta si la promoción no trae ninguna. */
+export function mostrarRestricciones(lista, promo) {
+  lista.replaceChildren(...restriccionesDe(promo).map(texto => {
+    const item = document.createElement('li');
+    item.textContent = texto;
+    return item;
+  }));
   lista.hidden = lista.children.length === 0;
 }
 
