@@ -75,6 +75,15 @@
 }
 .pr-paso[data-tipo="nota"]::before { background: #fff; }
 .pr-paso[data-tipo="nota"]::after { left: 22px; }
+/* Restricciones: lista sobria con icono de alerta, entre los pasos y «Ver en el mapa». */
+.pr-restricciones { display: grid; gap: 8px; width: 100%; margin-top: 6px; padding: 12px 14px; border-radius: 16px; background: var(--pr-rojo-suave); }
+.pr-restricciones:has(> ul[hidden]) { display: none; }
+.pr-restricciones h3 {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--pr-rojo); font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+}
+.pr-restricciones h3::before { content: ""; width: 15px; height: 15px; background: currentColor; -webkit-mask: var(--pr-i-alerta) center / contain no-repeat; mask: var(--pr-i-alerta) center / contain no-repeat; }
+.pr-restricciones ul { display: grid; gap: 6px; margin: 0; padding: 0 0 0 18px; color: #5c1f28; font-size: .88rem; line-height: 1.4; }
+.pr-restricciones li { margin: 0; }
 .pr-ver-mapa {
   display: inline-flex; align-items: center; gap: 8px; height: 44px; margin-top: 4px; padding: 0 18px 0 14px; border-radius: 999px;
   background: var(--pr-tinta); color: #fff; font-size: .88rem; font-weight: 700; text-decoration: none;

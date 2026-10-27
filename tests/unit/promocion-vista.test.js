@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { textoVigencia, condicionesVisibles, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoDias, estadoDias, pasosDeUso } from '../../public/js/promocion-vista.js';
+import { textoVigencia, condicionesVisibles, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoDias, estadoDias, pasosDeUso, restriccionesDe } from '../../public/js/promocion-vista.js';
 
 test('vigencia viene de la promoción y conserva el día de fecha sin depender de zona horaria del navegador', () => {
   assert.equal(textoVigencia({ validUntil: '2026-11-06' }), 'Válida hasta el 6 nov 2026');
@@ -106,4 +106,18 @@ test('con todas las tarjetas, la otra tarjeta solo se menciona si cambia el bene
   const dosBasicas = { mejorBeneficio: { tarjetaId: 'b1', tipoTarjeta: 'basica', texto: '10 %' }, otrosBeneficios: [{ tarjetaId: 'b2', tipoTarjeta: 'basica', texto: '10 %' }] };
   assert.equal(textoOtrasTarjetas(dosBasicas), '');
   assert.equal(textoOtrasTarjetas({}), '', 'con una tarjeta elegida no hay otros beneficios');
+});
+
+test('las restricciones juntan las de la tarjeta y las generales de la promoción, sin repetirse', () => {
+  assert.deepEqual(restriccionesDe({ restrictions: 'Entradas de igual precio.', generalRestrictions: 'No aplica a preventas.' }),
+    ['Entradas de igual precio.', 'No aplica a preventas.']);
+  assert.deepEqual(restriccionesDe({ restrictions: 'Solo artículos seleccionados.', generalRestrictions: 'Solo artículos seleccionados.' }), ['Solo artículos seleccionados.']);
+  assert.deepEqual(restriccionesDe({ restrictions: null, generalRestrictions: 'Una compra por transacción.' }), ['Una compra por transacción.']);
+  assert.deepEqual(restriccionesDe({}), []);
+});
+
+test('el detalle puede dejar las restricciones fuera de las condiciones porque van en «Cómo usarla»', () => {
+  const promo = { minimumPurchase: 10, restrictions: 'No acumulable.' };
+  assert.deepEqual(condicionesVisibles(promo, { restricciones: false }), ['Compra mínima: $10.00']);
+  assert.deepEqual(condicionesVisibles(promo), ['Compra mínima: $10.00', 'No acumulable.']);
 });
