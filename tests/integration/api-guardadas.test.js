@@ -78,7 +78,7 @@ test('un id inexistente no rompe la lista', async () => {
   reiniciarGuardadasMock();
   const cookie = await cookieDe('demo.basica', 'Basica2026');
   const alta = await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'no-existe' });
-  assert.equal(alta.status, 400);
+  assert.equal(alta.status, 404);
   const lista = await pedir('/api/guardadas', 'GET', cookie);
   assert.equal(lista.status, 200);
   assert.deepEqual((await lista.json()).ids, []);
@@ -159,4 +159,17 @@ test('QA-AUD-03 al cambiar intereses en Mis preferencias, GET /api/guardadas inf
       body: JSON.stringify({ categorias: ['Compras'] })
     }));
   }
+});
+
+test('QA-AUD-04 rechaza guardar una promoción exclusiva Black si el usuario solo tiene tarjeta Básica', async () => {
+  reiniciarGuardadasMock();
+  const cookieDemo = await cookieDe('demo', 'demo123');
+  const intento = await pedir('/api/guardadas', 'POST', cookieDemo, { promocionId: 'siman-black' });
+  assert.equal(intento.status, 404);
+  const error = await intento.json();
+  assert.match(error.error, /Promoción no encontrada/);
+
+  const lista = await (await pedir('/api/guardadas', 'GET', cookieDemo)).json();
+  assert.deepEqual(lista.ids, []);
+  assert.deepEqual(lista.promociones, []);
 });
