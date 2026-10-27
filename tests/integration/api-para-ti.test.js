@@ -162,3 +162,11 @@ test('H22 la entrada compartida despacha /api/para-ti', async () => {
   assert.equal(respuesta.status, 200);
   assert.equal((await respuesta.json()).version, CONFIGURACION.version);
 });
+
+test('H25 «Entretenimiento» sube lo que gira en torno al entretenimiento, no lo que solo lo incluye en parte', async () => {
+  const { promociones } = await consultar('/api/para-ti?intencion=entretenimiento', 'B');
+  const conIntencion = promociones.filter(p => p.componentes.T === 1);
+  assert.ok(conIntencion.length > 0 && conIntencion.every(p => p.category === 'Entretenimiento'), conIntencion.map(p => p.merchantId).join());
+  assert.equal(promociones[0].category, 'Entretenimiento');
+  assert.ok(promociones.filter(p => ['pizza-hut', 'claro'].includes(p.merchantId)).every(p => p.componentes.T === 0));
+});
