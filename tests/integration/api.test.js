@@ -25,7 +25,7 @@ test('API de listado y detalle devuelven la misma promoción', async () => {
   const lista = await promociones.fetch(new Request('http://localhost/api/promociones', { headers }));
   assert.equal(lista.status, 200);
   for (const item of await lista.json()) {
-    const detalle = await promocion.fetch(new Request(`http://localhost/api/promocion?id=${item.id}`, { headers }));
+    const detalle = await promocion.fetch(new Request(`http://localhost/api/promocion?id=${item.id}&tarjeta=cta-demo-3`, { headers }));
     assert.equal(detalle.status, 200);
     assert.deepEqual(await detalle.json(), item);
   }

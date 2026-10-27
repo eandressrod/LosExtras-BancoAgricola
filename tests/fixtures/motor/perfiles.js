@@ -12,6 +12,17 @@ export function ofertasDelCatalogo(tipoTarjeta = 'basica', ahora = AHORA) {
   return filtrarPromociones(promocionesDeFuente(fuente), tipoTarjeta, [], ahora);
 }
 
+/** Tarjetas propias de los perfiles del mock (backend/datos-menu.json), como las entrega tarjetasPropias. */
+export const TARJETAS = {
+  A: [{ id: 'cta-a-3', tipoTarjeta: 'basica' }, { id: 'cta-a-4', tipoTarjeta: 'black' }],
+  B: [{ id: 'cta-b-2', tipoTarjeta: 'black' }]
+};
+
+/** SCRUM-133: ofertas de todas las tarjetas propias (sin ?tarjeta=); la primera es la predeterminada. */
+export function ofertasDeTodas(tarjetas = TARJETAS.A, ahora = AHORA) {
+  return filtrarPromociones(promocionesDeFuente(fuente), { tarjetas, predeterminadaId: tarjetas[0]?.id ?? null }, [], ahora);
+}
+
 let siguiente = 1;
 const senal = (clase, ambito, valor, extra = {}) =>
   ({ id: siguiente++, clase, ambito, valor, origen: 'encuesta', creadaEn: '2026-10-21T17:00:00.000Z', activa: true, ...extra });

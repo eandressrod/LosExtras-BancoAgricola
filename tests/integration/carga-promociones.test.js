@@ -11,7 +11,8 @@ test('Promociones conserva aro, filtros y tarjeta durante petición/reintento si
   respuesta = new Promise((r,j) => { resolver=r; rechazar=j; });
   const consulta = p.chip('Compras').click();
   assert.equal(aro.hidden, false);
-  assert.match(p.consultas.at(-1), /categoria=Compras&tarjeta=cta-a-3/);
+  // Sin tarjeta elegida se consultan todas las propias (decisión del 24 de octubre).
+  assert.equal(p.consultas.at(-1), '/api/para-ti?categoria=Compras');
   resolver([]); await consulta;
   assert.equal(aro.hidden, true);
   respuesta = new Promise((r,j) => { resolver=r; rechazar=j; });
@@ -39,14 +40,15 @@ test('una respuesta antigua no retira el aro de la selección más reciente', as
 });
 
 // H21 (ADR-010): la encuesta es una hoja sobre la lista real; la entrada ya no redirige a encuesta.html.
-test('H21 encuesta pendiente abre la hoja sobre la lista cargada, con la tarjeta y las categorías vigentes', async () => {
+test('H21 encuesta pendiente abre la hoja sobre la lista cargada, con esa lista y las categorías vigentes', async () => {
   let revelaciones=0;
   const p=await abrirListado({search:'?entrada=menu',alRevelar:()=>revelaciones++,preferencias:()=>({completed:false})});
   assert.equal(p.contexto.location.destino,undefined);assert.equal(revelaciones,1);
   assert.equal(p.enlaces().length,3,'la lista real queda detrás de la hoja');
   assert.equal(p.hojas.length,1);
   const [hoja]=p.hojas;
-  assert.equal(hoja.perfil.id,'A');assert.equal(hoja.tarjeta.id,'cta-a-3');assert.equal(hoja.categorias.length,3);
+  // Desde SCRUM-133 Para ti usa todas las tarjetas propias: la hoja trabaja con la misma lista que se ve detrás.
+  assert.equal(hoja.perfil.id,'A');assert.deepEqual(hoja.lista.map(promo=>'promo-'+promo.id),p.enlaces().map(enlace=>enlace.id));assert.equal(hoja.categorias.length,3);
   assert.equal(typeof hoja.mostrarVistaPrevia,'function');assert.equal(typeof hoja.alCerrar,'function');
 });
 
@@ -64,7 +66,7 @@ test('H21 la vista previa pinta las promociones del motor y cerrar la hoja vuelv
   const [hoja]=p.hojas;
   hoja.mostrarVistaPrevia({promociones:[{id:'cine',category:'Entretenimiento'}],contador:'1 promoción para ti'});
   assert.deepEqual(p.enlaces().map(enlace=>enlace.id),['promo-cine']);
-  assert.equal(p.obtener('#list-status').textContent,'1 promoción para ti');
+  assert.equal(p.obtener('#pr-conteo').textContent,'1 promoción para ti');
   const antes=p.consultas.length;
   await hoja.alCerrar({terminada:true});
   assert.equal(p.consultas.length,antes+1);

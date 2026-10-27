@@ -25,12 +25,12 @@ test('H4 encuesta omitida muestra cuatro ofertas Básica y cinco Black; el clien
 });
 
 test('H4 detalle coincide con tarjeta y beneficio del listado y rechaza una exclusiva ajena', async () => {
-  assert.equal((await detalle.fetch(request('/api/promocion?id=siman-black&tipoTarjeta=black', 'A'))).status, 404);
+  assert.equal((await detalle.fetch(request('/api/promocion?id=siman-black&tipoTarjeta=black', 'demo'))).status, 404);
   assert.equal((await detalle.fetch(new Request('http://localhost/api/promocion?id=tienda'))).status, 401);
   for (const id of ['A','B']) {
     const lista = await (await promociones.fetch(request('/api/promociones', id))).json();
     for (const promo of lista) {
-      assert.deepEqual(await (await detalle.fetch(request('/api/promocion?id=' + promo.id, id))).json(), promo);
+      assert.deepEqual(await (await detalle.fetch(request('/api/promocion?id=' + promo.id + '&tarjeta=' + (id === 'A' ? 'cta-a-3' : 'cta-b-2'), id))).json(), promo);
       assert.ok(promo.detailDescription.length > promo.description.length);
     }
   }

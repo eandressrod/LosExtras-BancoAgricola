@@ -4,7 +4,6 @@
 // Cada página se confirma con el botón principal y entonces escribe sus señales con origen encuesta.
 // Antes de confirmar, la selección solo alimenta la vista previa, calculada en el navegador con el motor de H22.
 import { getJSON, almacenSesion } from './comun.js';
-import { conTarjeta } from './tarjeta-elegida.js';
 import { ordenarParaTi } from './motor/index.js';
 import {
   opcionesIntereses, categoriasAfinar, opcionesAfinar, alternar, seleccionVacia, textoBotonPrincipal, senalesDePagina,
@@ -35,12 +34,12 @@ async function enviar(url, metodo, cuerpo) {
 /**
  * @param {object} datos
  * @param {{id: string}} datos.perfil dueño de la sesión; su id es la semilla del orden de presentación
- * @param {{id: string}} datos.tarjeta tarjeta elegida en Para ti
+ * @param {object[]} datos.lista promociones de Para ti que se ven detrás de la hoja (todas las tarjetas propias o la del filtro)
  * @param {Array<object>} datos.categorias categorías vigentes de /api/categorias
  * @param {(vista: {promociones: object[], contador: string}) => void} datos.mostrarVistaPrevia
  * @param {(cierre: {terminada: boolean}) => Promise<void> | void} datos.alCerrar
  */
-export function abrirEncuestaHoja({ perfil, tarjeta, categorias, mostrarVistaPrevia, alCerrar }) {
+export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevia, alCerrar }) {
   const hoja = document.querySelector('#survey-sheet');
   const paso = hoja.querySelector('#survey-step');
   const titulo = hoja.querySelector('#survey-title');
@@ -329,10 +328,7 @@ export function abrirEncuestaHoja({ perfil, tarjeta, categorias, mostrarVistaPre
     error.textContent = '';
     cuerpo.replaceChildren(nota('Cargando opciones...'));
     try {
-      const [lista, { senales }] = await Promise.all([
-        getJSON(conTarjeta('/api/promociones', tarjeta.id)),
-        getJSON('/api/senales')
-      ]);
+      const { senales } = await getJSON('/api/senales');
       ofertas = lista;
       activas = senales;
       seleccion = seleccionGuardada();
@@ -363,7 +359,7 @@ export function abrirEncuestaHoja({ perfil, tarjeta, categorias, mostrarVistaPre
   for (const elemento of fondo) elemento.inert = true;
   hoja.hidden = false;
   // Detrás de la hoja deben verse el contador y las primeras tarjetas, no la cabecera del módulo.
-  document.querySelector('#list-status')?.scrollIntoView({ block: 'start' });
+  document.querySelector('#pr-conteo')?.scrollIntoView({ block: 'start' });
   paso.textContent = 'Paso 1 de 3';
   titulo.textContent = '¿Qué te interesa?';
   return cargar();
