@@ -43,9 +43,10 @@ const SIN_PUNTAJE = Object.freeze({ C: 0, M: 0, T: 0, R: 0 });
  * @param {import('./contrato.js').Senal[]} [entrada.senales]
  * @param {import('./contrato.js').FiltrosExplicitos} [entrada.filtros]
  * @param {Partial<import('./contrato.js').ReglasExternas>} [entrada.reglas]
+ * @param {'intereses' | 'todo'} [entrada.alcance] 'todo' (sección Explorar): no recorta por intereses; el puntaje sigue ordenando.
  * @returns {import('./contrato.js').RespuestaParaTi}
  */
-export function ordenarParaTi({ ofertas = [], senales = [], filtros = {}, config = CONFIGURACION, reglas = {} } = {}) {
+export function ordenarParaTi({ ofertas = [], senales = [], filtros = {}, config = CONFIGURACION, reglas = {}, alcance = 'intereses' } = {}) {
   const aplicadas = { ...REGLAS_NEUTRAS, ...reglas };
 
   // 1. Elegibilidad. Sin nada ordenable para la tarjeta no hay estrategia que aplicar.
@@ -56,7 +57,8 @@ export function ordenarParaTi({ ofertas = [], senales = [], filtros = {}, config
   // 2–3. Perfil, alcance y filtros. Distinguir el motivo del vacío permite a la pantalla ofrecer la salida correcta:
   // quitar filtros ('filtros') o revisar intereses ('intereses').
   const perfil = perfilDeSenales(senales);
-  const candidatas = aplicarFiltros(enAlcance(ordenables, perfil, filtros.categoria), filtros)
+  const enJuego = alcance === 'todo' ? ordenables : enAlcance(ordenables, perfil, filtros.categoria);
+  const candidatas = aplicarFiltros(enJuego, filtros)
     .filter(oferta => !aplicadas.excluir(oferta, perfil));
   const vacio = candidatas.length ? null : hayFiltros(filtros) ? 'filtros' : 'intereses';
   const hayIntencion = aplicadas.intencion !== REGLAS_NEUTRAS.intencion

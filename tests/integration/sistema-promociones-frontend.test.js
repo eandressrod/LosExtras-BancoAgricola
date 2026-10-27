@@ -149,3 +149,29 @@ test('Guardadas usa la misma tarjeta del sistema', async () => {
   assert.equal(oferta.querySelector('article').dataset.exclusiva, 'si');
   assert.equal(oferta.querySelector('.promo-applicability').dataset.tarjeta, 'black');
 });
+
+test('las pestañas cambian entre Para ti, Cerca de ti y Explorar, y la elegida se recuerda en la visita', async () => {
+  const p = await abrirListado({ search: '?intencion=salir' });
+  const seleccionada = () => ['para-ti', 'cerca', 'explorar'].filter(id => p.obtener('#tab-' + id).attributes['aria-selected'] === 'true');
+  assert.deepEqual(seleccionada(), ['para-ti']);
+  assert.equal(p.obtener('#panel-cerca').hidden, true);
+  assert.equal(p.obtener('#intent-box').hidden, false);
+
+  await p.obtener('#tab-explorar').click();
+  assert.deepEqual(seleccionada(), ['explorar']);
+  assert.equal(p.consultas.at(-1), '/api/para-ti?explorar=1', 'Explorar no lleva la intención del día');
+  assert.equal(p.obtener('#intent-box').hidden, true);
+  assert.equal(p.obtener('#panel-lista').attributes['aria-labelledby'], 'tab-explorar');
+
+  const antes = p.consultas.length;
+  await p.obtener('#tab-cerca').click();
+  assert.deepEqual(seleccionada(), ['cerca']);
+  assert.equal(p.obtener('#panel-cerca').hidden, false);
+  assert.equal(p.obtener('#panel-lista').hidden, true);
+  assert.equal(p.consultas.length, antes, 'Cerca de ti no consulta la lista');
+
+  const otra = await abrirListado({ sesion: p.sesion });
+  assert.equal(otra.obtener('#panel-cerca').hidden, false, 'al volver se abre la misma sección');
+  await otra.obtener('#tab-para-ti').click();
+  assert.equal(otra.consultas.at(-1), '/api/para-ti');
+});
