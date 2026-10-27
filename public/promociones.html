@@ -101,6 +101,7 @@
       <section id="panel-lista" class="pr-panel" role="tabpanel" aria-labelledby="tab-para-ti">
       <!-- Solo los filtros activos, como píldoras que se quitan con un toque. -->
       <div id="filtros-activos" class="pr-pildoras" role="group" aria-label="Filtros activos" hidden></div>
+      <p id="survey-notice" class="note survey-notice" role="status" hidden>Puedes cambiar tus intereses en Mis preferencias.</p>
       <p id="pr-conteo" class="pr-conteo" aria-live="polite"></p>
       <p id="saved-status" class="error" role="alert"></p>
       <div id="promotions-loading" class="pr-esqueleto" role="status" aria-label="Cargando promociones" hidden>
@@ -183,6 +184,22 @@
       </dialog>
       <div id="pr-aviso" class="pr-aviso" role="status" hidden><p class="pr-aviso__texto"></p><button type="button" class="pr-aviso__accion">Deshacer</button></div>
     </main>
+    <!-- H21: encuesta en tres pasos sobre la lista real (ADR-010). Solo se cierra con Omitir o Listo. -->
+    <section id="survey-sheet" class="survey-sheet" role="dialog" aria-modal="true" aria-labelledby="survey-title" hidden>
+      <div class="survey-head">
+        <p id="survey-step" class="survey-step"></p>
+        <h2 id="survey-title" tabindex="-1"></h2>
+        <p id="survey-subtitle" class="survey-subtitle" hidden></p>
+      </div>
+      <div id="survey-body" class="survey-body"></div>
+      <p id="survey-live" class="visualmente-oculto" aria-live="polite"></p>
+      <p id="survey-error" class="error" role="alert"></p>
+      <div class="survey-actions">
+        <button id="survey-back" type="button" class="survey-link">Atrás</button>
+        <button id="survey-skip" type="button" class="survey-link">Omitir</button>
+        <button id="survey-next" type="button" class="survey-primary">Saltar este paso</button>
+      </div>
+    </section>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>
   </body>
 </html>

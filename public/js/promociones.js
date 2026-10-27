@@ -5,8 +5,10 @@ import { filtrosActivos, textoBotonFiltros } from './filtros-activos.js';
 import { crearAviso } from './aviso-deshacer.js';
 import { diapositivasFranja } from './franja.js';
 import { montarCarrusel } from './carrusel.js';
-import { destinoEntradaPromociones } from './menu-modelo.js';
+import { encuestaAlEntrar } from './menu-modelo.js';
 import { registrarAperturaPromociones } from './usuarios-prueba.js';
+import { encuestaOmitida } from './encuesta-modelo.js';
+import { abrirEncuestaHoja } from './encuesta-hoja.js';
 import { conIndicador } from './transiciones.js';
 import { conMinimoCarga } from './carga-tiempo.js';
 import { guardarInstantanea, leerInstantanea, marcarVencidas, visitaVigente } from './instantanea.js';
@@ -143,6 +145,7 @@ if (profile) {
   const pildoras = document.querySelector('#filtros-activos');
   const franja = document.querySelector('#franja');
   const conteo = document.querySelector('#pr-conteo');
+  const surveyNotice = document.querySelector('#survey-notice');
   const pestanas = document.querySelector('.pr-pestanas');
   const botonesSeccion = SECCIONES.map(id => document.querySelector('#tab-' + id));
   const panelLista = document.querySelector('#panel-lista');
@@ -166,6 +169,8 @@ if (profile) {
   let consultaActual = 0;
   let timerBusqueda = null;
   let aperturaRegistrada = false;
+  let abrirEncuesta = false;
+  let listaActual = [];
   let volverDelDetalle = location.hash.startsWith('#promo-');
   // Sección elegida en esta visita; al volver del detalle se abre la misma.
   let seccion = leerSeccion(sesion, profile.id);
@@ -385,10 +390,10 @@ if (profile) {
     let lista;
     try {
       if (!aperturaRegistrada) { await registrarAperturaPromociones(); aperturaRegistrada = true; }
+      // H21: con la encuesta pendiente, la hoja se abre sobre la lista ya cargada (ADR-010).
       if (new URLSearchParams(location.search).get('entrada') === 'menu') {
         preferencias = await getJSON('/api/preferencias');
-        const destino = destinoEntradaPromociones(location.search, preferencias);
-        if (destino) { location.replace(destino); return false; }
+        abrirEncuesta = encuestaAlEntrar(location.search, preferencias, encuestaOmitida(sesion, profile.id));
       }
       revelarPagina();
       [categorias, lista] = await Promise.all([getJSON('/api/categorias'), getJSON('/api/tarjetas')]);
@@ -476,6 +481,7 @@ if (profile) {
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
       if (!guardada) guardarInstantanea(sesion, profile.id, consulta, respuesta);
       const promotions = marcarVencidas(respuesta.promociones);
+      listaActual = promotions;
       idsGuardados = await leerIdsGuardados();
       if (turno !== consultaActual) return;
       pintarContadorGuardadas();
@@ -547,9 +553,27 @@ if (profile) {
     return loadPromotions();
   }
 
+  // H21: la vista previa de la hoja pinta el orden calculado en el navegador sobre la lista real.
+  function mostrarVistaPrevia({ promociones, contador }) {
+    cards.replaceChildren();
+    for (const promotion of promociones) cards.append(crearOferta(promotion, categoria, hoy, busqueda, intencion));
+    conteo.textContent = contador;
+  }
+
+  // Al cerrar la hoja, el orden vuelve a pedirse a /api/para-ti con lo que quedó guardado.
+  async function alCerrarEncuesta({ terminada = false } = {}) {
+    if (terminada) preferencias = await getJSON('/api/preferencias');
+    await loadPromotions();
+    surveyNotice.hidden = !terminada;
+  }
+
   async function cargar() {
     if (!preparada && !await conIndicador(indicador, prepararPagina)) return;
-    if (tarjetas.length) await loadPromotions();
+    if (!tarjetas.length) return;
+    await loadPromotions();
+    if (!abrirEncuesta) return;
+    abrirEncuesta = false;
+    abrirEncuestaHoja({ perfil: profile, lista: listaActual, categorias, mostrarVistaPrevia, alCerrar: alCerrarEncuesta });
   }
 
   const [todas] = chips;
