@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { abrirDetalle, abrirListado, abrirGuardadas, almacen } from './pagina-promociones.js';
+import { textoAplica } from '../../public/js/promocion-vista.js';
 import { cardName } from '../../public/js/comun.js';
 import { tarjetaActiva } from '../../public/js/tarjeta-elegida.js';
 
@@ -117,6 +118,7 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
     marcarBoton() {},
     alPulsarGuardar() {},
     textoVigencia: () => '',
+    textoAplica,
     mostrarImagen() {},
     mostrarCondiciones() {},
     mostrarDias() {},

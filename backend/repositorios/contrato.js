@@ -54,6 +54,7 @@
  * @property {() => Promise<Promocion[]>} listarPromociones
  * @property {() => Promise<Array<Promocion & { beneficios: Array<{ tipo_tarjeta: string, beneficio: string, medio_pago: string, restricciones: string }> }>>} listarPromocionesConBeneficios
  * @property {(id: string) => Promise<Promocion | null>} buscarPromocion
+ * @property {() => Promise<Array<{id: string, nombre: string, latitud: number, longitud: number}>>} listarZonas Zonas de H8, en su orden fijo.
  *
  * Perfil de la sesión (H1). Nunca incluye credenciales.
  * @typedef {Object} PerfilSesion

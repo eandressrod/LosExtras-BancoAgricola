@@ -546,7 +546,7 @@
       "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
       "coordenadas": {
         "latitud": 13.7055,
-        "longitud": -89.2125
+        "longitud": -89.2099
       },
       "zona": "san-salvador-centro"
     },
@@ -556,8 +556,8 @@
       "nombre": "McDonald's Multiplaza",
       "direccion": "Centro Comercial Multiplaza, Carretera Panamericana, Antiguo Cuscatlán",
       "coordenadas": {
-        "latitud": 13.6779,
-        "longitud": -89.2506
+        "latitud": 13.6799,
+        "longitud": -89.2477
       },
       "zona": "antiguo-cuscatlan"
     },
@@ -567,8 +567,8 @@
       "nombre": "McDonald's Metrocentro Santa Ana",
       "direccion": "Centro Comercial Metrocentro, Avenida Independencia Sur, Santa Ana",
       "coordenadas": {
-        "latitud": 13.9853,
-        "longitud": -89.5585
+        "latitud": 13.9775,
+        "longitud": -89.5618
       },
       "zona": "santa-ana"
     },
@@ -578,8 +578,8 @@
       "nombre": "Pollo Campero Paseo El Carmen",
       "direccion": "Paseo El Carmen, Santa Tecla",
       "coordenadas": {
-        "latitud": 13.6735,
-        "longitud": -89.287
+        "latitud": 13.673,
+        "longitud": -89.2864
       },
       "zona": "santa-tecla"
     },
@@ -589,8 +589,8 @@
       "nombre": "Pollo Campero Centro Histórico",
       "direccion": "Plaza Libertad, Centro Histórico de San Salvador",
       "coordenadas": {
-        "latitud": 13.6978,
-        "longitud": -89.1906
+        "latitud": 13.6982,
+        "longitud": -89.1905
       },
       "zona": "san-salvador-centro"
     },
@@ -600,8 +600,8 @@
       "nombre": "Pollo Campero Metrocentro San Miguel",
       "direccion": "Centro Comercial Metrocentro, Avenida Roosevelt Sur, San Miguel",
       "coordenadas": {
-        "latitud": 13.4795,
-        "longitud": -88.1716
+        "latitud": 13.4617,
+        "longitud": -88.1654
       },
       "zona": "san-miguel"
     },
@@ -611,8 +611,8 @@
       "nombre": "Starbucks Multiplaza",
       "direccion": "Centro Comercial Multiplaza, Carretera Panamericana, Antiguo Cuscatlán",
       "coordenadas": {
-        "latitud": 13.6782,
-        "longitud": -89.2511
+        "latitud": 13.6799,
+        "longitud": -89.249
       },
       "zona": "antiguo-cuscatlan"
     },
@@ -622,8 +622,8 @@
       "nombre": "Starbucks Paseo General Escalón",
       "direccion": "Paseo General Escalón, San Salvador",
       "coordenadas": {
-        "latitud": 13.704,
-        "longitud": -89.241
+        "latitud": 13.7024,
+        "longitud": -89.2392
       },
       "zona": "escalon"
     },
@@ -633,8 +633,8 @@
       "nombre": "Pizza Hut Escalón",
       "direccion": "Paseo General Escalón, San Salvador",
       "coordenadas": {
-        "latitud": 13.7042,
-        "longitud": -89.2425
+        "latitud": 13.7065,
+        "longitud": -89.2493
       },
       "zona": "escalon"
     },
@@ -642,10 +642,10 @@
       "id": "pizza-hut-santa-tecla",
       "comercio": "pizza-hut",
       "nombre": "Pizza Hut Santa Tecla",
-      "direccion": "Carretera Panamericana, Santa Tecla",
+      "direccion": "Paseo El Carmen, Santa Tecla",
       "coordenadas": {
-        "latitud": 13.6745,
-        "longitud": -89.285
+        "latitud": 13.673,
+        "longitud": -89.2859
       },
       "zona": "santa-tecla"
     },
@@ -655,8 +655,8 @@
       "nombre": "Pizza Hut San Miguel",
       "direccion": "Avenida Roosevelt, San Miguel",
       "coordenadas": {
-        "latitud": 13.481,
-        "longitud": -88.175
+        "latitud": 13.4795,
+        "longitud": -88.1851
       },
       "zona": "san-miguel"
     },
@@ -666,8 +666,8 @@
       "nombre": "Siman Metrocentro",
       "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
       "coordenadas": {
-        "latitud": 13.7058,
-        "longitud": -89.213
+        "latitud": 13.7055,
+        "longitud": -89.2109
       },
       "zona": "san-salvador-centro"
     },
@@ -677,8 +677,8 @@
       "nombre": "Siman Galerías",
       "direccion": "Centro Comercial Galerías, Paseo General Escalón, San Salvador",
       "coordenadas": {
-        "latitud": 13.7034,
-        "longitud": -89.2437
+        "latitud": 13.7023,
+        "longitud": -89.2305
       },
       "zona": "escalon"
     },
@@ -688,8 +688,8 @@
       "nombre": "Siman Metrocentro San Miguel",
       "direccion": "Centro Comercial Metrocentro, Avenida Roosevelt Sur, San Miguel",
       "coordenadas": {
-        "latitud": 13.4798,
-        "longitud": -88.172
+        "latitud": 13.4615,
+        "longitud": -88.1656
       },
       "zona": "san-miguel"
     },
@@ -699,8 +699,8 @@
       "nombre": "Payless ShoeSource Metrocentro",
       "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
       "coordenadas": {
-        "latitud": 13.7057,
-        "longitud": -89.2128
+        "latitud": 13.7061,
+        "longitud": -89.2117
       },
       "zona": "san-salvador-centro"
     },
@@ -710,8 +710,8 @@
       "nombre": "Payless ShoeSource Plaza Mundo",
       "direccion": "Centro Comercial Plaza Mundo, Bulevar del Ejército, Soyapango",
       "coordenadas": {
-        "latitud": 13.7011,
-        "longitud": -89.1512
+        "latitud": 13.6988,
+        "longitud": -89.1499
       },
       "zona": "soyapango"
     },
@@ -721,7 +721,7 @@
       "nombre": "Cinemark Metrocentro",
       "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
       "coordenadas": {
-        "latitud": 13.706,
+        "latitud": 13.7053,
         "longitud": -89.212
       },
       "zona": "san-salvador-centro"
@@ -732,8 +732,8 @@
       "nombre": "Cinemark Plaza Mundo",
       "direccion": "Centro Comercial Plaza Mundo, Bulevar del Ejército, Soyapango",
       "coordenadas": {
-        "latitud": 13.7013,
-        "longitud": -89.1513
+        "latitud": 13.6989,
+        "longitud": -89.1521
       },
       "zona": "soyapango"
     },
@@ -741,10 +741,10 @@
       "id": "walmart-santa-elena",
       "comercio": "walmart",
       "nombre": "Walmart Santa Elena",
-      "direccion": "Bulevar Santa Elena, Antiguo Cuscatlán",
+      "direccion": "Bulevar Orden de Malta, Santa Elena, Antiguo Cuscatlán",
       "coordenadas": {
-        "latitud": 13.6698,
-        "longitud": -89.2453
+        "latitud": 13.6676,
+        "longitud": -89.2647
       },
       "zona": "antiguo-cuscatlan"
     },
@@ -754,8 +754,8 @@
       "nombre": "Walmart Constitución",
       "direccion": "Bulevar Constitución, San Salvador",
       "coordenadas": {
-        "latitud": 13.7225,
-        "longitud": -89.215
+        "latitud": 13.7361,
+        "longitud": -89.216
       },
       "zona": "san-salvador-centro"
     },
@@ -763,10 +763,10 @@
       "id": "pricesmart-santa-elena",
       "comercio": "pricesmart",
       "nombre": "PriceSmart Santa Elena",
-      "direccion": "Bulevar Santa Elena, Antiguo Cuscatlán",
+      "direccion": "Avenida El Pepeto, Santa Elena, Antiguo Cuscatlán",
       "coordenadas": {
-        "latitud": 13.669,
-        "longitud": -89.247
+        "latitud": 13.6632,
+        "longitud": -89.2491
       },
       "zona": "antiguo-cuscatlan"
     },
@@ -774,10 +774,10 @@
       "id": "pricesmart-los-heroes",
       "comercio": "pricesmart",
       "nombre": "PriceSmart Los Héroes",
-      "direccion": "Boulevard de Los Héroes, San Salvador",
+      "direccion": "Bulevar Tutunichapa, San Salvador",
       "coordenadas": {
-        "latitud": 13.708,
-        "longitud": -89.21
+        "latitud": 13.7042,
+        "longitud": -89.2061
       },
       "zona": "san-salvador-centro"
     },
@@ -787,8 +787,8 @@
       "nombre": "GNC Multiplaza",
       "direccion": "Centro Comercial Multiplaza, Carretera Panamericana, Antiguo Cuscatlán",
       "coordenadas": {
-        "latitud": 13.6781,
-        "longitud": -89.2509
+        "latitud": 13.6795,
+        "longitud": -89.2486
       },
       "zona": "antiguo-cuscatlan"
     },
@@ -798,8 +798,8 @@
       "nombre": "GNC Metrocentro",
       "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
       "coordenadas": {
-        "latitud": 13.7059,
-        "longitud": -89.2126
+        "latitud": 13.7061,
+        "longitud": -89.2117
       },
       "zona": "san-salvador-centro"
     },
@@ -809,8 +809,8 @@
       "nombre": "GNC Galerías",
       "direccion": "Centro Comercial Galerías, Paseo General Escalón, San Salvador",
       "coordenadas": {
-        "latitud": 13.7035,
-        "longitud": -89.2436
+        "latitud": 13.7024,
+        "longitud": -89.2299
       },
       "zona": "escalon"
     },
@@ -818,10 +818,10 @@
       "id": "la-curacao-centro",
       "comercio": "la-curacao",
       "nombre": "La Curacao Centro Histórico",
-      "direccion": "Calle Arce, Centro Histórico de San Salvador",
+      "direccion": "2a Calle Poniente, Centro Histórico de San Salvador",
       "coordenadas": {
-        "latitud": 13.6995,
-        "longitud": -89.196
+        "latitud": 13.6984,
+        "longitud": -89.1955
       },
       "zona": "san-salvador-centro"
     },
@@ -831,8 +831,8 @@
       "nombre": "La Curacao Santa Ana",
       "direccion": "Calle Libertad, Santa Ana",
       "coordenadas": {
-        "latitud": 13.9945,
-        "longitud": -89.561
+        "latitud": 13.9952,
+        "longitud": -89.5616
       },
       "zona": "santa-ana"
     },
@@ -840,10 +840,10 @@
       "id": "la-curacao-san-miguel",
       "comercio": "la-curacao",
       "nombre": "La Curacao San Miguel",
-      "direccion": "Avenida Roosevelt, San Miguel",
+      "direccion": "Centro de San Miguel",
       "coordenadas": {
-        "latitud": 13.483,
-        "longitud": -88.179
+        "latitud": 13.4834,
+        "longitud": -88.175
       },
       "zona": "san-miguel"
     },
@@ -854,7 +854,7 @@
       "direccion": "Centro Comercial Metrocentro, Boulevard de Los Héroes, San Salvador",
       "coordenadas": {
         "latitud": 13.7061,
-        "longitud": -89.2124
+        "longitud": -89.2117
       },
       "zona": "san-salvador-centro"
     },
@@ -864,8 +864,8 @@
       "nombre": "Claro Plaza Mundo",
       "direccion": "Centro Comercial Plaza Mundo, Bulevar del Ejército, Soyapango",
       "coordenadas": {
-        "latitud": 13.7014,
-        "longitud": -89.1509
+        "latitud": 13.699,
+        "longitud": -89.15
       },
       "zona": "soyapango"
     },
@@ -875,8 +875,8 @@
       "nombre": "Claro Metrocentro Santa Ana",
       "direccion": "Centro Comercial Metrocentro, Avenida Independencia Sur, Santa Ana",
       "coordenadas": {
-        "latitud": 13.9855,
-        "longitud": -89.5588
+        "latitud": 13.9771,
+        "longitud": -89.5625
       },
       "zona": "santa-ana"
     }
