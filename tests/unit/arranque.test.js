@@ -30,6 +30,17 @@ test('cancelar una transición nativa esperada no oculta errores ajenos de la ap
   assert.equal(cancelado,false);
 });
 
+test('una transición nativa omitida no deja un AbortError sin capturar en consola', async () => {
+  const source=await readFile(new URL('../../public/js/arranque.js',import.meta.url),'utf8');
+  const eventos={};vm.runInNewContext(source,{addEventListener(t,f){eventos[t]=f;},location:{pathname:'/index.html'},document:{}});
+  let cancelado=false;
+  eventos.unhandledrejection({reason:{name:'AbortError',message:'Transition was skipped'},preventDefault(){cancelado=true;}});
+  assert.equal(cancelado,true);cancelado=false;
+  // Otro AbortError de la aplicación (por ejemplo, una petición cancelada) sigue visible.
+  eventos.unhandledrejection({reason:{name:'AbortError',message:'The user aborted a request.'},preventDefault(){cancelado=true;}});
+  assert.equal(cancelado,false);
+});
+
 test('la carga bancaria cubre recargas, reaperturas y restauraciones sin repetirla entre páginas internas', async () => {
   const source = await readFile(new URL('../../public/js/arranque.js', import.meta.url), 'utf8');
   for (const [type, referrer, esperado] of [

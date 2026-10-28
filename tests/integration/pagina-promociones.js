@@ -6,8 +6,9 @@ import * as filtro from '../../public/js/filtro-categoria.js';
 import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
-import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
-import { textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas } from '../../public/js/promocion-vista.js';
+import { ofertaEncuesta } from '../../public/js/encuesta-modelo.js';
+import { textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarDias } from '../../public/js/promocion-vista.js';
+import * as pestanas from '../../public/js/pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
 import { diapositivasFranja } from '../../public/js/franja.js';
 import * as instantanea from '../../public/js/instantanea.js';
@@ -37,8 +38,8 @@ const fuente = async archivo => {
   return sinMultilinea.replace(/^import[^\n]+\n/gm, '');
 };
 const vista = {
-  textoVigencia: () => '', textoDisponibleHoy, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas,
-  mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarDias: () => {}
+  textoVigencia: () => '', textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarDias,
+  mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarPasos: () => {}, mostrarRestricciones: () => {}
 };
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 
@@ -99,8 +100,12 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     almacenSesion: () => sesion,
     cardName,
     revelarPagina: alRevelar,
-    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
-    ...vista, ...filtro, ...tarjeta, ...instantanea
+    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), ofertaEncuesta,
+    matchMedia: () => ({ matches: true }),
+    // H8: Cerca de ti y el bloque Dónde tienen sus propias pruebas; aquí solo se registran sus llamadas.
+    crearCerca: () => ({ mostrar() {}, ocultar() {} }),
+    mostrarDonde: () => {},
+    ...vista, ...filtro, ...tarjeta, ...instantanea, ...pestanas
   };
   return { obtener, history, contexto, elementos, sesion, timerFake };
 }
@@ -132,11 +137,19 @@ export async function abrirListado(opciones = {}) {
   const aviso = { mostrados: [], mostrar(datos) { this.mostrados.push(datos); }, cerrar() {} };
   const franja = { montajes: [], paradas: 0 };
   const pedidas = { categorias: 0, tarjetas: 0, aperturas: 0 };
+  // H21: la hoja de la encuesta se sustituye por un registro de sus aperturas, y las marcas del servidor por las de la prueba.
+  // Por omisión no hay nada que ofrecer, para que las demás pruebas describan solo la lista.
+  const hojas = [];
+  const marcasEnviadas = [];
+  const preferencias = opciones.preferencias ?? (() => ({ completed: true }));
   const categorias = opciones.categorias ?? (() => CATEGORIAS);
   const tarjetas = opciones.tarjetas ?? (() => TARJETAS[perfil] ?? []);
   const responder = opciones.responder ?? (url => PROMOS[parametro(url, 'categoria') ?? 'todas']);
   Object.assign(nav.contexto, {
-    registrarAperturaPromociones: async () => { pedidas.aperturas++; },
+    registrarAperturaPromociones: async () => { pedidas.aperturas++; return { promocionesAbiertas: true, hojaMostrada: true, avisoCerrado: true, ...opciones.marcas }; },
+    marcarEncuesta: async marca => { marcasEnviadas.push(marca); },
+    abrirEncuestaHoja: datos => { hojas.push(datos); },
+    repintarConMovimiento: (_lista, _id, pintar) => pintar(),
     crearAviso: () => aviso,
     diapositivasFranja, filtrosActivos, textoBotonFiltros,
     montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },
@@ -148,7 +161,7 @@ export async function abrirListado(opciones = {}) {
       createElement: tagName => elemento({ tagName })
     },
     getJSON: async url => {
-      if (url === '/api/preferencias') return opciones.preferencias();
+      if (url === '/api/preferencias') return preferencias();
       if (url === '/api/categorias') { pedidas.categorias += 1; return categorias(); }
       if (url === '/api/tarjetas') { pedidas.tarjetas += 1; return tarjetas(); }
       consultas.push(url);
@@ -173,7 +186,7 @@ export async function abrirListado(opciones = {}) {
   };
   const marcados = lista => lista.filter(boton => boton.attributes['aria-checked'] === 'true').map(boton => boton.textContent);
   return {
-    ...nav, cards, consultas, pedidas, chips, aviso, franja,
+    ...nav, cards, consultas, pedidas, chips, aviso, franja, hojas, marcasEnviadas,
     obtener: obtenerConFlush,
     activo: () => pulsados(chips()),
     chip: nombre => chips().find(chip => chip.textContent === nombre),
@@ -244,6 +257,7 @@ export async function abrirGuardadas(opciones = {}) {
     marcarBoton: () => {},
     alPulsarGuardar: () => {},
     textoVigencia: () => '',
+    textoAplica,
     mostrarImagen: () => {},
     mostrarCondiciones: () => {},
     mostrarDias: () => {},
