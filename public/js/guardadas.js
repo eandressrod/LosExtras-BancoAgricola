@@ -1,5 +1,5 @@
 import { requireSession, almacenSesion, cardName, getJSON } from './comun.js';
-import { textoVigencia, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { textoVigencia, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
 import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
 
@@ -40,8 +40,9 @@ function tarjeta(promotion, tarjetaId) {
   card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
   card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
   const aplica = card.querySelector('.promo-applicability');
-  aplica.textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
-  aplica.dataset.tarjeta = promotion.applicableCard === 'black' ? 'black' : 'basica';
+  const { texto: textoTarjetas, tarjeta } = textoAplica(promotion);
+  aplica.textContent = textoTarjetas;
+  aplica.dataset.tarjeta = tarjeta;
   // Sistema visual: acento por categoría y exclusivas Black en oscuro, como en Para ti.
   const articulo = card.querySelector('article');
   articulo.dataset.categoria = promotion.category ?? '';
@@ -51,7 +52,7 @@ function tarjeta(promotion, tarjetaId) {
   badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
   mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
-  mostrarDias(card.querySelector('.promo-dias'), promotion);
+  mostrarDias(card.querySelector('.promo-cuando'), promotion);
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
   const boton = card.querySelector('.guardar-promo');
   marcarBoton(boton, true);

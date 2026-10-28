@@ -22,6 +22,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
+    <!-- Rendimiento: módulos precargados en paralelo (tests/unit/precarga-modulos.test.js mantiene la lista). -->
+    <link rel="modulepreload" href="/js/carga-tiempo.js">
+    <link rel="modulepreload" href="/js/cerca/origen.js">
+    <link rel="modulepreload" href="/js/comun.js">
+    <link rel="modulepreload" href="/js/guardar-promo.js">
+    <link rel="modulepreload" href="/js/instantanea.js">
+    <link rel="modulepreload" href="/js/promocion-vista.js">
+    <link rel="modulepreload" href="/js/tarjeta-elegida.js">
+    <link rel="modulepreload" href="/js/transiciones.js">
+    <link rel="modulepreload" href="/pwa/inactividad-modelo.js">
+    <link rel="modulepreload" href="/pwa/inactividad.js">
   </head>
   <body class="saved-page pr" data-session="pending">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
@@ -73,7 +84,7 @@
                 <p class="promo-category"></p>
               </div>
               <p class="promo-description"></p>
-              <ol class="promo-dias" hidden></ol>
+              <p class="promo-cuando"></p>
               <p class="promo-validity"></p>
               <ul class="promo-conditions"></ul>
               <div class="promo-pie">
