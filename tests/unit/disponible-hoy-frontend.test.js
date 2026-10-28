@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { leerHoy, estadoNavegacion, urlConsulta, urlListado, urlDetalle } from '../../public/js/filtro-categoria.js';
-import { textoDisponibleHoy } from '../../public/js/promocion-vista.js';
+import { estadoDias } from '../../public/js/promocion-vista.js';
 
 test('H17 Disponibles hoy se lee de la URL solo con hoy=1', () => {
   assert.equal(leerHoy('?hoy=1', null, 'A'), true);
@@ -29,9 +29,10 @@ test('H17 la consulta, el detalle y el retorno conservan Disponibles hoy junto c
 });
 
 test('H17 explica la disponibilidad de hoy sin afirmar que ya se cumple la compra mínima', () => {
-  assert.equal(textoDisponibleHoy({ availableToday: false, usageDays: [1, 2, 3, 4] }), '');
-  assert.equal(textoDisponibleHoy({}), '');
-  assert.equal(textoDisponibleHoy({ availableToday: true, usageDays: null }), 'Disponible hoy: aplica todos los días de su vigencia.');
-  assert.equal(textoDisponibleHoy({ availableToday: true, usageDays: [1, 2, 3, 4] }), 'Disponible hoy: es uno de sus días válidos.');
-  assert.equal(textoDisponibleHoy({ availableToday: true, usageDays: null, minimumPurchase: 30 }), 'Disponible hoy: aplica todos los días de su vigencia, con la compra mínima indicada.');
+  assert.equal(estadoDias({ availableToday: false, usageDays: [1, 2, 3, 4], canUse: true }).estado, 'otro-dia');
+  assert.equal(estadoDias({}).estado, 'neutro');
+  assert.equal(estadoDias({ availableToday: true, usageDays: null, canUse: true }).texto, 'Disponible hoy · todos los días');
+  assert.equal(estadoDias({ availableToday: true, usageDays: [1, 2, 3, 4], canUse: true }).texto, 'Disponible hoy · lunes a jueves');
+  assert.equal(estadoDias({ availableToday: true, usageDays: null, canUse: true, minimumPurchase: 30 }).texto, 'Disponible hoy · todos los días',
+    'la compra mínima va en las condiciones, no en la disponibilidad');
 });

@@ -102,14 +102,15 @@ test('los filtros activos se ven como píldoras sobre la lista y cada una se qui
   assert.equal(p.obtener('#abrir-filtros').attributes['aria-label'], 'Filtros');
 });
 
-test('con todas las tarjetas la tarjeta dice con cuál conviene y menciona la otra solo si cambia el beneficio', async () => {
+test('con todas las tarjetas la tarjeta dice con cuáles aplica y menciona la otra solo si cambia el beneficio', async () => {
   const p = await abrirListado({ responder: () => [{
     id: 'tienda', category: 'Compras', applicableCard: 'black', benefit: '25 %',
     mejorBeneficio: { tarjetaId: 'cta-a-4', tipoTarjeta: 'black', texto: '25 %' },
     otrosBeneficios: [{ tarjetaId: 'cta-a-3', tipoTarjeta: 'basica', texto: '15 %' }]
   }] });
   const [oferta] = p.cards.hijos;
-  assert.equal(oferta.querySelector('.promo-applicability').textContent, 'Aplica a tu tarjeta Black');
+  assert.equal(oferta.querySelector('.promo-applicability').textContent, 'Aplica a tus tarjetas Black y Básica');
+  assert.equal(oferta.querySelector('.promo-applicability').dataset.tarjeta, 'ambas');
   assert.equal(oferta.querySelector('.promo-otras').textContent, 'También 15 % con tu Básica');
   assert.equal(oferta.querySelector('.promo-otras').hidden, false);
 });
@@ -135,7 +136,9 @@ test('el detalle muestra la categoría con su acento, vence pronto y las otras t
   assert.equal(categoria.dataset.categoria, 'Compras');
   assert.equal(p.obtener('#ending').textContent, 'Vence en 2 días');
   assert.equal(p.obtener('#ending').hidden, false);
-  assert.equal(p.obtener('#payment').dataset.tarjeta, 'black');
+  // Aplica a las dos tarjetas propias, y la Básica se menciona aparte porque su beneficio cambia.
+  assert.equal(p.obtener('#payment').textContent, 'Aplica a tus tarjetas Black y Básica');
+  assert.equal(p.obtener('#payment').dataset.tarjeta, 'ambas');
   assert.equal(p.obtener('#otras-tarjetas').textContent, 'También 15 % con tu Básica');
 });
 
@@ -148,4 +151,30 @@ test('Guardadas usa la misma tarjeta del sistema', async () => {
   assert.equal(oferta.querySelector('article').dataset.categoria, 'Compras');
   assert.equal(oferta.querySelector('article').dataset.exclusiva, 'si');
   assert.equal(oferta.querySelector('.promo-applicability').dataset.tarjeta, 'black');
+});
+
+test('las pestañas cambian entre Para ti, Cerca de ti y Explorar, y la elegida se recuerda en la visita', async () => {
+  const p = await abrirListado({ search: '?intencion=salir' });
+  const seleccionada = () => ['para-ti', 'cerca', 'explorar'].filter(id => p.obtener('#tab-' + id).attributes['aria-selected'] === 'true');
+  assert.deepEqual(seleccionada(), ['para-ti']);
+  assert.equal(p.obtener('#panel-cerca').hidden, true);
+  assert.equal(p.obtener('#intent-box').hidden, false);
+
+  await p.obtener('#tab-explorar').click();
+  assert.deepEqual(seleccionada(), ['explorar']);
+  assert.equal(p.consultas.at(-1), '/api/para-ti?explorar=1', 'Explorar no lleva la intención del día');
+  assert.equal(p.obtener('#intent-box').hidden, true);
+  assert.equal(p.obtener('#panel-lista').attributes['aria-labelledby'], 'tab-explorar');
+
+  const antes = p.consultas.length;
+  await p.obtener('#tab-cerca').click();
+  assert.deepEqual(seleccionada(), ['cerca']);
+  assert.equal(p.obtener('#panel-cerca').hidden, false);
+  assert.equal(p.obtener('#panel-lista').hidden, true);
+  assert.equal(p.consultas.length, antes, 'Cerca de ti no consulta la lista');
+
+  const otra = await abrirListado({ sesion: p.sesion });
+  assert.equal(otra.obtener('#panel-cerca').hidden, false, 'al volver se abre la misma sección');
+  await otra.obtener('#tab-para-ti').click();
+  assert.equal(otra.consultas.at(-1), '/api/para-ti');
 });

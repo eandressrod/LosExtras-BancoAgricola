@@ -1,5 +1,5 @@
 import { perfiles, promociones } from '../datos.js';
-import { catalogoPromociones } from '../catalogo.js';
+import { catalogoPromociones, zonasCatalogo } from '../catalogo.js';
 
 /** @type {import('./contrato.js').RepositorioCatalogo} */
 export const repositorioMock = {
@@ -10,5 +10,6 @@ export const repositorioMock = {
   },
   async buscarPromocion(id) {
     return promociones.find(promocion => promocion.id === id) ?? null;
-  }
+  },
+  async listarZonas() { return structuredClone(zonasCatalogo); }
 };

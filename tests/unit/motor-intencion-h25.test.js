@@ -38,22 +38,23 @@ test('H25 el vocabulario de chips Hoy busco contiene las 11 ocasiones en orden m
   assert.equal(textoPrimeroHoyBusco(null), '');
 });
 
-test('H25 cálculo de T por ocasión (con umbral versionado >= 0.5) y por etiqueta de intención', () => {
-  assert.equal(CONFIGURACION.umbralOcasion, 0.5);
+test('H25 cálculo de T por ocasión (umbral versionado: solo ocasiones en torno a las que gira la oferta) y por etiqueta', () => {
+  // Desde 2026-10-26.1 el umbral es 1: un 0.5 («la incluye en parte») ya no sube la oferta (Pizza Hut en Entretenimiento).
+  assert.equal(CONFIGURACION.umbralOcasion, 1);
   const promo = {
     id: 'p1',
     occasions: { salir: 1, familia: 0.5, viajes: 0 },
     intentTags: ['regalo']
   };
-  // Coincidencia por ocasión >= 0.5
+  // Coincidencia por ocasión = 1; un 0.5 no basta
   assert.equal(calcularTerminoIntencion(promo, 'salir'), 1);
-  assert.equal(calcularTerminoIntencion(promo, 'familia'), 1);
+  assert.equal(calcularTerminoIntencion(promo, 'familia'), 0);
   assert.equal(calcularTerminoIntencion(promo, 'viajes'), 0);
   assert.equal(calcularTerminoIntencion(promo, 'hogar'), 0);
   // Respeta un umbral distinto en la configuración versionada
-  const configEstricta = { ...CONFIGURACION, umbralOcasion: 1 };
-  assert.equal(calcularTerminoIntencion(promo, 'familia', configEstricta), 0);
-  assert.equal(calcularTerminoIntencion(promo, 'salir', configEstricta), 1);
+  const configAmplia = { ...CONFIGURACION, umbralOcasion: 0.5 };
+  assert.equal(calcularTerminoIntencion(promo, 'familia', configAmplia), 1);
+  assert.equal(calcularTerminoIntencion(promo, 'salir', configAmplia), 1);
   // Coincidencia por etiqueta de intención («regalo»)
   assert.equal(calcularTerminoIntencion(promo, 'regalo'), 1);
   assert.equal(calcularTerminoIntencion({ id: 'p2', occasions: {}, intentTags: [] }, 'regalo'), 0);
@@ -65,22 +66,23 @@ test('H25 T suma 15·T y reordena sin filtrar ninguna promoción elegible del al
   const ofertas = ofertasDelCatalogo('basica');
   const senales = PERFILES.soloCategorias;
   const sinChip = ordenarParaTi({ ofertas, senales });
-  const conSalir = ordenarParaTi({ ofertas, senales, reglas: { intencion: reglaIntencion('salir') } });
+  // «Rápido» tiene ocasiones en 1 dentro del alcance (Restaurantes); con el umbral 1, «Salir» solo coincide con el cine.
+  const conChip = ordenarParaTi({ ofertas, senales, reglas: { intencion: reglaIntencion('rapido-practico') } });
 
   // No filtra: exactamente el mismo conjunto de promociones
   assert.deepEqual(
-    conSalir.promociones.map(p => p.id).sort(),
+    conChip.promociones.map(p => p.id).sort(),
     sinChip.promociones.map(p => p.id).sort()
   );
 
   // R suma 15·T en las que coinciden y las coloca primero dentro de su mismo nivel de comercio/categoría
-  for (const promo of conSalir.promociones) {
+  for (const promo of conChip.promociones) {
     const base = sinChip.promociones.find(p => p.id === promo.id);
-    const esperadoT = calcularTerminoIntencion(promo, 'salir');
+    const esperadoT = calcularTerminoIntencion(promo, 'rapido-practico');
     assert.equal(promo.componentes.T, esperadoT, promo.id);
     assert.equal(promo.componentes.R, base.componentes.R + 15 * esperadoT, promo.id);
   }
-  assert.equal(conSalir.promociones[0].componentes.T, 1);
+  assert.equal(conChip.promociones[0].componentes.T, 1);
 });
 
 test('H25 un comercio no elegido nunca supera a uno elegido con la misma T', () => {

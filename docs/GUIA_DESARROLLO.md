@@ -336,12 +336,15 @@ Los parámetros y su versión están en `config.js`; cambiar un valor exige camb
 
 | Endpoint | Método | Contrato |
 | --- | --- | --- |
-| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`); `tarjeta` es opcional (ver «Todas las tarjetas»). Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
+| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`); `tarjeta` es opcional (ver «Todas las tarjetas»). Con `explorar=1` (sección Explorar) no recorta por intereses (`alcance: 'todo'` del motor) ni usa la intención del día; las señales siguen ordenando, así que lo de interés va primero. Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
 | `/api/senales` | GET | `{senales}`: las activas del dueño de la sesión. |
 | `/api/senales` | POST | `{clase, ambito, valor, origen}` crea la señal o reactiva la existente; responde `{senal}`. Valida el vocabulario y que el valor exista en el catálogo. |
 | `/api/senales` | PATCH | `{id, activa}` desactiva (quitar) o reactiva (deshacer); 404 si la señal no es del usuario. |
+| `/api/zonas` | GET | `{zonas: [{id, nombre, latitud, longitud}]}`: lista fija de zonas con su centro, en su orden (H8). |
 
-Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (`backend/http.js`). `/api/promociones` conserva su contrato. Para ti ya no lo usa: consume `/api/para-ti` y conserva el orden de la visita en `sessionStorage` (`public/js/instantanea.js`).
+Las rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (`backend/http.js`). `/api/promociones` conserva su contrato. Para ti ya no lo usa: consume `/api/para-ti` y conserva el orden de la visita en `sessionStorage` (`public/js/instantanea.js`).
+
+**Cerca de ti y Dónde** ([SCRUM-11](https://somos-agilistas.atlassian.net/browse/SCRUM-11), H8; ADR-012). La pestaña Cerca de ti y el bloque «Dónde» del detalle usan `/api/para-ti` (sus promociones traen `branches` y `componentes.R`) y `/api/zonas`; la distancia y el orden D × (0.2 + 0.8 × R / 95) se calculan en el navegador (`public/js/cerca/`). El mapa es MapLibre GL JS 6.16.0, servido desde `public/vendor/maplibre-gl@6.16.0/`, con teselas de OpenFreeMap; el service worker no las intercepta. La posición del dispositivo vive solo en memoria: `sessionStorage` guarda qué se eligió (`{tipo: 'ubicacion'}` o la zona), nunca coordenadas, y se limpia al iniciar o cerrar sesión. La zona elegida se guarda como señal `criterio·zona`. Las coordenadas de `catalogo/catalogo.json` se verificaron contra OpenStreetMap (migración `20261026040041_h8_sucursales_verificadas.sql`, aplicada al proyecto compartido solo con la sentencia de `sucursales`, que es lo único que cambia).
 
 **Todas las tarjetas** ([SCRUM-133](https://somos-agilistas.atlassian.net/browse/SCRUM-133), decisión del 24 de octubre de 2026 en el comentario 10031 de SCRUM-116). Para ti muestra las mejores promociones considerando todas las tarjetas del usuario; filtrar por tarjeta es opcional.
 
@@ -361,3 +364,30 @@ Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfi
 - Abre una transición de regreso en `supabase/versiones.json`, porque las pruebas de PR 21 cuentan las tablas de forma fija. Se cerró el 25 de octubre al registrar el PR del motor (PR 25) y los siguientes, hasta el PR 30, como destinos de regreso.
 
 **Aplicar en la base compartida** (solo con autorización): sacar la foto de datos (`npm run respaldo -- crear`), aplicar la migración y comprobar con `npm run test:remote`.
+
+## 12. H21: marcas de la encuesta sin insistir — 26 de octubre de 2026
+
+Parte 2 de H21 ([SCRUM-71](https://somos-agilistas.atlassian.net/browse/SCRUM-71)), caso de backend de [ADR-010](<../ADR/0010-Decision de ofrecer la encuesta sin insistir.md>). La interfaz las usa desde el 26 de octubre (`ofertaEncuesta` en `public/js/encuesta-modelo.js` y `marcarEncuesta` en `public/js/usuarios-prueba.js`), en lugar de la marca de sesión de la parte 1. Mis preferencias abre la hoja con `/promociones.html?encuesta=1`, que no guarda ninguna marca.
+
+**Contrato.** `POST /api/promociones-apertura` conserva su ruta, su método y la validación de sesión. El propietario sale siempre de la sesión.
+
+| Cuerpo | Efecto |
+| --- | --- |
+| Vacío, como hasta ahora | Registra la apertura de Promociones. |
+| `{ "marca": "hoja-mostrada" }` | Además guarda que la hoja ya se abrió sola. |
+| `{ "marca": "aviso-cerrado" }` | Además guarda que la persona cerró el aviso de la lista. |
+| Otra marca o JSON inválido | 400 «Marca de encuesta no válida.», sin cambios. |
+
+La respuesta 200 siempre trae el estado guardado: `{ "promocionesAbiertas": true, "hojaMostrada": bool, "avisoCerrado": bool }`. Las marcas no se desmarcan.
+
+**Uso previsto en la interfaz.** La llamada que ya hace Promociones al entrar devuelve las marcas, sin otra petición. Con la encuesta pendiente:
+
+- Si `hojaMostrada` es falso, se abre la hoja y se envía `hoja-mostrada`.
+- Si ya es verdadero y `avisoCerrado` es falso, se muestra el aviso en la lista; al cerrarlo se envía `aviso-cerrado`.
+- Si las dos son verdaderas, no se ofrece nada; la encuesta sigue en «Mis preferencias».
+
+Con la encuesta completada las marcas no se consultan. «Listo» sin categorías sigue dejando la encuesta pendiente (`/api/preferencias` no cambia).
+
+**Datos.** La migración `20261026220500_h21_marcas_encuesta.sql` añade `perfiles.encuesta_hoja_mostrada` y `perfiles.encuesta_aviso_cerrado`, booleanos obligatorios en falso. Son columnas aparte de `promociones_abiertas` porque esa marca ya es verdadera en perfiles que nunca vieron la hoja. Son estado de interfaz, no impresiones ni analítica.
+
+**Base compartida:** aplicada el 26 de octubre, con foto de datos previa en `respaldos/20261026160000/`. El backend con `DATA_SOURCE=supabase` necesita estas columnas: sin ellas, la apertura responde 503.
