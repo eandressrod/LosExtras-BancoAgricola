@@ -46,6 +46,11 @@ export function crearRepositorioSupabase(client) {
       const { data, error } = await client.from('promociones').select(CAMPOS_PROMOCION).eq('id', id).maybeSingle();
       if (error) throw new Error('No se pudo consultar la promoción.');
       return data;
+    },
+    async listarZonas() {
+      const { data, error } = await client.from('zonas').select('id, nombre, latitud, longitud').order('orden').order('id');
+      if (error) throw new Error('No se pudieron consultar las zonas.');
+      return data;
     }
   };
 }

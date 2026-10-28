@@ -327,7 +327,7 @@ Subtareas 2 y 3 de H22 ([SCRUM-128](https://somos-agilistas.atlassian.net/browse
 
 **Motor.** Es un paquete ESM puro en `public/js/motor/`, sin dependencias: el backend lo importa y el navegador puede cargarlo tal cual (vista previa de H21). Entrada de `ordenarParaTi`:
 
-- `ofertas`: las de la tarjeta elegida, aplanadas por `filtrarPromociones` sin filtrar por intereses.
+- `ofertas`: las de la tarjeta elegida o, sin `?tarjeta=`, las de todas las tarjetas propias, aplanadas por `filtrarPromociones` sin filtrar por intereses.
 - `senales`: las activas del usuario.
 - `filtros`: `{categoria, hoy, comercio}`.
 - `reglas` (opcional): `excluir` y `multiplicador` para H23, `intencion` para H25.
@@ -336,12 +336,24 @@ Los parámetros y su versión están en `config.js`; cambiar un valor exige camb
 
 | Endpoint | Método | Contrato |
 | --- | --- | --- |
-| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`). Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
+| `/api/para-ti` | GET | Mismos parámetros y validaciones que `/api/promociones` (`categoria`, `hoy`, `comercio`, `tarjeta`); `tarjeta` es opcional (ver «Todas las tarjetas»). Con `explorar=1` (sección Explorar) no recorta por intereses (`alcance: 'todo'` del motor) ni usa la intención del día; las señales siguen ordenando, así que lo de interés va primero. Responde `{version, estrategia, vacio, promociones, descartadas}`; cada promoción agrega `componentes {C, M, T, R}`, `razon` e `insignias`. `vacio` es `null`, `sin-catalogo`, `filtros` o `intereses`. |
 | `/api/senales` | GET | `{senales}`: las activas del dueño de la sesión. |
 | `/api/senales` | POST | `{clase, ambito, valor, origen}` crea la señal o reactiva la existente; responde `{senal}`. Valida el vocabulario y que el valor exista en el catálogo. |
 | `/api/senales` | PATCH | `{id, activa}` desactiva (quitar) o reactiva (deshacer); 404 si la señal no es del usuario. |
+| `/api/zonas` | GET | `{zonas: [{id, nombre, latitud, longitud}]}`: lista fija de zonas con su centro, en su orden (H8). |
 
-Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (`backend/http.js`). `/api/promociones` conserva su contrato. Para ti ya no lo usa: consume `/api/para-ti` y conserva el orden de la visita en `sessionStorage` (`public/js/instantanea.js`).
+Las rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfil` (`backend/http.js`). `/api/promociones` conserva su contrato. Para ti ya no lo usa: consume `/api/para-ti` y conserva el orden de la visita en `sessionStorage` (`public/js/instantanea.js`).
+
+**Cerca de ti y Dónde** ([SCRUM-11](https://somos-agilistas.atlassian.net/browse/SCRUM-11), H8; ADR-012). La pestaña Cerca de ti y el bloque «Dónde» del detalle usan `/api/para-ti` (sus promociones traen `branches` y `componentes.R`) y `/api/zonas`; la distancia y el orden D × (0.2 + 0.8 × R / 95) se calculan en el navegador (`public/js/cerca/`). El mapa es MapLibre GL JS 6.16.0, servido desde `public/vendor/maplibre-gl@6.16.0/`, con teselas de OpenFreeMap; el service worker no las intercepta. La posición del dispositivo vive solo en memoria: `sessionStorage` guarda qué se eligió (`{tipo: 'ubicacion'}` o la zona), nunca coordenadas, y se limpia al iniciar o cerrar sesión. La zona elegida se guarda como señal `criterio·zona`. Las coordenadas de `catalogo/catalogo.json` se verificaron contra OpenStreetMap (migración `20261026040041_h8_sucursales_verificadas.sql`, aplicada al proyecto compartido solo con la sentencia de `sucursales`, que es lo único que cambia).
+
+**Todas las tarjetas** ([SCRUM-133](https://somos-agilistas.atlassian.net/browse/SCRUM-133), decisión del 24 de octubre de 2026 en el comentario 10031 de SCRUM-116). Para ti muestra las mejores promociones considerando todas las tarjetas del usuario; filtrar por tarjeta es opcional.
+
+- **Sin `?tarjeta=`** se evalúan todas las tarjetas propias de la sesión, leídas del repositorio de tarjetas y nunca del cliente. Una oferta es elegible si aplica con al menos una. Cada oferta suma `mejorBeneficio {tarjetaId, tipoTarjeta, texto}` y `otrosBeneficios` (las demás tarjetas propias que aplican, del mejor al peor). `applicableCard`, `benefit`, `payment`, `restrictions`, `minimumPurchase` y `discountCap` son los del mejor beneficio, así la UI actual sigue funcionando; `exclusive` sigue indicando si la oferta solo existe para un tipo de tarjeta. Un perfil sin tarjetas recibe `vacio: 'sin-catalogo'`.
+- **Con `?tarjeta=`** el resultado es idéntico al anterior y no aparecen `mejorBeneficio` ni `otrosBeneficios`.
+- **Regla del mejor beneficio** (`ordenarBeneficios` en `public/js/motor/elegibilidad.js`), en este orden: (1) solo compiten las tarjetas propias con beneficio en la oferta, de modo que una exclusiva Black exige una Black propia; (2) mayor valor: porcentaje de descuento o reintegro, o número de cuotas (`valorBeneficio`; un texto sin número, como «2×1» o «Puntos BA dobles», vale 0); (3) a igual valor, Black antes que Básica, porque en el catálogo su beneficio es el de Básica con algo más; (4) entre tarjetas del mismo tipo, la predeterminada del perfil; (5) el id de tarjeta menor.
+- **Detalle.** `/api/promocion` sin `?tarjeta=` aplica la misma elegibilidad y regla y agrega `beneficiosPropios` (`[mejorBeneficio, ...otrosBeneficios]`); una exclusiva Black se abre sin tarjeta si el perfil tiene una Black. Con `?tarjeta=` no cambia.
+- **Motor e instantánea.** El puntaje, el reordenamiento, la razón y la instantánea no cambian. La clave de la instantánea incluye el alcance (`los-extras-instantanea:<perfil>:todas` o `:tarjeta:<id>`), así «todas» y cada tarjeta conservan su propio orden durante la visita.
+- La pantalla todavía consulta siempre con la tarjeta elegida; mostrar «todas» y los beneficios alternativos corresponde a la UI de SCRUM-127. `/api/promociones` y `/api/guardadas` no cambian. Un cambio de este contrato se avisa en H20, H21, H23 y H25.
 
 **Datos.**
 
@@ -352,3 +364,30 @@ Las dos rutas entran por `api/recursos.js` y validan la sesión con `exigirPerfi
 - Abre una transición de regreso en `supabase/versiones.json`, porque las pruebas de PR 21 cuentan las tablas de forma fija. El PR del motor se registra como destino al fusionarse.
 
 **Aplicar en la base compartida** (solo con autorización): sacar la foto de datos (`npm run respaldo -- crear`), aplicar la migración y comprobar con `npm run test:remote`.
+
+## 12. H21: marcas de la encuesta sin insistir — 26 de octubre de 2026
+
+Parte 2 de H21 ([SCRUM-71](https://somos-agilistas.atlassian.net/browse/SCRUM-71)), caso de backend de [ADR-010](<../ADR/0010-Decision de ofrecer la encuesta sin insistir.md>). La interfaz las usa desde el 26 de octubre (`ofertaEncuesta` en `public/js/encuesta-modelo.js` y `marcarEncuesta` en `public/js/usuarios-prueba.js`), en lugar de la marca de sesión de la parte 1. Mis preferencias abre la hoja con `/promociones.html?encuesta=1`, que no guarda ninguna marca.
+
+**Contrato.** `POST /api/promociones-apertura` conserva su ruta, su método y la validación de sesión. El propietario sale siempre de la sesión.
+
+| Cuerpo | Efecto |
+| --- | --- |
+| Vacío, como hasta ahora | Registra la apertura de Promociones. |
+| `{ "marca": "hoja-mostrada" }` | Además guarda que la hoja ya se abrió sola. |
+| `{ "marca": "aviso-cerrado" }` | Además guarda que la persona cerró el aviso de la lista. |
+| Otra marca o JSON inválido | 400 «Marca de encuesta no válida.», sin cambios. |
+
+La respuesta 200 siempre trae el estado guardado: `{ "promocionesAbiertas": true, "hojaMostrada": bool, "avisoCerrado": bool }`. Las marcas no se desmarcan.
+
+**Uso previsto en la interfaz.** La llamada que ya hace Promociones al entrar devuelve las marcas, sin otra petición. Con la encuesta pendiente:
+
+- Si `hojaMostrada` es falso, se abre la hoja y se envía `hoja-mostrada`.
+- Si ya es verdadero y `avisoCerrado` es falso, se muestra el aviso en la lista; al cerrarlo se envía `aviso-cerrado`.
+- Si las dos son verdaderas, no se ofrece nada; la encuesta sigue en «Mis preferencias».
+
+Con la encuesta completada las marcas no se consultan. «Listo» sin categorías sigue dejando la encuesta pendiente (`/api/preferencias` no cambia).
+
+**Datos.** La migración `20261026220500_h21_marcas_encuesta.sql` añade `perfiles.encuesta_hoja_mostrada` y `perfiles.encuesta_aviso_cerrado`, booleanos obligatorios en falso. Son columnas aparte de `promociones_abiertas` porque esa marca ya es verdadera en perfiles que nunca vieron la hoja. Son estado de interfaz, no impresiones ni analítica.
+
+**Base compartida:** aplicada el 26 de octubre, con foto de datos previa en `respaldos/20261026160000/`. El backend con `DATA_SOURCE=supabase` necesita estas columnas: sin ellas, la apertura responde 503.

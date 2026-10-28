@@ -12,7 +12,8 @@ const PERFIL = { id: 'A', tipoTarjeta: 'basica' };
 const leer = query => leerConsultaPromociones(new URLSearchParams(query), CATEGORIAS, PROPIAS, PERFIL);
 
 test('H22 una consulta válida entrega los filtros explícitos y la tarjeta propia elegida', () => {
-  assert.deepEqual(leer('categoria=Compras&hoy=1&comercio=%20Siman%20&tarjeta=cta-a-4'),
+  const { ok, filtros, tarjeta } = leer('categoria=Compras&hoy=1&comercio=%20Siman%20&tarjeta=cta-a-4');
+  assert.deepEqual({ ok, filtros, tarjeta },
     { ok: true, filtros: { categoria: 'Compras', hoy: true, comercio: 'Siman' },
       tarjeta: { id: 'cta-a-4', cuentaId: 'c2', tipoTarjeta: 'black', nombre: 'Black', numeroEnmascarado: undefined } });
   const predeterminada = leer('');
@@ -26,6 +27,13 @@ test('H22 cada parámetro inválido tiene su respuesta', () => {
   assert.deepEqual(leer('comercio=a&comercio=b'), { ok: false, estado: 400, cuerpo: { error: 'Búsqueda por comercio no válida.' } });
   assert.deepEqual(leer('tarjeta=ajena'), { ok: false, estado: 404, cuerpo: { error: 'Tarjeta no encontrada.' } });
   assert.deepEqual(leer('tarjeta='), { ok: false, estado: 400, cuerpo: { error: 'Tarjeta no válida.' } });
+});
+
+test('SCRUM-133 la consulta indica si pide todas las tarjetas y entrega las propias', () => {
+  const sinParametro = leer('');
+  assert.equal(sinParametro.todas, true);
+  assert.deepEqual(sinParametro.tarjetas.map(t => t.id), ['cta-a-3', 'cta-a-4']);
+  assert.equal(leer('tarjeta=cta-a-4').todas, false);
 });
 
 test('H22 sin tarjetas propias la consulta es válida y no tiene tarjeta', () => {

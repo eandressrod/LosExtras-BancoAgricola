@@ -1,8 +1,8 @@
 import { requireSession, getJSON, almacenSesion, cardName } from './comun.js';
-import { textoVigencia, textoDisponibleHoy, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
-import { leerCategoria, leerHoy, leerBusqueda, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
+import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias, mostrarPasos, mostrarRestricciones } from './promocion-vista.js';
+import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
-import { conMinimoCarga } from './carga-tiempo.js';
+import { mostrarDonde } from './cerca/donde.js';
 
 const profile = await requireSession();
 if (profile) {
@@ -10,19 +10,20 @@ if (profile) {
   const id = parametros.get('id');
   // Se lee antes de normalizar la URL: replaceState no debe borrar el origen.
   const desdeGuardadas = parametros.get('desde') === 'guardadas';
-  // H5, H17 y H10: volver al listado conserva los filtros y la búsqueda si esta entrada pertenece al mismo perfil.
+  // H5, H17, H10 y H25: volver al listado conserva los filtros, la búsqueda y el chip si esta entrada pertenece al mismo perfil.
   const categoria = leerCategoria(location.search, history.state, profile.id);
   const hoy = leerHoy(location.search, history.state, profile.id);
   const busqueda = leerBusqueda(location.search, history.state, profile.id);
+  const intencion = leerIntencion(location.search, history.state, profile.id);
   const back = document.querySelector('#back-to-list');
   const retornoGuardadas = '/guardadas.html' + (busqueda ? '?comercio=' + encodeURIComponent(busqueda) : '');
-  const destino = id ? urlDetalle(id, categoria, hoy, busqueda) + (desdeGuardadas ? '&desde=guardadas' : '') : location.href;
+  const destino = id ? urlDetalle(id, categoria, hoy, busqueda, intencion) + (desdeGuardadas ? '&desde=guardadas' : '') : location.href;
   history.replaceState(estadoNavegacion(profile.id, categoria), '', destino);
   if (desdeGuardadas) {
     back.href = retornoGuardadas;
     back.textContent = 'Volver a guardadas';
   } else {
-    back.href = urlListado(categoria, null, hoy, busqueda);
+    back.href = urlListado(categoria, null, hoy, busqueda, intencion);
   }
   // H16: el detalle muestra el beneficio de la tarjeta elegida en "Para ti" (el backend valida que sea propia).
   const tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
@@ -37,25 +38,54 @@ if (profile) {
     if (!id) { status.textContent = 'Selecciona una promoción desde el listado.'; return; }
     status.textContent = 'Cargando detalle…';
     try {
-      const promotion = await conMinimoCarga(() => getJSON(conTarjeta('/api/promocion?id=' + encodeURIComponent(id), tarjetaId)));
+      const promotion = await getJSON(conTarjeta('/api/promocion?id=' + encodeURIComponent(id), tarjetaId));
       document.querySelector('h1').textContent = promotion.merchant;
       document.title = promotion.merchant + ' · Promoción';
       document.querySelector('#benefit').textContent = promotion.benefit;
       document.querySelector('#description').textContent = promotion.detailDescription || promotion.description;
-      document.querySelector('#payment').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+      const aplica = document.querySelector('#payment');
+      // Con cuáles de las tarjetas propias aplica (sale de sus beneficios; el listado añade «Solo con…»).
+      const { texto: textoTarjetas, tarjeta } = textoAplica(promotion);
+      aplica.textContent = textoTarjetas;
+      aplica.dataset.tarjeta = tarjeta;
+      // Todas las tarjetas (SCRUM-133): la otra tarjeta propia solo se menciona si su beneficio cambia.
+      const otras = document.querySelector('#otras-tarjetas');
+      otras.textContent = textoOtrasTarjetas(promotion);
+      otras.hidden = !otras.textContent;
+      // Sistema visual: la categoría lleva su acento.
+      const categoriaPromo = document.querySelector('#category');
+      categoriaPromo.textContent = promotion.categoryName || promotion.category || '';
+      categoriaPromo.dataset.categoria = promotion.category ?? '';
+      const vence = document.querySelector('#ending');
+      vence.textContent = textoVencePronto(promotion, hoyEnElSalvador());
+      vence.hidden = !vence.textContent;
       document.querySelector('#validity').textContent = textoVigencia(promotion);
-      const disponible = document.querySelector('#today');
-      disponible.textContent = textoDisponibleHoy(promotion);
-      disponible.hidden = !disponible.textContent;
       document.querySelector('#exclusive').hidden = !promotion.exclusive;
       mostrarImagen(document.querySelector('#promotion-image'), promotion.imageUrl, promotion.imageAlt);
       mostrarImagen(document.querySelector('#merchant-logo'), promotion.logoUrl);
-      mostrarCondiciones(document.querySelector('#conditions'), promotion);
+      mostrarDias(document.querySelector('#days'), promotion);
+      // Las restricciones van en «Cómo usarla»; Condiciones no las repite.
+      mostrarCondiciones(document.querySelector('#conditions'), promotion, { dias: false, restricciones: false });
+      mostrarPasos(document.querySelector('#pasos'), promotion);
+      mostrarRestricciones(document.querySelector('#restricciones'), promotion);
+      // Dónde: el mapa (H8) solo aplica a promociones que se usan en tienda.
+      const enTienda = Boolean(promotion.channels?.includes('presencial'));
+      document.querySelector('#donde').hidden = !enTienda;
+      // H8: distancia, mapa reducido y enlaces; sin sucursales presenciales no hay distancia.
+      if (enTienda) mostrarDonde(promotion, profile);
+      const verMapa = document.querySelector('#ver-mapa');
+      verMapa.hidden = !enTienda;
+      verMapa.onclick = evento => {
+        evento.preventDefault();
+        const donde = document.querySelector('#bloque-donde');
+        donde.scrollIntoView?.({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+        donde.focus?.({ preventScroll: true });
+      };
       if (desdeGuardadas) {
         back.href = retornoGuardadas;
         back.textContent = 'Volver a guardadas';
       } else {
-        back.href = urlListado(categoria, promotion.id, hoy, busqueda);
+        back.href = urlListado(categoria, promotion.id, hoy, busqueda, intencion);
         back.textContent = 'Volver al listado';
       }
       const sessionBadge = document.querySelector('#session-profile');

@@ -1,5 +1,5 @@
 import { requireSession, almacenSesion, cardName, getJSON } from './comun.js';
-import { textoVigencia, mostrarImagen, mostrarCondiciones } from './promocion-vista.js';
+import { textoVigencia, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
 import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
 
@@ -39,13 +39,21 @@ function tarjeta(promotion, tarjetaId) {
   card.querySelector('.promo-description').textContent = promotion.description;
   card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
   card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
-  card.querySelector('.promo-applicability').textContent = 'Aplica a tu tarjeta ' + (promotion.applicableCard === 'black' ? 'Black' : 'Básica');
+  const aplica = card.querySelector('.promo-applicability');
+  const { texto: textoTarjetas, tarjeta } = textoAplica(promotion);
+  aplica.textContent = textoTarjetas;
+  aplica.dataset.tarjeta = tarjeta;
+  // Sistema visual: acento por categoría y exclusivas Black en oscuro, como en Para ti.
+  const articulo = card.querySelector('article');
+  articulo.dataset.categoria = promotion.category ?? '';
+  if (promotion.exclusive) articulo.dataset.exclusiva = 'si';
   const badge = card.querySelector('.promo-exclusive');
   badge.hidden = !promotion.exclusive;
   badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
   mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
   mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
-  mostrarCondiciones(card.querySelector('.promo-conditions'), promotion);
+  mostrarDias(card.querySelector('.promo-cuando'), promotion);
+  mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
   const boton = card.querySelector('.guardar-promo');
   marcarBoton(boton, true);
   alPulsarGuardar(boton, promotion.id, guardada => {

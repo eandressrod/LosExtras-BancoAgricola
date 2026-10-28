@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
     <link rel="stylesheet" href="/css/carga.css">
+    <link rel="stylesheet" href="/css/promociones-sistema.css">
     <link rel="stylesheet" href="/css/promociones.css">
-    <link rel="stylesheet" href="/css/guardadas.css">
     <script type="module" src="/js/detalle.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -22,10 +22,30 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
+    <!-- Rendimiento: módulos precargados en paralelo (tests/unit/precarga-modulos.test.js mantiene la lista). -->
+    <link rel="modulepreload" href="/js/carga-tiempo.js">
+    <link rel="modulepreload" href="/js/cerca/cercania.js">
+    <link rel="modulepreload" href="/js/cerca/donde.js">
+    <link rel="modulepreload" href="/js/cerca/enlaces.js">
+    <link rel="modulepreload" href="/js/cerca/mapa.js">
+    <link rel="modulepreload" href="/js/cerca/origen.js">
+    <link rel="modulepreload" href="/js/cerca/recorrido.js">
+    <link rel="modulepreload" href="/js/cerca/zona.js">
+    <link rel="modulepreload" href="/js/comun.js">
+    <link rel="modulepreload" href="/js/filtro-categoria.js">
+    <link rel="modulepreload" href="/js/instantanea.js">
+    <link rel="modulepreload" href="/js/motor/config.js">
+    <link rel="modulepreload" href="/js/motor/intencion.js">
+    <link rel="modulepreload" href="/js/promocion-vista.js">
+    <link rel="modulepreload" href="/js/tarjeta-elegida.js">
+    <link rel="modulepreload" href="/js/transiciones.js">
+    <link rel="modulepreload" href="/pwa/inactividad-modelo.js">
+    <link rel="modulepreload" href="/pwa/inactividad.js">
   </head>
-  <body class="detail-page" data-session="pending">
+  <body class="detail-page pr" data-session="pending">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
+      <a class="pr-volver" href="/menu.html" aria-label="Volver al menú"></a>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <div class="header-row">
         <p>Los Extras</p>
@@ -33,27 +53,78 @@
       </div>
     </header>
     <main>
+      <a id="back-to-list" class="pr-atras" href="/promociones.html">Volver al listado</a>
       <p id="detail-status" class="note" role="status">Cargando detalle…</p>
       <button id="retry" class="secondary" hidden>Reintentar</button>
       <div id="detail" hidden>
         <div class="promo-media detail-media">
           <img id="promotion-image" class="promo-photo" width="960" height="540" alt="">
           <div class="merchant-mark"><img id="merchant-logo" class="merchant-logo" alt=""></div>
+          <div class="pr-detalle-titulo">
+            <h1>Promoción</h1>
+            <p id="benefit" class="detail-benefit"></p>
+          </div>
         </div>
+        <button id="guardar-promo" class="pr-guardar-detalle" type="button" data-guardada="no" hidden>Guardar</button>
         <div class="detail-content">
-          <span id="exclusive" class="exclusive-label" hidden>Exclusiva Black</span>
-          <h1>Promoción</h1>
-          <p id="benefit" class="detail-benefit"></p>
+          <div class="pr-detalle-etiquetas">
+            <span id="exclusive" class="exclusive-label" hidden>Exclusiva Black</span>
+            <span id="category" class="promo-category"></span>
+          </div>
           <p id="description" class="detail-description"></p>
-          <p id="payment" class="promo-applicability"></p>
-          <p id="validity" class="promo-validity"></p>
-          <p id="today" class="promo-today" hidden></p>
-          <ul id="conditions" class="promo-conditions"></ul>
-          <button id="guardar-promo" class="secondary" type="button" hidden>Guardar</button>
+          <!-- Cómo usarla: pasos armados con datos del catálogo; las instrucciones propias de la promoción van al final. -->
+          <section class="pr-bloque pr-uso" aria-labelledby="bloque-uso">
+            <h2 id="bloque-uso">Cómo usarla</h2>
+            <ol id="pasos" class="pr-pasos"></ol>
+            <div class="pr-restricciones">
+              <h3 id="titulo-restricciones">Restricciones</h3>
+              <ul id="restricciones" aria-labelledby="titulo-restricciones" hidden></ul>
+            </div>
+            <a id="ver-mapa" class="pr-ver-mapa" href="#bloque-donde" hidden>Ver en el mapa</a>
+          </section>
+          <section class="pr-bloque" aria-labelledby="bloque-cuando">
+            <h2 id="bloque-cuando">Cuándo</h2>
+            <p id="days" class="promo-cuando"></p>
+            <p id="validity" class="promo-validity"></p>
+            <p id="ending" class="promo-ending" hidden></p>
+          </section>
+          <section class="pr-bloque" aria-labelledby="bloque-tarjeta">
+            <h2 id="bloque-tarjeta">Con tu tarjeta</h2>
+            <p id="payment" class="promo-applicability"></p>
+            <p id="otras-tarjetas" class="promo-otras" hidden></p>
+          </section>
+          <section class="pr-bloque" aria-labelledby="bloque-condiciones">
+            <h2 id="bloque-condiciones">Condiciones</h2>
+            <ul id="conditions" class="promo-conditions"></ul>
+          </section>
+          <!-- H8 (js/cerca/donde.js): distancia a la sucursal más cercana, recorrido aproximado y enlaces. Solo con canal presencial. -->
+          <section id="donde" class="pr-bloque pr-donde" aria-labelledby="bloque-donde" hidden>
+            <h2 id="bloque-donde" tabindex="-1">Dónde</h2>
+            <p id="donde-distancia" class="pr-donde__distancia" hidden></p>
+            <p id="donde-sucursal" class="pr-donde__sucursal" hidden></p>
+            <button id="ver-distancia" type="button" class="pr-origen__boton" data-icono="ubicacion" hidden>Ver distancia</button>
+            <div id="mapa-detalle" class="pr-mapa pr-mapa--detalle" data-mapa="detalle" hidden>
+              <p class="pr-mapa__rotulo">Mapa de la promoción</p>
+              <a id="mapa-detalle-enlace" class="pr-mapa__enlace" href="/promociones.html"><span class="visualmente-oculto">Ver en Cerca de ti</span></a>
+            </div>
+            <p id="donde-nota" class="pr-donde__nota" hidden>Recorrido aproximado. La ruta exacta te la da tu app de mapas.</p>
+            <div class="pr-donde__acciones" hidden>
+              <a id="abrir-waze" class="pr-donde__enlace" data-app="waze" target="_blank" rel="noopener">Abrir en Waze</a>
+              <a id="como-llegar" class="pr-donde__enlace" data-app="mapas" target="_blank" rel="noopener">Cómo llegar</a>
+            </div>
+            <dialog id="zonas" class="pr-hoja" aria-labelledby="zonas-titulo">
+              <div class="pr-hoja__asa" aria-hidden="true"></div>
+              <h2 id="zonas-titulo" class="pr-hoja__titulo">¿Qué zona te queda mejor?</h2>
+              <div class="pr-hoja__cuerpo">
+                <button id="donde-ubicacion" type="button" class="pr-origen__boton" data-icono="ubicacion">Usar mi ubicación</button>
+                <div class="pr-zonas" role="group" aria-labelledby="zonas-titulo"></div>
+              </div>
+              <div class="pr-hoja__acciones"><button id="cerrar-zonas" type="button">Cerrar</button></div>
+            </dialog>
+          </section>
           <p id="guardar-error" class="error" role="alert"></p>
         </div>
       </div>
-      <div class="actions"><a id="back-to-list" class="button secondary" href="/promociones.html">Volver al listado</a></div>
     </main>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>
   </body>

@@ -17,16 +17,21 @@ export default {
       const perfil = await perfilDeSesion(leerCookie(request), obtenerRepositorioAccesos());
       if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
       // H16: el detalle usa la tarjeta elegida, siempre que sea del dueño de la sesión.
-      const eleccion = elegirTarjeta(tarjetasDelUsuario(await obtenerRepositorioProductosMenu().listarTarjetas(perfil.id), perfil), parametros, perfil.tipoTarjeta);
+      const tarjetas = tarjetasDelUsuario(await obtenerRepositorioProductosMenu().listarTarjetas(perfil.id), perfil);
+      const eleccion = elegirTarjeta(tarjetas, parametros, perfil.tipoTarjeta);
       if (!eleccion.ok) {
         const { cuerpo, estado } = rechazoDeTarjeta(eleccion);
         return responderJson(cuerpo, estado);
       }
       if (!eleccion.tarjeta) return responderJson({ error: 'Promoción no encontrada.' }, 404);
+      // SCRUM-133: sin ?tarjeta= se evalúan todas las tarjetas propias, como en Para ti.
+      const todas = !parametros.has('tarjeta');
+      const alcance = todas ? { tarjetas, predeterminadaId: eleccion.tarjeta.id } : eleccion.tarjeta.tipoTarjeta;
       const catalogo = await obtenerRepositorio().listarPromocionesConBeneficios();
-      const promocion = filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, []).find(item => item.id === id);
+      const promocion = filtrarPromociones(catalogo, alcance, []).find(item => item.id === id);
       if (!promocion) return responderJson({ error: 'Promoción no encontrada.' }, 404);
-      return responderJson(promocion);
+      if (!todas) return responderJson(promocion);
+      return responderJson({ ...promocion, beneficiosPropios: [promocion.mejorBeneficio, ...promocion.otrosBeneficios] });
     } catch {
       return responderJson({ error: 'No se pudo cargar la promoción.' }, 503);
     }
