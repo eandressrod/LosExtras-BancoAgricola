@@ -15,6 +15,13 @@ test('H22 guardar preferencias sincroniza interés·categoría con origen encues
   assert.deepEqual(registro, [['preferencias', 'A', ['Compras', 'Salud']], ['senales', 'A', ['Compras', 'Salud'], 'encuesta']]);
 });
 
+test('SCRUM-113 las señales reciben las categorías repetidas una sola vez, igual que las preferencias', async () => {
+  const registro = [];
+  const senales = { sincronizarCategorias: async (usuario, categorias, origen) => { registro.push(['senales', usuario, categorias, origen]); } };
+  await validarYGuardarPreferencias('A', ['Compras', 'Salud', 'Compras'], repo(registro), senales);
+  assert.deepEqual(registro, [['preferencias', 'A', ['Compras', 'Salud']], ['senales', 'A', ['Compras', 'Salud'], 'encuesta']]);
+});
+
 test('H22 una selección inválida no toca preferencias ni señales', async () => {
   const registro = [];
   const senales = { sincronizarCategorias: async () => { registro.push('senales'); } };
