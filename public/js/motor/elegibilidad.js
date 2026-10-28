@@ -27,3 +27,35 @@ export function separarOrdenables(ofertas = []) {
   }
   return { ordenables, descartadas };
 }
+
+// SCRUM-133: sin ?tarjeta= se evalúan todas las tarjetas propias y la oferta muestra el mejor beneficio entre ellas.
+// Regla determinista, en este orden:
+//   1. Solo compiten las tarjetas propias con beneficio en la oferta (una exclusiva Black exige una Black propia).
+//   2. Mayor valor: el porcentaje de descuento o reintegro, o el número de cuotas (valorBeneficio).
+//   3. Empate: Black antes que Básica; en el catálogo su beneficio es el de Básica con algo más (2×1 y bebida incluida).
+//   4. Empate entre tarjetas del mismo tipo: la predeterminada del perfil.
+//   5. Último desempate: el id de tarjeta menor.
+
+const PRIORIDAD_TIPO = { black: 0, basica: 1 };
+
+/** Porcentaje del texto del beneficio («20 % de descuento») o número de cuotas («12 cuotas»); 0 si no tiene. */
+export function valorBeneficio(texto) {
+  const porcentaje = /(\d+(?:[.,]\d+)?)\s*%/.exec(texto ?? '');
+  if (porcentaje) return Number(porcentaje[1].replace(',', '.'));
+  const cuotas = /(\d+)\s*cuotas/i.exec(texto ?? '');
+  return cuotas ? Number(cuotas[1]) : 0;
+}
+
+/**
+ * Ordena del mejor al peor los beneficios de las tarjetas propias que aplican a una oferta. No altera la entrada.
+ * @param {Array<import('./contrato.js').BeneficioPropio>} candidatos
+ * @param {string | null} predeterminadaId
+ */
+export function ordenarBeneficios(candidatos, predeterminadaId) {
+  const prioridad = tipo => PRIORIDAD_TIPO[tipo] ?? 2;
+  return [...candidatos].sort((a, b) =>
+    valorBeneficio(b.texto) - valorBeneficio(a.texto)
+    || prioridad(a.tipoTarjeta) - prioridad(b.tipoTarjeta)
+    || Number(b.tarjetaId === predeterminadaId) - Number(a.tarjetaId === predeterminadaId)
+    || (a.tarjetaId < b.tarjetaId ? -1 : a.tarjetaId > b.tarjetaId ? 1 : 0));
+}

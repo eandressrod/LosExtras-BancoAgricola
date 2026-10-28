@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
     <link rel="stylesheet" href="/css/carga.css">
+    <link rel="stylesheet" href="/css/promociones-sistema.css">
     <link rel="stylesheet" href="/css/promociones.css">
     <script type="module" src="/js/preferencias.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
@@ -21,20 +22,36 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
+    <!-- Rendimiento: módulos precargados en paralelo (tests/unit/precarga-modulos.test.js mantiene la lista). -->
+    <link rel="modulepreload" href="/js/carga-tiempo.js">
+    <link rel="modulepreload" href="/js/categorias.js">
+    <link rel="modulepreload" href="/js/cerca/origen.js">
+    <link rel="modulepreload" href="/js/comun.js">
+    <link rel="modulepreload" href="/js/instantanea.js">
+    <link rel="modulepreload" href="/js/transiciones.js">
+    <link rel="modulepreload" href="/pwa/inactividad-modelo.js">
+    <link rel="modulepreload" href="/pwa/inactividad.js">
   </head>
-  <body class="preferences-page" data-session="pending">
+  <body class="preferences-page pr" data-session="pending">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
+      <a class="pr-volver" href="/promociones.html" aria-label="Volver a Para ti"></a>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <p id="session-profile" class="session-profile" hidden></p>
     </header>
     <main>
-      <h1>Mis preferencias</h1>
-      <nav class="module-nav" aria-label="Promociones">
-        <a href="/promociones.html">Para ti</a>
-        <a href="/guardadas.html">Guardadas</a>
-        <a href="/preferencias.html" aria-current="page">Mis preferencias</a>
-      </nav>
+      <section class="pr-hero">
+        <div class="pr-hero__barra">
+          <h1>Mis preferencias</h1>
+          <a class="pr-icono pr-icono--guardadas" href="/guardadas.html" aria-label="Guardadas"><span id="pr-contador-guardadas" class="pr-contador" hidden></span></a>
+          <a class="pr-icono pr-icono--preferencias" href="/preferencias.html" aria-label="Mis preferencias" aria-current="page"></a>
+        </div>
+      </section>
+      <!-- H21 (ADR-010): la encuesta siempre se puede repetir desde aquí; se abre sobre Para ti. -->
+      <a class="pr-encuesta-entrada" href="/promociones.html?encuesta=1">
+        <span class="pr-encuesta-entrada__titulo">Personalizar en 3 pasos</span>
+        <span class="pr-encuesta-entrada__texto">Elige intereses, comercios y cómo prefieres tus promociones.</span>
+      </a>
       <p id="preferences-status" class="note" role="status">Cargando preferencias…</p>
       <button id="retry" class="secondary" type="button" hidden>Reintentar</button>
       <form id="preferences-form" hidden>
@@ -43,8 +60,10 @@
           <div id="category-options"></div>
         </fieldset>
         <p id="preferences-error" class="error" role="alert"></p>
-        <button id="save-preferences" type="submit">Guardar cambios</button>
-        <a id="cancel-preferences" class="button secondary" href="/promociones.html">Cancelar</a>
+        <div class="pr-acciones-form">
+          <a id="cancel-preferences" class="button secondary" href="/promociones.html">Cancelar</a>
+          <button id="save-preferences" type="submit">Guardar cambios</button>
+        </div>
       </form>
     </main>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>

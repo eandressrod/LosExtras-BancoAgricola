@@ -6,8 +6,11 @@ import * as filtro from '../../public/js/filtro-categoria.js';
 import * as tarjeta from '../../public/js/tarjeta-elegida.js';
 import { cardName } from '../../public/js/comun.js';
 import { conIndicador } from '../../public/js/transiciones.js';
-import { destinoEntradaPromociones } from '../../public/js/menu-modelo.js';
-import { textoDisponibleHoy } from '../../public/js/promocion-vista.js';
+import { ofertaEncuesta } from '../../public/js/encuesta-modelo.js';
+import { textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarDias } from '../../public/js/promocion-vista.js';
+import * as pestanas from '../../public/js/pestanas.js';
+import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
+import { diapositivasFranja } from '../../public/js/franja.js';
 import * as instantanea from '../../public/js/instantanea.js';
 
 export const CATEGORIAS = ['Restaurantes', 'Compras', 'Entretenimiento'].map((id, orden) => ({ id, nombre: id, orden }));
@@ -26,8 +29,18 @@ export const PROMOS = {
 };
 export const parametro = (url, nombre) => new URL(url, 'http://localhost').searchParams.get(nombre);
 
-const fuente = async archivo => (await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8')).replace(/^import[^\n]+\n/gm, '');
-const vista = { textoVigencia: () => '', textoDisponibleHoy, mostrarImagen: () => {}, mostrarCondiciones: () => {} };
+// Elimina sentencias import tanto de una línea como multilinea (import {\n  ...\n} from '...';).
+const fuente = async archivo => {
+  const texto = await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8');
+  // Primero elimina imports multilínea: import { ... } from '...'; que abarcan varias líneas.
+  const sinMultilinea = texto.replace(/^import\s*\{[^}]*\}\s*from\s*['"][^'"]+['"]\s*;?\s*\n/gms, '');
+  // Luego elimina imports de una sola línea que puedan haber quedado.
+  return sinMultilinea.replace(/^import[^\n]+\n/gm, '');
+};
+const vista = {
+  textoVigencia: () => '', textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarDias,
+  mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarPasos: () => {}, mostrarRestricciones: () => {}
+};
 const NOMBRES = { A: 'Usuario A', B: 'Usuario B', demo: 'Usuario' };
 
 export function elemento(extra = {}) {
@@ -87,8 +100,12 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     almacenSesion: () => sesion,
     cardName,
     revelarPagina: alRevelar,
-    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), destinoEntradaPromociones,
-    ...vista, ...filtro, ...tarjeta, ...instantanea
+    conIndicador:(indicador,operacion)=>conIndicador(indicador,operacion,{esperar:async()=>{}}), conMinimoCarga:async f=>f(), ofertaEncuesta,
+    matchMedia: () => ({ matches: true }),
+    // H8: Cerca de ti y el bloque Dónde tienen sus propias pruebas; aquí solo se registran sus llamadas.
+    crearCerca: () => ({ mostrar() {}, ocultar() {} }),
+    mostrarDonde: () => {},
+    ...vista, ...filtro, ...tarjeta, ...instantanea, ...pestanas
   };
   return { obtener, history, contexto, elementos, sesion, timerFake };
 }
@@ -99,6 +116,10 @@ export async function abrirListado(opciones = {}) {
   const todas = elemento({ dataset: { category: '' }, textContent: 'Todas' });
   const conHijos = extra => elemento({ hijos: [], append(nodo) { this.hijos.push(nodo); }, ...extra });
   const filtros = conHijos();
+  const intenciones = conHijos({ attributes: { role: 'radiogroup' } });
+  nav.elementos.set('#intent-filter', intenciones);
+  nav.elementos.set('#intent-box', elemento({ hidden: true }));
+  nav.elementos.set('#intent-status', elemento({ hidden: true }));
   const opcionesTarjeta = conHijos();
   const cards = conHijos({ replaceChildren() { this.hijos = []; } });
   nav.elementos.set('#category-filter', filtros);
@@ -106,25 +127,41 @@ export async function abrirListado(opciones = {}) {
   nav.elementos.set('#card-choice', elemento({ hidden: true }));
   nav.elementos.set('#card-single', elemento({ hidden: true }));
   nav.elementos.set('#cards', cards);
+  nav.elementos.set('#filtros-activos', conHijos({ replaceChildren(...nodos) { this.hijos = nodos; } }));
   nav.elementos.set('#promotion-card', { content: { cloneNode() {
     const partes = new Map();
     return { querySelector(selector) { if (!partes.has(selector)) partes.set(selector, elemento()); return partes.get(selector); } };
   } } });
   const consultas = [];
+  // Sistema visual: se registran los avisos y los carruseles que pide la página; sus componentes tienen pruebas unitarias.
+  const aviso = { mostrados: [], mostrar(datos) { this.mostrados.push(datos); }, cerrar() {} };
+  const franja = { montajes: [], paradas: 0 };
   const pedidas = { categorias: 0, tarjetas: 0, aperturas: 0 };
+  // H21: la hoja de la encuesta se sustituye por un registro de sus aperturas, y las marcas del servidor por las de la prueba.
+  // Por omisión no hay nada que ofrecer, para que las demás pruebas describan solo la lista.
+  const hojas = [];
+  const marcasEnviadas = [];
+  const preferencias = opciones.preferencias ?? (() => ({ completed: true }));
   const categorias = opciones.categorias ?? (() => CATEGORIAS);
   const tarjetas = opciones.tarjetas ?? (() => TARJETAS[perfil] ?? []);
   const responder = opciones.responder ?? (url => PROMOS[parametro(url, 'categoria') ?? 'todas']);
   Object.assign(nav.contexto, {
-    registrarAperturaPromociones: async () => { pedidas.aperturas++; },
+    registrarAperturaPromociones: async () => { pedidas.aperturas++; return { promocionesAbiertas: true, hojaMostrada: true, avisoCerrado: true, ...opciones.marcas }; },
+    marcarEncuesta: async marca => { marcasEnviadas.push(marca); },
+    abrirEncuestaHoja: datos => { hojas.push(datos); },
+    repintarConMovimiento: (_lista, _id, pintar) => pintar(),
+    crearAviso: () => aviso,
+    diapositivasFranja, filtrosActivos, textoBotonFiltros,
+    montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },
     document: {
+      body: { dataset: {} },
       querySelector: nav.obtener,
       querySelectorAll: selector => selector === '.filter-chip' ? [todas] : [],
       getElementById: () => null,
       createElement: tagName => elemento({ tagName })
     },
     getJSON: async url => {
-      if (url === '/api/preferencias') return opciones.preferencias();
+      if (url === '/api/preferencias') return preferencias();
       if (url === '/api/categorias') { pedidas.categorias += 1; return categorias(); }
       if (url === '/api/tarjetas') { pedidas.tarjetas += 1; return tarjetas(); }
       consultas.push(url);
@@ -147,11 +184,15 @@ export async function abrirListado(opciones = {}) {
     el.click = async () => { const r = await clickOriginal(); await esperarMicrotareas(); return r; };
     return el;
   };
+  const marcados = lista => lista.filter(boton => boton.attributes['aria-checked'] === 'true').map(boton => boton.textContent);
   return {
-    ...nav, cards, consultas, pedidas, chips,
+    ...nav, cards, consultas, pedidas, chips, aviso, franja, hojas, marcasEnviadas,
     obtener: obtenerConFlush,
     activo: () => pulsados(chips()),
     chip: nombre => chips().find(chip => chip.textContent === nombre),
+    chipsIntencion: () => intenciones.hijos,
+    chipIntencion: nombre => intenciones.hijos.find(chip => chip.attributes['aria-label'] === nombre),
+    intencionActiva: () => intenciones.hijos.filter(chip => chip.attributes['aria-checked'] === 'true').map(chip => chip.attributes['aria-label']),
     enlaces: () => cards.hijos.map(oferta => oferta.querySelector('a')),
     opciones: () => opcionesTarjeta.hijos,
     tarjetaActiva: () => pulsados(opcionesTarjeta.hijos),
@@ -164,7 +205,7 @@ export async function abrirDetalle(opciones = {}) {
   const consultas = [];
   Object.assign(nav.contexto, {
     fetch: opciones.fetch,
-    document: { querySelector: nav.obtener, title: '' },
+    document: { querySelector: nav.obtener, title: '', body: { dataset: {} } },
     getJSON: async url => {
       consultas.push(url);
       if (opciones.falla) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');
@@ -203,7 +244,7 @@ export async function abrirGuardadas(opciones = {}) {
     return { promociones: termino ? promos.filter(p => p.merchant.includes(termino)) : promos, sinCoincidencias: false };
   });
   Object.assign(nav.contexto, {
-    document: { querySelector: nav.obtener },
+    document: { querySelector: nav.obtener, body: { dataset: {} } },
     getJSON: async url => {
       if (url === '/api/tarjetas') return tarjetas();
       consultas.push(url);
@@ -216,8 +257,10 @@ export async function abrirGuardadas(opciones = {}) {
     marcarBoton: () => {},
     alPulsarGuardar: () => {},
     textoVigencia: () => '',
+    textoAplica,
     mostrarImagen: () => {},
     mostrarCondiciones: () => {},
+    mostrarDias: () => {},
     leerTarjetaElegida: (storage, perfilId) => storage.getItem('los-extras-tarjeta:' + perfilId),
     tarjetaActiva: (lista, id) => lista.find(t => t.id === id) ?? lista.find(t => t.predeterminada) ?? lista[0] ?? null,
     cardName

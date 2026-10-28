@@ -130,3 +130,11 @@ test('las dos salidas de carga respetan movimiento reducido sin dejar el menú c
     assert.equal(cubierta.hidden,true);assert.equal(valores.size,0);
   }
 });
+
+test('el indicador de módulo se retira en cuanto llega la respuesta: sin espera mínima fuera de la carga y el login', async () => {
+  const indicador = { hidden: true };
+  const inicio = Date.now();
+  assert.deepEqual(await transiciones.conIndicador(indicador, async () => ['oferta']), ['oferta']);
+  assert.equal(indicador.hidden, true);
+  assert.ok(Date.now() - inicio < 200, `tardó ${Date.now() - inicio} ms`);
+});

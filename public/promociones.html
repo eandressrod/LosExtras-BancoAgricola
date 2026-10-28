@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Para ti · Los Extras</title>
+    <title>Promociones · Los Extras</title>
     <script src="/js/arranque.js"></script>
     <link rel="stylesheet" href="/css/inicio.css">
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
     <link rel="stylesheet" href="/css/carga.css">
+    <link rel="stylesheet" href="/css/promociones-sistema.css">
     <link rel="stylesheet" href="/css/promociones.css">
-    <link rel="stylesheet" href="/css/guardadas.css">
     <script type="module" src="/js/promociones.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -22,10 +22,47 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
+    <!-- Rendimiento: módulos precargados en paralelo (tests/unit/precarga-modulos.test.js mantiene la lista). -->
+    <link rel="modulepreload" href="/js/aviso-deshacer.js">
+    <link rel="modulepreload" href="/js/carga-tiempo.js">
+    <link rel="modulepreload" href="/js/carrusel.js">
+    <link rel="modulepreload" href="/js/cerca/atras.js">
+    <link rel="modulepreload" href="/js/cerca/cercania.js">
+    <link rel="modulepreload" href="/js/cerca/mapa.js">
+    <link rel="modulepreload" href="/js/cerca/origen.js">
+    <link rel="modulepreload" href="/js/cerca/pantalla.js">
+    <link rel="modulepreload" href="/js/cerca/zona.js">
+    <link rel="modulepreload" href="/js/comun.js">
+    <link rel="modulepreload" href="/js/encuesta-hoja.js">
+    <link rel="modulepreload" href="/js/encuesta-modelo.js">
+    <link rel="modulepreload" href="/js/filtro-categoria.js">
+    <link rel="modulepreload" href="/js/filtros-activos.js">
+    <link rel="modulepreload" href="/js/franja.js">
+    <link rel="modulepreload" href="/js/instantanea.js">
+    <link rel="modulepreload" href="/js/motor/alcance.js">
+    <link rel="modulepreload" href="/js/motor/config.js">
+    <link rel="modulepreload" href="/js/motor/elegibilidad.js">
+    <link rel="modulepreload" href="/js/motor/filtros.js">
+    <link rel="modulepreload" href="/js/motor/index.js">
+    <link rel="modulepreload" href="/js/motor/insignias.js">
+    <link rel="modulepreload" href="/js/motor/intencion.js">
+    <link rel="modulepreload" href="/js/motor/orden.js">
+    <link rel="modulepreload" href="/js/motor/perfil.js">
+    <link rel="modulepreload" href="/js/motor/puntaje.js">
+    <link rel="modulepreload" href="/js/motor/vocabulario.js">
+    <link rel="modulepreload" href="/js/movimiento-lista.js">
+    <link rel="modulepreload" href="/js/pestanas.js">
+    <link rel="modulepreload" href="/js/promocion-vista.js">
+    <link rel="modulepreload" href="/js/tarjeta-elegida.js">
+    <link rel="modulepreload" href="/js/transiciones.js">
+    <link rel="modulepreload" href="/js/usuarios-prueba.js">
+    <link rel="modulepreload" href="/pwa/inactividad-modelo.js">
+    <link rel="modulepreload" href="/pwa/inactividad.js">
   </head>
-  <body class="promotions-page" data-session="pending">
+  <body class="promotions-page pr" data-session="pending">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso a promociones"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
+      <a class="pr-volver" href="/menu.html" aria-label="Volver al menú"></a>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <div class="header-row">
         <p>Los Extras</p>
@@ -33,70 +70,184 @@
       </div>
     </header>
     <main>
-      <h1>Para ti</h1>
-      <nav class="module-nav" aria-label="Promociones">
-        <a href="/promociones.html" aria-current="page">Para ti</a>
-        <a href="/guardadas.html">Guardadas</a>
-        <a href="/preferencias.html">Mis preferencias</a>
-      </nav>
-      <!-- H16: tarjetas propias. El selector solo aparece con dos o más tarjetas. -->
-      <section id="card-choice" class="card-choice" hidden>
-        <p id="card-choice-label" class="card-choice-label">Ver beneficios de</p>
-        <div id="card-options" class="card-options" role="group" aria-labelledby="card-choice-label"></div>
-      </section>
-      <p id="card-single" class="card-single" hidden></p>
-      <!-- H10: búsqueda temporal por nombre de comercio sobre el catálogo aplicable. -->
-      <div id="search-box" class="search-box" role="search">
-        <label for="merchant-search" class="search-label">Buscar comercio</label>
-        <div class="search-field">
-          <input id="merchant-search" type="search" class="search-input" placeholder="Escribe el nombre del comercio" autocomplete="off" maxlength="100">
-          <button id="clear-search" type="button" class="secondary search-clear" hidden>Limpiar</button>
+      <!-- Sistema visual: cabecera de Promociones; las secciones van en las pestañas bajo la franja. -->
+      <section class="pr-hero">
+        <div class="pr-hero__barra">
+          <h1>Promociones</h1>
+          <a class="pr-icono pr-icono--guardadas" href="/guardadas.html" aria-label="Guardadas"><span id="pr-contador-guardadas" class="pr-contador" hidden></span></a>
+          <a class="pr-icono pr-icono--preferencias" href="/preferencias.html" aria-label="Mis preferencias"></a>
         </div>
+        <div class="pr-buscador">
+        <!-- H10: búsqueda temporal por nombre de comercio sobre el catálogo aplicable. -->
+        <div id="search-box" class="search-box" role="search">
+          <label for="merchant-search" class="search-label">Buscar comercio</label>
+          <div class="search-field">
+            <input id="merchant-search" type="search" class="search-input" placeholder="Buscar comercio" autocomplete="off" maxlength="100">
+            <button id="clear-search" type="button" class="search-clear" aria-label="Limpiar búsqueda" hidden>Limpiar</button>
+          </div>
+        </div>
+        <button id="abrir-filtros" type="button" class="pr-boton-filtros" aria-label="Filtros" aria-haspopup="dialog" aria-controls="filtros" data-activos="0"></button>
+        </div>
+        <!-- H25: intención del día («Hoy busco»). Tira de la cabecera que reordena sin filtrar y vive solo durante la visita. -->
+        <div id="intent-box" class="pr-hoy" hidden>
+          <p id="intent-label" class="visualmente-oculto">Hoy busco</p>
+          <div id="intent-filter" class="pr-hoy__tira" role="radiogroup" aria-labelledby="intent-label"></div>
+          <p id="intent-status" class="pr-hoy__estado" role="status" hidden></p>
+        </div>
+      </section>
+      <!-- Franja de avisos: no repite tarjetas de la lista (js/franja.js, js/carrusel.js). -->
+      <section id="franja" class="pr-franja" aria-roledescription="carrusel" aria-label="Avisos para ti" hidden></section>
+      <!-- Secciones (js/pestanas.js): Para ti y Explorar comparten la lista; Cerca de ti muestra el mapa. Se puede deslizar entre ellas. -->
+      <div class="pr-pestanas" role="tablist" aria-label="Secciones de Promociones" data-seccion="para-ti">
+        <button id="tab-para-ti" type="button" role="tab" class="pr-pestana" data-seccion="para-ti" aria-controls="panel-lista" aria-selected="true">Para ti</button>
+        <button id="tab-cerca" type="button" role="tab" class="pr-pestana" data-seccion="cerca" aria-controls="panel-cerca" aria-selected="false" tabindex="-1">Cerca de ti</button>
+        <button id="tab-explorar" type="button" role="tab" class="pr-pestana" data-seccion="explorar" aria-controls="panel-lista" aria-selected="false" tabindex="-1">Explorar</button>
       </div>
-      <!-- H17: Disponibles hoy; filtro temporal que no cambia las preferencias guardadas. -->
-      <button id="today-filter" type="button" class="today-filter" aria-pressed="false">Disponibles hoy</button>
-      <!-- H5: filtro temporal; no cambia las preferencias guardadas. Las categorías llegan de /api/categorias. -->
-      <div id="category-filter" class="category-filter" role="group" aria-label="Filtrar por categoría">
-        <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
-      </div>
-      <p id="list-status" class="note" role="status"></p>
+      <!-- H8 (js/cerca/pantalla.js): origen por zona o ubicación, mapa ampliable y lista ordenada por cercanía. -->
+      <section id="panel-cerca" class="pr-panel pr-cerca" role="tabpanel" aria-labelledby="tab-cerca" hidden>
+        <div class="pr-origen">
+          <p id="cerca-origen" class="pr-origen__texto" role="status"></p>
+          <div class="pr-origen__acciones">
+            <button id="cerca-zona" type="button" class="pr-origen__boton" data-icono="zona">Elegir zona</button>
+            <button id="cerca-ubicacion" type="button" class="pr-origen__boton" data-icono="ubicacion">Usar mi ubicación</button>
+            <button id="cerca-seguir" type="button" class="pr-origen__boton" data-icono="seguir" aria-pressed="false" hidden>Seguir mi ubicación</button>
+          </div>
+        </div>
+        <div id="cerca-pregunta" class="pr-zonas-pregunta" hidden>
+          <h2 id="cerca-pregunta-titulo">¿Qué zona te queda mejor?</h2>
+          <div class="pr-zonas" role="group" aria-labelledby="cerca-pregunta-titulo"></div>
+        </div>
+        <div id="mapa-cerca" class="pr-mapa" data-mapa="cerca">
+          <p class="pr-mapa__rotulo">Mapa de comercios cerca de ti</p>
+          <button id="cerca-ampliar" type="button" class="pr-mapa__ampliar" aria-pressed="false" hidden>Ampliar mapa</button>
+        </div>
+        <p id="cerca-conteo" class="pr-conteo" role="status"></p>
+        <section class="pr-estado">
+          <p id="cerca-estado" class="note" role="status"></p>
+          <button id="cerca-reintentar" type="button" class="secondary" hidden>Reintentar</button>
+        </section>
+        <ol id="cerca-lista" class="pr-cerca__lista" aria-label="Comercios cerca"></ol>
+      </section>
+      <dialog id="zonas" class="pr-hoja" aria-labelledby="zonas-titulo">
+        <div class="pr-hoja__asa" aria-hidden="true"></div>
+        <h2 id="zonas-titulo" class="pr-hoja__titulo">¿Qué zona te queda mejor?</h2>
+        <div class="pr-hoja__cuerpo"><div class="pr-zonas" role="group" aria-labelledby="zonas-titulo"></div></div>
+        <div class="pr-hoja__acciones"><button id="cerrar-zonas" type="button">Cerrar</button></div>
+      </dialog>
+      <section id="panel-lista" class="pr-panel" role="tabpanel" aria-labelledby="tab-para-ti">
+      <!-- Solo los filtros activos, como píldoras que se quitan con un toque. -->
+      <div id="filtros-activos" class="pr-pildoras" role="group" aria-label="Filtros activos" hidden></div>
+      <!-- H21 (ADR-010): aviso discreto tras la primera vez; cerrarlo una vez lo guarda en el servidor y no vuelve. -->
+      <aside id="encuesta-aviso" class="pr-encuesta-aviso" aria-labelledby="encuesta-aviso-titulo" hidden>
+        <p id="encuesta-aviso-titulo" class="pr-encuesta-aviso__titulo">Personaliza tus promociones en 3 pasos</p>
+        <p class="pr-encuesta-aviso__texto">Elige lo que te interesa y verás primero lo que más te sirve.</p>
+        <button id="encuesta-aviso-empezar" type="button" class="pr-encuesta-aviso__empezar">Empezar</button>
+        <button id="encuesta-aviso-cerrar" type="button" class="pr-encuesta-aviso__cerrar" aria-label="Cerrar aviso"></button>
+      </aside>
+      <p id="survey-notice" class="pr-encuesta-listo" role="status" hidden>Puedes cambiar tus intereses cuando quieras en <a href="/preferencias.html">Mis preferencias</a>.</p>
+      <p id="pr-conteo" class="pr-conteo" aria-live="polite"></p>
       <p id="saved-status" class="error" role="alert"></p>
-      <div id="promotions-loading" class="module-loading" role="status" aria-label="Cargando promociones" hidden><svg class="loading-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="147 22.65" transform="rotate(230 32 32)"/></svg><span>CARGANDO...</span></div>
-      <button id="retry" class="secondary" hidden>Reintentar</button>
-      <div id="cards" class="promo-list"></div>
-      <div class="empty-actions">
-        <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
-        <button id="show-all" type="button" class="secondary" hidden>Ver todas</button>
-        <button id="exit-today" type="button" class="secondary" hidden>Quitar Disponibles hoy</button>
-        <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>
+      <div id="promotions-loading" class="pr-esqueleto" role="status" aria-label="Cargando promociones" hidden>
+        <div class="pr-esqueleto__tarjeta" aria-hidden="true"></div>
+        <div class="pr-esqueleto__tarjeta" aria-hidden="true"></div>
       </div>
+      <!-- Estado vacío o de error; se oculta mientras #list-status está vacío. -->
+      <section class="pr-estado">
+        <p id="list-status" class="note" role="status"></p>
+        <button id="retry" class="secondary" hidden>Reintentar</button>
+        <div class="empty-actions">
+          <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
+          <button id="show-all" type="button" class="secondary" hidden>Ver todas</button>
+          <button id="exit-today" type="button" class="secondary" hidden>Quitar Disponibles hoy</button>
+          <a id="empty-preferences" class="button secondary" href="/preferencias.html" hidden>Cambiar mis preferencias</a>
+        </div>
+      </section>
+      <div id="cards" class="promo-list"></div>
+      </section>
       <template id="promotion-card">
-        <a class="promo-card">
-          <div class="promo-media">
-            <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
-            <div class="merchant-mark"><img class="merchant-logo" alt="" loading="lazy"></div>
-            <span class="promo-exclusive" hidden></span>
-          </div>
-          <div class="promo-content">
-            <p class="promo-category"></p>
-            <p class="promo-reason" hidden></p>
-            <h2></h2>
-            <p class="promo-benefit"></p>
-            <p class="promo-description"></p>
-            <p class="promo-applicability"></p>
-            <p class="promo-validity"></p>
-            <p class="promo-today" hidden></p>
-            <p class="promo-expired" hidden>Vencida</p>
-            <p class="promo-badges" hidden></p>
-            <ul class="promo-conditions"></ul>
-            <button type="button" class="secondary guardar-promo">Guardar</button>
-            <p class="error guardar-error" role="alert"></p>
-            <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
-          </div>
-        </a>
+        <article class="promo-item">
+          <a class="promo-card">
+            <div class="promo-media">
+              <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
+              <div class="merchant-mark"><img class="merchant-logo" alt="" loading="lazy"></div>
+              <span class="promo-exclusive" hidden></span>
+              <p class="promo-benefit"></p>
+            </div>
+            <div class="promo-content">
+              <div class="promo-cabeza">
+                <h2></h2>
+                <p class="promo-category"></p>
+              </div>
+              <p class="promo-reason" hidden></p>
+              <p class="promo-description"></p>
+              <p class="promo-cuando"></p>
+              <p class="promo-validity"></p>
+              <p class="promo-ending" hidden></p>
+              <p class="promo-expired" hidden>Vencida</p>
+              <p class="promo-badges" hidden></p>
+              <ul class="promo-conditions"></ul>
+              <div class="promo-pie">
+                <div class="promo-tarjetas">
+                  <p class="promo-applicability"></p>
+                  <p class="promo-otras" hidden></p>
+                </div>
+                <span class="promo-open">Ver promoción</span>
+              </div>
+            </div>
+          </a>
+          <button type="button" class="guardar-promo" data-guardada="no">Guardar</button>
+          <p class="error guardar-error" role="alert"></p>
+        </article>
       </template>
-      <div class="actions"><a class="button secondary" href="/menu.html">Volver al menú</a></div>
+      <!-- Hoja Filtros: tarjeta (H16), categoría (H5) y aplica hoy (H17). Los cambios se aplican al tocarlos. -->
+      <dialog id="filtros" class="pr-hoja" aria-labelledby="filtros-titulo">
+        <div class="pr-hoja__asa" aria-hidden="true"></div>
+        <h2 id="filtros-titulo" class="pr-hoja__titulo">Filtros</h2>
+        <div class="pr-hoja__cuerpo">
+          <section class="pr-hoja__grupo">
+            <h3>Tarjeta</h3>
+            <section id="card-choice" class="card-choice" hidden>
+              <p id="card-choice-label" class="card-choice-label">Ver beneficios de</p>
+              <div id="card-options" class="card-options" role="group" aria-labelledby="card-choice-label"></div>
+            </section>
+            <p id="card-single" class="card-single" hidden></p>
+          </section>
+          <section class="pr-hoja__grupo">
+            <h3 id="grupo-categoria">Categoría</h3>
+            <div id="category-filter" class="category-filter" role="group" aria-labelledby="grupo-categoria">
+              <button type="button" class="filter-chip" data-category="" aria-pressed="true">Todas</button>
+            </div>
+          </section>
+          <section class="pr-hoja__grupo">
+            <h3>Cuándo</h3>
+            <button id="today-filter" type="button" class="today-filter" aria-pressed="false">Solo lo que aplica hoy</button>
+          </section>
+        </div>
+        <div class="pr-hoja__acciones"><button id="cerrar-filtros" type="button">Listo</button></div>
+      </dialog>
+      <div id="pr-aviso" class="pr-aviso" role="status" hidden><p class="pr-aviso__texto"></p><button type="button" class="pr-aviso__accion">Deshacer</button></div>
     </main>
+    <!-- H21: encuesta en tres pasos sobre la lista real (ADR-010). Solo se cierra con Omitir o Listo. -->
+    <section id="survey-sheet" class="survey-sheet" role="dialog" aria-modal="true" aria-labelledby="survey-title" hidden>
+      <div class="survey-head">
+        <div class="survey-head__fila">
+          <ol class="survey-progreso" aria-hidden="true"><li></li><li></li><li></li></ol>
+          <p id="survey-step" class="survey-step"></p>
+          <!-- Lo que ya cambia en la lista (P1); la región en vivo lo anuncia, aquí solo se ve. -->
+          <p id="survey-cuenta" class="survey-cuenta" aria-hidden="true"></p>
+        </div>
+        <h2 id="survey-title" tabindex="-1"></h2>
+        <p id="survey-subtitle" class="survey-subtitle" hidden></p>
+      </div>
+      <div id="survey-body" class="survey-body"></div>
+      <p id="survey-live" class="visualmente-oculto" aria-live="polite"></p>
+      <p id="survey-error" class="error" role="alert"></p>
+      <div class="survey-actions">
+        <button id="survey-back" type="button" class="survey-link">Atrás</button>
+        <button id="survey-skip" type="button" class="survey-link">Omitir</button>
+        <button id="survey-next" type="button" class="survey-primary">Saltar este paso</button>
+      </div>
+    </section>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>
   </body>
 </html>

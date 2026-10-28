@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/fuentes.css">
     <link rel="stylesheet" href="/css/carga.css">
+    <link rel="stylesheet" href="/css/promociones-sistema.css">
     <link rel="stylesheet" href="/css/promociones.css">
-    <link rel="stylesheet" href="/css/guardadas.css">
     <script type="module" src="/js/guardadas.js"></script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
@@ -22,10 +22,22 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
+    <!-- Rendimiento: módulos precargados en paralelo (tests/unit/precarga-modulos.test.js mantiene la lista). -->
+    <link rel="modulepreload" href="/js/carga-tiempo.js">
+    <link rel="modulepreload" href="/js/cerca/origen.js">
+    <link rel="modulepreload" href="/js/comun.js">
+    <link rel="modulepreload" href="/js/guardar-promo.js">
+    <link rel="modulepreload" href="/js/instantanea.js">
+    <link rel="modulepreload" href="/js/promocion-vista.js">
+    <link rel="modulepreload" href="/js/tarjeta-elegida.js">
+    <link rel="modulepreload" href="/js/transiciones.js">
+    <link rel="modulepreload" href="/pwa/inactividad-modelo.js">
+    <link rel="modulepreload" href="/pwa/inactividad.js">
   </head>
-  <body class="saved-page" data-session="pending">
+  <body class="saved-page pr" data-session="pending">
     <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
     <header>
+      <a class="pr-volver" href="/promociones.html" aria-label="Volver a Para ti"></a>
       <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
       <div class="header-row">
         <p>Los Extras</p>
@@ -33,51 +45,58 @@
       </div>
     </header>
     <main>
-      <h1>Guardadas</h1>
-      <nav class="module-nav" aria-label="Promociones">
-        <a href="/promociones.html">Para ti</a>
-        <a href="/guardadas.html" aria-current="page">Guardadas</a>
-        <a href="/preferencias.html">Mis preferencias</a>
-      </nav>
-      <div id="search-box" class="search-box" role="search">
-        <label for="merchant-search" class="search-label">Buscar comercio</label>
-        <div class="search-field">
-          <input id="merchant-search" type="search" class="search-input" placeholder="Escribe el nombre del comercio" autocomplete="off" maxlength="100">
-          <button id="clear-search" type="button" class="secondary search-clear" hidden>Limpiar</button>
+      <section class="pr-hero">
+        <div class="pr-hero__barra">
+          <h1>Guardadas</h1>
+          <a class="pr-icono pr-icono--guardadas" href="/guardadas.html" aria-label="Guardadas" aria-current="page"><span id="pr-contador-guardadas" class="pr-contador" hidden></span></a>
+          <a class="pr-icono pr-icono--preferencias" href="/preferencias.html" aria-label="Mis preferencias"></a>
         </div>
-      </div>
+        <div id="search-box" class="search-box" role="search">
+          <label for="merchant-search" class="search-label">Buscar comercio</label>
+          <div class="search-field">
+            <input id="merchant-search" type="search" class="search-input" placeholder="Buscar en tus guardadas" autocomplete="off" maxlength="100">
+            <button id="clear-search" type="button" class="search-clear" aria-label="Limpiar búsqueda" hidden>Limpiar</button>
+          </div>
+        </div>
+      </section>
       <p id="list-status" class="note" role="status">Cargando guardadas…</p>
       <button id="retry" class="secondary" type="button" hidden>Reintentar</button>
+      <section class="pr-estado pr-estado--lista">
+        <p id="empty-none" hidden>No tienes promociones guardadas.</p>
+        <p id="empty-filter" hidden>Ninguna promoción guardada aplica ahora a tu tarjeta.</p>
+        <p id="empty-search" hidden>Ninguna promoción guardada coincide con tu búsqueda.</p>
+        <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
+        <p id="empty-action" hidden><a class="button secondary" href="/promociones.html">Ver el listado</a></p>
+      </section>
       <div id="cards" class="promo-list"></div>
-      <p id="empty-none" hidden>No tienes promociones guardadas.</p>
-      <p id="empty-filter" hidden>Ninguna promoción guardada aplica ahora a tu tarjeta.</p>
-      <p id="empty-search" hidden>Ninguna promoción guardada coincide con tu búsqueda.</p>
-      <button id="clear-search-empty" type="button" class="secondary" hidden>Limpiar búsqueda</button>
-      <p id="empty-action" hidden><a class="button secondary" href="/promociones.html">Ver el listado</a></p>
       <template id="promotion-card">
-        <div class="promo-card-wrap">
+        <article class="promo-item">
           <a class="promo-card">
             <div class="promo-media">
               <img class="promo-photo" width="960" height="540" loading="lazy" decoding="async" alt="">
               <div class="merchant-mark"><img class="merchant-logo" alt="" loading="lazy"></div>
               <span class="promo-exclusive" hidden></span>
+              <p class="promo-benefit"></p>
             </div>
             <div class="promo-content">
-              <p class="promo-category"></p>
-              <h2></h2>
-              <p class="promo-benefit"></p>
+              <div class="promo-cabeza">
+                <h2></h2>
+                <p class="promo-category"></p>
+              </div>
               <p class="promo-description"></p>
-              <p class="promo-applicability"></p>
+              <p class="promo-cuando"></p>
               <p class="promo-validity"></p>
               <ul class="promo-conditions"></ul>
-              <span class="promo-open">Ver promoción <span aria-hidden="true">↗</span></span>
+              <div class="promo-pie">
+                <p class="promo-applicability"></p>
+                <span class="promo-open">Ver promoción</span>
+              </div>
             </div>
           </a>
-          <button type="button" class="secondary guardar-promo">Quitar</button>
+          <button type="button" class="guardar-promo" data-guardada="si">Quitar</button>
           <p class="error guardar-error" role="alert"></p>
-        </div>
+        </article>
       </template>
-      <div class="actions"><a class="button secondary" href="/menu.html">Volver al menú</a></div>
     </main>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>
   </body>

@@ -1,5 +1,4 @@
 import { readStorage, saveStorage } from './comun.js';
-import { conMinimoCarga } from './carga-tiempo.js';
 
 const ENTRADA_MENU = 'los-extras-entrada-menu';
 const movimientoReducido = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -75,9 +74,10 @@ export async function animarPantalla(pantalla, { reducirMovimiento = movimientoR
   await deslizar(pantalla, [{ transform:'translateX(100%)' }, { transform:'translateX(0)' }], reducirMovimiento, revelar);
 }
 
-export async function conIndicador(indicador, operacion, opciones) {
+// El indicador acompaña la petición y se retira al llegar la respuesta; el mínimo visual es solo de la carga y del login.
+export async function conIndicador(indicador, operacion) {
   indicador.hidden = false;
-  try { return await conMinimoCarga(operacion, opciones); }
+  try { return await operacion(); }
   finally { indicador.hidden = true; }
 }
 
