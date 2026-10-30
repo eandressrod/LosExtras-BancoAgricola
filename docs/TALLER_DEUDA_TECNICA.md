@@ -6,7 +6,7 @@ Equipo: David Ignacio Argueta Valles, Sara Nicole Meléndez Ortez, Samuel André
 
 Este documento conserva el contenido del taller entregado. Las decisiones finales están en [ADR-007](<../ADR/0007-Decision de aceptar deuda tecnica hasta la feria.md>), que incorpora las respuestas de la tabla 4, y en [ADR-008](<../ADR/0008-Decision de retirar Midi.md>), que retira Midi después del taller.
 
-Revisamos completo el repositorio en su estado del 21 de octubre de 2026 (rama `main`, commit `0fcc663`): API, backend, interfaz, scripts, pruebas y Midi. Cada hallazgo señala el archivo donde se encuentra. Las zonas críticas (sesión, promociones, guardadas y API) ya tienen pruebas unitarias, de integración y de extremo a extremo en la integración continua, así que esa señal no aparece en el inventario.
+Revisamos completo el repositorio en su estado del 21 de octubre de 2026 (rama `main`, commit `c4f73ea`): API, backend, interfaz, scripts, pruebas y Midi. Cada hallazgo señala el archivo donde se encuentra. Las zonas críticas (sesión, promociones, guardadas y API) ya tienen pruebas unitarias, de integración y de extremo a extremo en la integración continua, así que esa señal no aparece en el inventario.
 
 ## Inventario de la deuda
 
