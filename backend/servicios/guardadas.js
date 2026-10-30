@@ -20,19 +20,26 @@ export async function quitarPromocion(usuarioId, promocionId, repo) {
   return { guardada: false };
 }
 
-// Las vencidas o de otra tarjeta siguen en ids, pero no salen en la lista usable.
-export function seleccionarGuardadasVisibles(filtradas, idsGuardados) {
+// Las vencidas, de otra tarjeta o fuera de los intereses actuales siguen en ids, pero no salen en la lista usable.
+export function seleccionarGuardadasVisibles(filtradas, idsGuardados, aplicablesTarjeta = null) {
   const ids = [];
   const promociones = [];
+  let ocultasPorIntereses = false;
   for (const id of idsGuardados || []) {
     if (ids.includes(id)) continue;
     ids.push(id);
     const promo = (filtradas || []).find(item => item.id === id && item.canUse === true);
-    if (promo) promociones.push(promo);
+    if (promo) {
+      promociones.push(promo);
+    } else if ((aplicablesTarjeta || []).some(item => item.id === id && item.canUse === true)) {
+      ocultasPorIntereses = true;
+    }
   }
+  const sinCoincidencias = ids.length > 0 && promociones.length === 0;
   return {
     ids,
     promociones,
-    sinCoincidencias: ids.length > 0 && promociones.length === 0
+    sinCoincidencias,
+    motivoSinCoincidencias: !sinCoincidencias ? null : (ocultasPorIntereses ? 'intereses' : 'tarjeta')
   };
 }

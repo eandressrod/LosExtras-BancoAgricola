@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { abrirDetalle, abrirListado, almacen } from './pagina-promociones.js';
+import { abrirDetalle, abrirListado, abrirGuardadas, almacen } from './pagina-promociones.js';
 import { textoAplica } from '../../public/js/promocion-vista.js';
 import { cardName } from '../../public/js/comun.js';
 import { tarjetaActiva } from '../../public/js/tarjeta-elegida.js';
@@ -133,4 +133,39 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
   assert.deepEqual(consultas, ['cta-a-4']);
   assert.equal(cards.hijos[0].querySelector('a').href, '/detalle.html?id=siman-black&desde=guardadas');
   assert.equal(cards.hijos[0].querySelector('.promo-benefit').textContent, '30 % de descuento');
+});
+
+test('QA-AUD-03 el estado vacío de Guardadas distingue entre falta de coincidencia por intereses y por tarjeta', async () => {
+  const porIntereses = await abrirGuardadas({
+    consultarGuardadas: async () => ({
+      ids: ['tienda'],
+      promociones: [],
+      sinCoincidencias: true,
+      motivoSinCoincidencias: 'intereses'
+    })
+  });
+  assert.equal(porIntereses.obtener('#empty-none').hidden, true);
+  assert.equal(porIntereses.obtener('#empty-filter').hidden, false);
+  assert.equal(
+    porIntereses.obtener('#empty-filter').textContent,
+    'Ninguna promoción guardada coincide con tus intereses actuales.'
+  );
+  assert.equal(porIntereses.obtener('#empty-preferences').hidden, false);
+  assert.equal(porIntereses.obtener('#empty-action').hidden, false);
+
+  const porTarjeta = await abrirGuardadas({
+    consultarGuardadas: async () => ({
+      ids: ['siman-black'],
+      promociones: [],
+      sinCoincidencias: true,
+      motivoSinCoincidencias: 'tarjeta'
+    })
+  });
+  assert.equal(porTarjeta.obtener('#empty-filter').hidden, false);
+  assert.equal(
+    porTarjeta.obtener('#empty-filter').textContent,
+    'Ninguna promoción guardada aplica ahora a tu tarjeta.'
+  );
+  assert.equal(porTarjeta.obtener('#empty-preferences').hidden, true);
+  assert.equal(porTarjeta.obtener('#empty-action').hidden, false);
 });
