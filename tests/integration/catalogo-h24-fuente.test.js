@@ -40,6 +40,22 @@ test('H24 el esqueleto cubre todas las variantes del contrato', () => {
   assert.ok(comercios.filter(c => c.sensible).every(c => Object.keys(c.ocasiones).length === 0), 'sensibles con ocasiones vacías');
 });
 
+test('H24 la muestra de Restaurantes alcanza para afinar la categoría en la encuesta con cualquier tarjeta', () => {
+  const comercios = fuente.comercios.filter(c => c.categoria === 'Restaurantes');
+  const promociones = fuente.promociones.filter(p => comercios.some(c => c.id === p.comercio));
+  assert.ok(promociones.length >= 10, `${promociones.length} promociones de Restaurantes`);
+  for (const tarjeta of ['basica', 'black']) {
+    const conOferta = new Set(promociones.filter(p => p.beneficios.some(b => b.tarjeta === tarjeta)).map(p => p.comercio));
+    assert.ok(conOferta.size >= 6, `${tarjeta}: ${conOferta.size} comercios con promociones aplicables`);
+  }
+  assert.ok(comercios.every(c => c.reconocible && c.afinarPor === 'comercio'), 'comercios reconocibles que se afinan por marca');
+  assert.ok(conjunto(comercios.map(c => c.subcategoria)).length >= 4, 'al menos 4 subcategorías');
+  assert.deepEqual(conjunto(comercios.map(c => c.nivelPrecio)), [1, 2, 3]);
+  assert.deepEqual(conjunto(promociones.flatMap(p => p.canales)), ['delivery', 'en-linea', 'presencial']);
+  assert.ok(conjunto(promociones.map(p => p.tipoBeneficio)).length >= 3, 'al menos 3 tipos de beneficio');
+  assert.equal(new Set(promociones.map(p => p.imagen)).size, promociones.length, 'cada promoción con su propia foto');
+});
+
 test('H24 la lista fija de zonas acordada tiene su centro y cada sucursal pertenece a una', () => {
   assert.deepEqual(fuente.zonas.map(zona => zona.nombre),
     ['San Salvador Centro', 'Escalón', 'Antiguo Cuscatlán', 'Santa Tecla', 'Soyapango', 'Santa Ana', 'San Miguel']);
