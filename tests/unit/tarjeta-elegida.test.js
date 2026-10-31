@@ -57,9 +57,14 @@ test('SCRUM-109 la etiqueta de la sesión nombra la tarjeta elegida si sigue sie
   assert.equal(descripcionTarjetas(TARJETAS_A, 'cta-a-3'), 'Tarjeta Básica');
 });
 
-test('SCRUM-109 sin elección, varias tarjetas no se resumen en un tipo único', () => {
-  assert.equal(descripcionTarjetas(TARJETAS_A, null), '2 tarjetas');
-  assert.equal(descripcionTarjetas(TARJETAS_A, 'cta-b-2'), '2 tarjetas');
+test('SCRUM-109 sin elección, varias tarjetas se describen por sus tipos y no por un tipo único', () => {
+  assert.equal(descripcionTarjetas(TARJETAS_A, null), 'Básica y Black');
+  assert.equal(descripcionTarjetas(TARJETAS_A, 'cta-b-2'), 'Básica y Black');
+});
+
+test('SCRUM-109 varias tarjetas del mismo tipo nombran ese tipo una sola vez', () => {
+  const dosBlack = [{ id: 'cta-b-1', tipoTarjeta: 'black' }, { id: 'cta-b-2', tipoTarjeta: 'black' }];
+  assert.equal(descripcionTarjetas(dosBlack, null), 'Tarjetas Black');
 });
 
 test('SCRUM-109 con una sola tarjeta se nombra esa; sin tarjetas no se inventa ninguna', () => {

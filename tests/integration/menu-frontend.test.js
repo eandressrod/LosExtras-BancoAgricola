@@ -83,7 +83,7 @@ test('SCRUM-109 Perfil nombra la tarjeta elegida y no el tipo heredado del perfi
   assert.equal(elegida.get('dialog-body').children[2].textContent, 'Tarjeta Black');
   const sinElegir = await page({ tarjetas: propias });
   await sinElegir.get('btn-perfil').click();
-  assert.equal(sinElegir.get('dialog-body').children[2].textContent, '2 tarjetas');
+  assert.equal(sinElegir.get('dialog-body').children[2].textContent, 'Básica y Black');
   const sinTarjetas = await page({ tarjetas: [] });
   await sinTarjetas.get('btn-perfil').click();
   assert.equal(sinTarjetas.get('dialog-body').children.length, 2);

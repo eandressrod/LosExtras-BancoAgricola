@@ -26,11 +26,13 @@ export function textoTarjeta(tarjeta) {
 }
 
 // SCRUM-109: la sesión se describe con las tarjetas propias, nunca con el tipo heredado del perfil.
-/** La elegida si sigue siendo propia, la única si hay una, «N tarjetas» si hay varias y null sin tarjetas. */
+/** La elegida si sigue siendo propia, la única si hay una, sus tipos («Básica y Black») si hay varias y null sin tarjetas. */
 export function descripcionTarjetas(tarjetas, elegida) {
   if (!tarjetas?.length) return null;
   const tarjeta = tarjetas.find(item => item.id === elegida) ?? (tarjetas.length === 1 ? tarjetas[0] : null);
-  return tarjeta ? cardName(tarjeta) : `${tarjetas.length} tarjetas`;
+  if (tarjeta) return cardName(tarjeta);
+  const tipos = [...new Set(tarjetas.map(cardShortName))];
+  return tipos.length === 1 ? 'Tarjetas ' + tipos[0] : new Intl.ListFormat('es', { type: 'conjunction' }).format(tipos);
 }
 
 export function textoInsignia(perfil, tarjetas, elegida) {
