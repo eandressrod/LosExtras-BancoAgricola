@@ -78,8 +78,8 @@ test('H24 conserva las cinco promociones actuales y sus beneficios, y todo el ca
     ['starbucks', 'basica', '10 % de descuento', null, null], ['starbucks', 'black', '20 % de descuento', null, null],
     ['tienda', 'basica', '15 % de descuento', 30, 15], ['tienda', 'black', '25 % de descuento', 30, 25]
   ].sort());
-  for (const { id, vigencia } of fuente.promociones) {
-    assert.ok(vigencia.desde <= '2026-10-20', `${id} todavía no está vigente`);
+  for (const { id, vigencia, alta } of fuente.promociones) {
+    assert.equal(vigencia.desde, alta, `${id}: la vigencia empieza el día de su alta`);
     assert.ok(vigencia.hasta >= '2026-12-31', `${id} termina antes del 31 de diciembre`);
   }
 });
