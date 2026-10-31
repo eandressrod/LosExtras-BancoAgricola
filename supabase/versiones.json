@@ -16,9 +16,13 @@
     { "pr": 15, "commit": "96cd0242a4c9a731681150de613bd16523199462", "migracion": "20261016015547", "regreso": false },
     { "pr": 18, "commit": "2db0eac17062b1459b1789a851500d3bfd94de43", "migracion": "20261016015547", "regreso": false },
     { "pr": 21, "commit": "a5b5efb1624b3d8ccda74fb1da9ba91b466fa6a0", "migracion": "20261020203100", "regreso": false },
-    { "pr": 24, "commit": "0a49fa561977fb9a7ea7fb3497416b2ce67783de", "migracion": "20261023013727", "regreso": true },
-    { "pr": 25, "commit": "d51ee6547ebb8398e8bc47663a87d6e0a308188b", "migracion": "20261023013727", "regreso": true },
-    { "pr": 29, "commit": "116da0f73b3dc22df23e40137c3ba54a8ff87fbf", "migracion": "20261023013727", "regreso": true },
-    { "pr": 30, "commit": "3e80c92e69dbc52c95524dc6e6416659f35e4e58", "migracion": "20261023013727", "regreso": true }
+    { "pr": 24, "commit": "0a49fa561977fb9a7ea7fb3497416b2ce67783de", "migracion": "20261023013727", "regreso": false },
+    { "pr": 25, "commit": "d51ee6547ebb8398e8bc47663a87d6e0a308188b", "migracion": "20261023013727", "regreso": false },
+    { "pr": 29, "commit": "116da0f73b3dc22df23e40137c3ba54a8ff87fbf", "migracion": "20261023013727", "regreso": false },
+    { "pr": 30, "commit": "3e80c92e69dbc52c95524dc6e6416659f35e4e58", "migracion": "20261023013727", "regreso": false },
+    { "pr": 36, "commit": "f8cdee1c65de4cec4532338b57be67db7c2fa9b0", "migracion": "20261023013727", "regreso": false },
+    { "pr": 37, "commit": "f53ca30f0ffe0acb0bf0d27d189cc8ea68fd8ed6", "migracion": "20261026040041", "regreso": true },
+    { "pr": 40, "commit": "8269601f327ff4be10b527f2c4885475f37b5ea6", "migracion": "20261026220500", "regreso": true },
+    { "pr": 41, "commit": "fd4da7b70546c8375bffd15d589256bdbd01ccf1", "migracion": "20261026220500", "regreso": true }
   ]
 }
