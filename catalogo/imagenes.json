@@ -419,17 +419,17 @@
       "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/3/33/Entrance_to_a_Subway_restaurant_in_Foggy_Bottom.jpg",
       "autor": "Ser Amantio di Nicolao",
       "licencia": "CC BY-SA 4.0",
-      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+      "procesamiento": "Recorte 16:9, 1280×720 px; se difumina el adhesivo de la puerta con el horario y el nombre del encargado de la tienda; WebP de 150 KB como máximo, sin metadatos."
     },
     {
       "ruta": "/recursos/promociones/dominos-lunes.webp",
       "tipo": "foto",
-      "descripcion": "Caja de Domino's Pizza abierta con una pizza",
-      "origen": "https://commons.wikimedia.org/wiki/File:Domino%27s_Pizza_%28Malaysia%29%2C_Chicken_Pepperoni%2C_NY_Crust.JPG",
-      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Domino%27s_Pizza_%28Malaysia%29%2C_Chicken_Pepperoni%2C_NY_Crust.JPG",
-      "autor": "Aero777",
-      "licencia": "GFDL, CC BY-SA 3.0",
-      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+      "descripcion": "Motos de reparto con cajas de Domino's frente a su local",
+      "origen": "https://commons.wikimedia.org/wiki/File:Delivery_scooters_outside_Dominos_shop._Penpol_Terrace%2C_Hayle._Cornwall_-_August_2024.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/9/90/Delivery_scooters_outside_Dominos_shop._Penpol_Terrace%2C_Hayle._Cornwall_-_August_2024.jpg",
+      "autor": "Mutney",
+      "licencia": "CC0",
+      "procesamiento": "Recorte 16:9, 1280×720 px; se difumina un cartel con precio en la vitrina; WebP de 150 KB como máximo, sin metadatos."
     },
     {
       "ruta": "/recursos/comercios/burger-king.png",

@@ -2238,7 +2238,7 @@
       "condicionDecisiva": "Válido solo los jueves",
       "tipoBeneficio": "2x1-combo",
       "etiquetasIntencion": [],
-      "alta": "2026-10-31"
+      "alta": "2026-10-20"
     },
     {
       "id": "burger-king-domicilio",
@@ -2272,7 +2272,7 @@
       "condicionDecisiva": "Pedido mínimo de $10",
       "tipoBeneficio": "descuento",
       "etiquetasIntencion": [],
-      "alta": "2026-10-31"
+      "alta": "2026-10-20"
     },
     {
       "id": "wendys-fin-de-semana",
@@ -2317,7 +2317,7 @@
       "condicionDecisiva": "Válido solo sábados y domingos",
       "tipoBeneficio": "2x1-combo",
       "etiquetasIntencion": [],
-      "alta": "2026-10-31"
+      "alta": "2026-10-20"
     },
     {
       "id": "subway-reintegro",
@@ -2359,19 +2359,19 @@
       "condicionDecisiva": "Compra mínima de $8",
       "tipoBeneficio": "cashback-puntos",
       "etiquetasIntencion": [],
-      "alta": "2026-10-31"
+      "alta": "2026-10-20"
     },
     {
       "id": "dominos-lunes",
       "comercio": "dominos",
       "titulo": "Descuento en pizzas a domicilio los lunes en Domino's",
       "descripcion": "Los lunes, tu pizza de Domino's a domicilio con descuento.",
-      "descripcionDetalle": "Cada lunes, pide tus pizzas de Domino's en línea para entrega a domicilio y págalas con tu tarjeta para recibir el descuento de tu perfil.",
+      "descripcionDetalle": "Cada lunes, pide tus pizzas de Domino's en línea para entrega a domicilio y págalas con tu tarjeta: 25 % de descuento con Básica y 35 % con Black.",
       "condiciones": "Pizzas medianas y grandes pedidas en línea para entrega a domicilio.",
       "restricciones": "El descuento no incluye el cargo de envío ni otras promociones.",
       "instrucciones": "Haz tu pedido en el sitio o la aplicación de la marca y elige pago con tarjeta al finalizar.",
       "imagen": "/recursos/promociones/dominos-lunes.webp",
-      "textoAlternativo": "Caja de Domino's Pizza abierta con una pizza",
+      "textoAlternativo": "Motos de reparto con cajas de Domino's frente a su local",
       "beneficios": [
         {
           "tarjeta": "basica",
@@ -2404,7 +2404,7 @@
       "condicionDecisiva": "Válido solo los lunes",
       "tipoBeneficio": "descuento",
       "etiquetasIntencion": [],
-      "alta": "2026-10-31"
+      "alta": "2026-10-20"
     }
   ]
 }
