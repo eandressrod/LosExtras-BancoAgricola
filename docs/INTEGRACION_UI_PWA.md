@@ -4,7 +4,7 @@ Fecha: 15 de octubre de 2026. Registro técnico del incremento y de las decision
 
 ## Versiones reunidas
 
-El commit local `9271cad` de `feat/h19-menu` reúne H19 (menú y productos), login de prueba, recursos visuales, cargas/transiciones y H13 (PWA e inactividad). Se integra con `main` en `d8b2de9`, que ya contiene la guía compartida (PR #9), H5 (filtro por categoría, PR #10) y H16 (tarjetas propias, PR #11), además de Midi y las funcionalidades anteriores. No se sustituyen los cambios de los compañeros por la versión local.
+El commit local `91309dd` de `feat/h19-menu` reúne H19 (menú y productos), login de prueba, recursos visuales, cargas/transiciones y H13 (PWA e inactividad). Se integra con `main` en `65cad8d`, que ya contiene la guía compartida (PR #9), H5 (filtro por categoría, PR #10) y H16 (tarjetas propias, PR #11), además de Midi y las funcionalidades anteriores. No se sustituyen los cambios de los compañeros por la versión local.
 
 Las dos historias incorporadas desde `main` son **H5 y H16**, identificadas por sus PR y ramas.
 
@@ -49,7 +49,7 @@ La renovación por inactividad reveló otro problema en el adaptador local: reco
 
 ## Empaquetado para Vercel Hobby
 
-El primer Preview de `71dbe6f` [falló](https://vercel.com/idk-bro6/los-extras-banco-agricola/3kdLt4hpofpQe3HNxGSeCtLb6CVX): el Dashboard autenticado indicó el máximo de **12 Serverless Functions** del plan Hobby, frente a 14 entradas de esta integración. Los CI de pruebas de push y PR habían pasado.
+El primer Preview de `a4cd5ea` [falló](https://vercel.com/idk-bro6/los-extras-banco-agricola/3kdLt4hpofpQe3HNxGSeCtLb6CVX): el Dashboard autenticado indicó el máximo de **12 Serverless Functions** del plan Hobby, frente a 14 entradas de esta integración. Los CI de pruebas de push y PR habían pasado.
 
 Se agrupan `/api/mensajes`, `/api/metas` y `/api/promociones-apertura` en `api/recursos.js` mediante tres rewrites explícitos en `vercel.json`, reduciendo el despliegue a **12 entradas**. Sus handlers se trasladan a `backend/handlers/`, conservando métodos, validaciones, respuestas y propietario; el servidor local utiliza esa misma entrada. Las otras API mantienen sus rutas y funciones. No se cambia de plan ni se contratan servicios.
 
