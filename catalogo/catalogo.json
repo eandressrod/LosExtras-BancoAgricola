@@ -210,6 +210,11 @@
       "categoria": "Restaurantes"
     },
     {
+      "id": "sandwiches",
+      "nombre": "Sándwiches",
+      "categoria": "Restaurantes"
+    },
+    {
       "id": "tiendas-departamento",
       "nombre": "Tiendas por departamento",
       "categoria": "Compras"
@@ -353,6 +358,102 @@
         "viajes": 0
       },
       "nivelPrecio": 2,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "burger-king",
+      "nombre": "Burger King",
+      "logo": "/recursos/comercios/burger-king.png",
+      "categoria": "Restaurantes",
+      "subcategoria": "comida-rapida",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 1,
+        "darse-un-gusto": 0.5,
+        "salir": 0.5,
+        "familia": 0,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 1,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "wendys",
+      "nombre": "Wendy's",
+      "logo": "/recursos/comercios/wendys.png",
+      "categoria": "Restaurantes",
+      "subcategoria": "comida-rapida",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 1,
+        "darse-un-gusto": 0.5,
+        "salir": 0.5,
+        "familia": 0.5,
+        "bienestar": 0,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 2,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "subway",
+      "nombre": "Subway",
+      "logo": "/recursos/comercios/subway.png",
+      "categoria": "Restaurantes",
+      "subcategoria": "sandwiches",
+      "ocasiones": {
+        "dia-a-dia": 0.5,
+        "rapido-practico": 1,
+        "darse-un-gusto": 0,
+        "salir": 0,
+        "familia": 0,
+        "bienestar": 0.5,
+        "entretenimiento": 0,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 1,
+      "reconocible": true,
+      "sensible": false,
+      "afinarPor": "comercio"
+    },
+    {
+      "id": "dominos",
+      "nombre": "Domino's",
+      "logo": "/recursos/comercios/dominos.png",
+      "categoria": "Restaurantes",
+      "subcategoria": "pizzerias",
+      "ocasiones": {
+        "dia-a-dia": 0,
+        "rapido-practico": 0.5,
+        "darse-un-gusto": 0,
+        "salir": 0,
+        "familia": 1,
+        "bienestar": 0,
+        "entretenimiento": 0.5,
+        "estilo-personal": 0,
+        "tecnologia": 0,
+        "hogar": 0,
+        "viajes": 0
+      },
+      "nivelPrecio": 1,
       "reconocible": true,
       "sensible": false,
       "afinarPor": "comercio"
@@ -879,6 +980,105 @@
         "longitud": -89.5625
       },
       "zona": "santa-ana"
+    },
+    {
+      "id": "burger-king-heroes",
+      "comercio": "burger-king",
+      "nombre": "Burger King Boulevard de los Héroes",
+      "direccion": "Boulevard de los Héroes, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7099,
+        "longitud": -89.2084
+      },
+      "zona": "san-salvador-centro"
+    },
+    {
+      "id": "burger-king-soyapango",
+      "comercio": "burger-king",
+      "nombre": "Burger King Soyapango",
+      "direccion": "Calle Monte Carmelo, Soyapango",
+      "coordenadas": {
+        "latitud": 13.6984,
+        "longitud": -89.1506
+      },
+      "zona": "soyapango"
+    },
+    {
+      "id": "burger-king-san-miguel",
+      "comercio": "burger-king",
+      "nombre": "Burger King Roosevelt",
+      "direccion": "Alameda Roosevelt Sur, San Miguel",
+      "coordenadas": {
+        "latitud": 13.4756,
+        "longitud": -88.1844
+      },
+      "zona": "san-miguel"
+    },
+    {
+      "id": "wendys-escalon",
+      "comercio": "wendys",
+      "nombre": "Wendy's Escalón",
+      "direccion": "Paseo General Escalón, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7017,
+        "longitud": -89.2314
+      },
+      "zona": "escalon"
+    },
+    {
+      "id": "wendys-santa-tecla",
+      "comercio": "wendys",
+      "nombre": "Wendy's Santa Tecla",
+      "direccion": "Calle Chiltiupán, Santa Tecla",
+      "coordenadas": {
+        "latitud": 13.6801,
+        "longitud": -89.2729
+      },
+      "zona": "santa-tecla"
+    },
+    {
+      "id": "wendys-santa-ana",
+      "comercio": "wendys",
+      "nombre": "Wendy's Santa Ana",
+      "direccion": "Avenida Independencia Sur, Santa Ana",
+      "coordenadas": {
+        "latitud": 13.975,
+        "longitud": -89.5609
+      },
+      "zona": "santa-ana"
+    },
+    {
+      "id": "subway-escalon",
+      "comercio": "subway",
+      "nombre": "Subway Escalón",
+      "direccion": "Paseo General Escalón, San Salvador",
+      "coordenadas": {
+        "latitud": 13.7026,
+        "longitud": -89.2291
+      },
+      "zona": "escalon"
+    },
+    {
+      "id": "subway-merliot",
+      "comercio": "subway",
+      "nombre": "Subway Merliot",
+      "direccion": "Boulevard Merliot, Antiguo Cuscatlán",
+      "coordenadas": {
+        "latitud": 13.6786,
+        "longitud": -89.263
+      },
+      "zona": "antiguo-cuscatlan"
+    },
+    {
+      "id": "subway-centro",
+      "comercio": "subway",
+      "nombre": "Subway Calle Arce",
+      "direccion": "Calle Arce, Centro Histórico de San Salvador",
+      "coordenadas": {
+        "latitud": 13.7,
+        "longitud": -89.2014
+      },
+      "zona": "san-salvador-centro"
     }
   ],
   "cobertura": [
@@ -1056,6 +1256,76 @@
       "comercio": "gnc",
       "zona": "san-miguel",
       "estado": "no"
+    },
+    {
+      "comercio": "burger-king",
+      "zona": "san-salvador-centro",
+      "estado": "si"
+    },
+    {
+      "comercio": "burger-king",
+      "zona": "escalon",
+      "estado": "si"
+    },
+    {
+      "comercio": "burger-king",
+      "zona": "antiguo-cuscatlan",
+      "estado": "si"
+    },
+    {
+      "comercio": "burger-king",
+      "zona": "santa-tecla",
+      "estado": "si"
+    },
+    {
+      "comercio": "burger-king",
+      "zona": "soyapango",
+      "estado": "si"
+    },
+    {
+      "comercio": "burger-king",
+      "zona": "santa-ana",
+      "estado": "desconocida"
+    },
+    {
+      "comercio": "burger-king",
+      "zona": "san-miguel",
+      "estado": "si"
+    },
+    {
+      "comercio": "dominos",
+      "zona": "san-salvador-centro",
+      "estado": "si"
+    },
+    {
+      "comercio": "dominos",
+      "zona": "escalon",
+      "estado": "si"
+    },
+    {
+      "comercio": "dominos",
+      "zona": "antiguo-cuscatlan",
+      "estado": "si"
+    },
+    {
+      "comercio": "dominos",
+      "zona": "santa-tecla",
+      "estado": "si"
+    },
+    {
+      "comercio": "dominos",
+      "zona": "soyapango",
+      "estado": "si"
+    },
+    {
+      "comercio": "dominos",
+      "zona": "santa-ana",
+      "estado": "no"
+    },
+    {
+      "comercio": "dominos",
+      "zona": "san-miguel",
+      "estado": "si"
     }
   ],
   "relaciones": [],
@@ -1925,6 +2195,216 @@
       "tipoBeneficio": "cashback-puntos",
       "etiquetasIntencion": [],
       "alta": "2026-10-18"
+    },
+    {
+      "id": "burger-king-jueves",
+      "comercio": "burger-king",
+      "titulo": "2×1 en Whopper los jueves en Burger King",
+      "descripcion": "Los jueves, tu segundo Whopper va sin costo.",
+      "descripcionDetalle": "Cada jueves, pide dos Whopper en el restaurante y paga solo uno con tu tarjeta. Con Black, el 2×1 aplica al combo completo.",
+      "condiciones": "Whopper sencillo o con queso, en restaurante y autoservicio.",
+      "restricciones": "No aplica a pedidos a domicilio ni a otras promociones de la marca.",
+      "instrucciones": "Menciona la promoción al ordenar y paga con tu tarjeta en caja o autoservicio.",
+      "imagen": "/recursos/promociones/burger-king-jueves.webp",
+      "textoAlternativo": "Restaurante Burger King con su logo en la fachada",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "2×1 en Whopper",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "2×1 en combos Whopper",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-20",
+        "hasta": "2026-12-31"
+      },
+      "dias": [
+        4
+      ],
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Válido solo los jueves",
+      "tipoBeneficio": "2x1-combo",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-31"
+    },
+    {
+      "id": "burger-king-domicilio",
+      "comercio": "burger-king",
+      "titulo": "Exclusivo Black: 20 % en pedidos a domicilio de Burger King",
+      "descripcion": "Tu pedido a domicilio de Burger King con 20 % de descuento.",
+      "descripcionDetalle": "Haz tu pedido a domicilio de Burger King y págalo con tu tarjeta Black: recibes un 20 % de descuento sobre el total de la comida.",
+      "condiciones": "Pedidos a domicilio desde $10 pagados con tu tarjeta Black.",
+      "restricciones": "El descuento no incluye el cargo de envío.",
+      "instrucciones": "Elige pago con tarjeta al confirmar el pedido; el descuento se aplica al momento del pago.",
+      "imagen": "/recursos/promociones/burger-king-domicilio.webp",
+      "textoAlternativo": "Bandeja con hamburguesa, papas y bebida en empaques de Burger King",
+      "beneficios": [
+        {
+          "tarjeta": "black",
+          "beneficio": "20 % de descuento",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 10,
+          "tope": 6
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-20",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "delivery"
+      ],
+      "condicionDecisiva": "Pedido mínimo de $10",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-31"
+    },
+    {
+      "id": "wendys-fin-de-semana",
+      "comercio": "wendys",
+      "titulo": "Combo agrandado sin costo los fines de semana en Wendy's",
+      "descripcion": "Sábados y domingos, agranda tu combo sin pagar más.",
+      "descripcionDetalle": "Cada sábado y domingo, pide tu combo en Wendy's y págalo con tu tarjeta: las papas y la bebida se agrandan sin costo. Con Black, también incluye un Frosty pequeño.",
+      "condiciones": "Combos de hamburguesa o de pollo, en restaurante.",
+      "restricciones": "Un beneficio por combo. No acumulable con otras ofertas.",
+      "instrucciones": "Menciona la promoción al ordenar y paga con tu tarjeta en caja.",
+      "imagen": "/recursos/promociones/wendys-fin-de-semana.webp",
+      "textoAlternativo": "Restaurante Wendy's con su rótulo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "Combo agrandado sin costo",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "Combo agrandado y Frosty pequeño incluidos",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-20",
+        "hasta": "2026-12-31"
+      },
+      "dias": [
+        0,
+        6
+      ],
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Válido solo sábados y domingos",
+      "tipoBeneficio": "2x1-combo",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-31"
+    },
+    {
+      "id": "subway-reintegro",
+      "comercio": "subway",
+      "titulo": "Reintegro en tus sándwiches de Subway",
+      "descripcion": "Parte de tu compra en Subway regresa a tu tarjeta.",
+      "descripcionDetalle": "Arma tu sándwich o ensalada en Subway y paga con tu tarjeta: un porcentaje de la compra regresa como reintegro en tu próximo estado de cuenta.",
+      "condiciones": "Compras desde $8 en sándwiches, ensaladas y combos.",
+      "restricciones": "Un reintegro por transacción.",
+      "instrucciones": "Paga con tu tarjeta en caja; el reintegro se refleja en tu siguiente estado de cuenta.",
+      "imagen": "/recursos/promociones/subway-reintegro.webp",
+      "textoAlternativo": "Entrada de un restaurante Subway con su rótulo",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "5 % de reintegro",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": 8,
+          "tope": 3
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "10 % de reintegro",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": 8,
+          "tope": 5
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-20",
+        "hasta": "2026-12-31"
+      },
+      "dias": null,
+      "canales": [
+        "presencial"
+      ],
+      "condicionDecisiva": "Compra mínima de $8",
+      "tipoBeneficio": "cashback-puntos",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-31"
+    },
+    {
+      "id": "dominos-lunes",
+      "comercio": "dominos",
+      "titulo": "Descuento en pizzas a domicilio los lunes en Domino's",
+      "descripcion": "Los lunes, tu pizza de Domino's a domicilio con descuento.",
+      "descripcionDetalle": "Cada lunes, pide tus pizzas de Domino's en línea para entrega a domicilio y págalas con tu tarjeta para recibir el descuento de tu perfil.",
+      "condiciones": "Pizzas medianas y grandes pedidas en línea para entrega a domicilio.",
+      "restricciones": "El descuento no incluye el cargo de envío ni otras promociones.",
+      "instrucciones": "Haz tu pedido en el sitio o la aplicación de la marca y elige pago con tarjeta al finalizar.",
+      "imagen": "/recursos/promociones/dominos-lunes.webp",
+      "textoAlternativo": "Caja de Domino's Pizza abierta con una pizza",
+      "beneficios": [
+        {
+          "tarjeta": "basica",
+          "beneficio": "25 % de descuento",
+          "medioPago": "Tarjeta Básica",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        },
+        {
+          "tarjeta": "black",
+          "beneficio": "35 % de descuento",
+          "medioPago": "Tarjeta Black",
+          "restricciones": "",
+          "compraMinima": null,
+          "tope": null
+        }
+      ],
+      "vigencia": {
+        "desde": "2026-10-20",
+        "hasta": "2026-12-31"
+      },
+      "dias": [
+        1
+      ],
+      "canales": [
+        "delivery",
+        "en-linea"
+      ],
+      "condicionDecisiva": "Válido solo los lunes",
+      "tipoBeneficio": "descuento",
+      "etiquetasIntencion": [],
+      "alta": "2026-10-31"
     }
   ]
 }

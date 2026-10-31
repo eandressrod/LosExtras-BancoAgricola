@@ -380,6 +380,96 @@
       "autor": "Glenn Samonte - Own Work",
       "licencia": "CC BY 2.0",
       "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/burger-king-jueves.webp",
+      "tipo": "foto",
+      "descripcion": "Restaurante Burger King con su logo en la fachada",
+      "origen": "https://commons.wikimedia.org/wiki/File:Burger_King_%28BK%29_-_Fontaine-l%27%C3%89v%C3%AAque_%28Belgique%29_-_2023-09-01.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/1/18/Burger_King_%28BK%29_-_Fontaine-l%27%C3%89v%C3%AAque_%28Belgique%29_-_2023-09-01.jpg",
+      "autor": "Le Sharkoïste",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Recorte 16:9 que deja fuera una furgoneta con datos de contacto, la placa de un auto y un cartel con precios; ampliado a 1280×720 px desde 824×464 de la miniatura de 1280 px; WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/burger-king-domicilio.webp",
+      "tipo": "foto",
+      "descripcion": "Bandeja con hamburguesa, papas y bebida en empaques de Burger King",
+      "origen": "https://commons.wikimedia.org/wiki/File:BURGER_KING_PRODUCTS_IN_CHINA_%285%29.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/d/d6/BURGER_KING_PRODUCTS_IN_CHINA_%285%29.jpg",
+      "autor": "Dinkun Chen",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/wendys-fin-de-semana.webp",
+      "tipo": "foto",
+      "descripcion": "Restaurante Wendy's con su rótulo",
+      "origen": "https://commons.wikimedia.org/wiki/File:Wendy%27s_flagship_restaurant_%28Dublin%2C_Ohio%29.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/0/09/Wendy%27s_flagship_restaurant_%28Dublin%2C_Ohio%29.jpg",
+      "autor": "Nheyob",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/subway-reintegro.webp",
+      "tipo": "foto",
+      "descripcion": "Entrada de un restaurante Subway con su rótulo",
+      "origen": "https://commons.wikimedia.org/wiki/File:Entrance_to_a_Subway_restaurant_in_Foggy_Bottom.jpg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/3/33/Entrance_to_a_Subway_restaurant_in_Foggy_Bottom.jpg",
+      "autor": "Ser Amantio di Nicolao",
+      "licencia": "CC BY-SA 4.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/promociones/dominos-lunes.webp",
+      "tipo": "foto",
+      "descripcion": "Caja de Domino's Pizza abierta con una pizza",
+      "origen": "https://commons.wikimedia.org/wiki/File:Domino%27s_Pizza_%28Malaysia%29%2C_Chicken_Pepperoni%2C_NY_Crust.JPG",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Domino%27s_Pizza_%28Malaysia%29%2C_Chicken_Pepperoni%2C_NY_Crust.JPG",
+      "autor": "Aero777",
+      "licencia": "GFDL, CC BY-SA 3.0",
+      "procesamiento": "Recorte 16:9, 1280×720 px, WebP de 150 KB como máximo, sin metadatos."
+    },
+    {
+      "ruta": "/recursos/comercios/burger-king.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Burger King",
+      "origen": "https://commons.wikimedia.org/wiki/File:Burger_King_2020.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Burger_King_2020.svg",
+      "autor": "Burger King",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/wendys.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Wendy's",
+      "origen": "https://commons.wikimedia.org/wiki/File:Wendy%27s_logo_2012.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/6/66/Wendy%27s_logo_2012.svg",
+      "autor": "Gindomarlo",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/subway.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Subway",
+      "origen": "https://commons.wikimedia.org/wiki/File:Subway_2016_logo.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Subway_2016_logo.svg",
+      "autor": "Subway",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
+    },
+    {
+      "ruta": "/recursos/comercios/dominos.png",
+      "tipo": "logo",
+      "descripcion": "Logo de Domino's",
+      "origen": "https://commons.wikimedia.org/wiki/File:Domino%27s_pizza_logo.svg",
+      "archivoOrigen": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Domino%27s_pizza_logo.svg",
+      "autor": "Domino's Pizza",
+      "licencia": "Public domain",
+      "procesamiento": "Render PNG de Wikimedia, recorte de márgenes y lado mayor de 512 px con transparencia."
     }
   ]
 }
