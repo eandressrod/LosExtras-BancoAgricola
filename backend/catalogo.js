@@ -64,6 +64,12 @@ export function categoriasDeFuente(fuente) {
   })));
 }
 
+/** H8: zonas con su centro, en el orden de la fuente (columna orden de la base). */
+export function zonasDeFuente(fuente) {
+  return fuente.zonas.map(({ id, nombre, centro }) => ({ id, nombre, latitud: centro.latitud, longitud: centro.longitud }));
+}
+
 // El mock sirve la misma fuente que carga la migración generada.
 export const catalogoPromociones = promocionesDeFuente(fuente);
 export const categoriasCatalogo = categoriasDeFuente(fuente);
+export const zonasCatalogo = zonasDeFuente(fuente);

@@ -32,6 +32,12 @@ test('un error de Supabase no se convierte en encuesta pendiente ni revela detal
   await assert.rejects(repo.estaCompletada('A'), error => /encuesta/.test(error.message) && !error.message.includes('detalle privado'));
 });
 
+test('el mock deja pendiente a B cuando no tiene preferencias guardadas', async () => {
+  const { crearRepositorioEstadoEncuestaMock } = await import('../../backend/repositorios/estado-encuesta.mock.js');
+  const repo = crearRepositorioEstadoEncuestaMock();
+  assert.equal(await repo.estaCompletada('B'), false);
+});
+
 test('mock consulta el estado del propietario, sin deducirlo del tipo de tarjeta', async () => {
   const { crearRepositorioEstadoEncuestaMock } = await import('../../backend/repositorios/estado-encuesta.mock.js');
   const repo = crearRepositorioEstadoEncuestaMock({ A: false, B: true });

@@ -47,7 +47,7 @@ export function crearReproductor({ total, intervalo = 5000, reducido = false, re
 }
 
 const ROTULOS = {
-  encuesta: 'Personaliza', vence: 'Vence pronto', ahorro: 'Ahorro de hoy', 'hoy-toca': 'Hoy toca',
+  vence: 'Vence pronto', ahorro: 'Ahorro de hoy', 'hoy-toca': 'Hoy toca',
   semana: 'Esta semana', guardadas: 'Tus guardadas', orden: 'Tu lista'
 };
 const UMBRAL_ARRASTRE = 8;

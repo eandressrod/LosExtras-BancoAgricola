@@ -3,10 +3,11 @@
   const direccion = volver => { if (volver) document.documentElement.dataset.direccion = 'volver'; };
   try { direccion(sessionStorage.getItem('los-extras-direccion') === 'volver');sessionStorage.removeItem('los-extras-direccion'); } catch {}
   if (typeof addEventListener === 'function') {
+    // El navegador puede cancelar la captura al redirigir antes de mostrar una página intermedia,
+    // y algunos omiten la transición nativa sin pasar por los catch de pagereveal y pageswap.
+    const transicionCancelada = ['Transition was aborted because of invalid state. ViewTransition opt-in disabled', 'Transition was skipped'];
     addEventListener('unhandledrejection', event => {
-      // El navegador puede cancelar la captura al redirigir antes de mostrar una página intermedia.
-      if (['AbortError','InvalidStateError'].includes(event.reason?.name)
-        && event.reason.message === 'Transition was aborted because of invalid state. ViewTransition opt-in disabled') event.preventDefault();
+      if (['AbortError','InvalidStateError'].includes(event.reason?.name) && transicionCancelada.includes(event.reason.message)) event.preventDefault();
     });
     addEventListener('pagereveal', event => {
       if (!event.viewTransition) return;

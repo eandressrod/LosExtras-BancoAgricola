@@ -10,7 +10,8 @@
     { "source": "/api/promociones-apertura", "destination": "/api/recursos?recurso=promociones-apertura" },
     { "source": "/api/guardadas", "destination": "/api/recursos?recurso=guardadas" },
     { "source": "/api/para-ti", "destination": "/api/recursos?recurso=para-ti" },
-    { "source": "/api/senales", "destination": "/api/recursos?recurso=senales" }
+    { "source": "/api/senales", "destination": "/api/recursos?recurso=senales" },
+    { "source": "/api/zonas", "destination": "/api/recursos?recurso=zonas" }
   ],
   "headers": [
     {

@@ -1,7 +1,3 @@
-export function destinoEntradaPromociones(search, preferencias) {
-  return new URLSearchParams(search).get('entrada') === 'menu' && !preferencias.completed ? '/encuesta.html' : null;
-}
-
 export function fechaMensaje(valor) {
   if (!valor) return '';
   const fecha = new Date(valor);

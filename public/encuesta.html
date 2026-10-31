@@ -2,49 +2,17 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8">
-    <script src="/js/arranque.js"></script>
-    <link rel="stylesheet" href="/css/inicio.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Tus intereses · Los Extras</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/fuentes.css">
-    <link rel="stylesheet" href="/css/carga.css">
-    <!-- PWA pendiente: manifest e iconos en /pwa/, a cargo del usuario. -->
-    <script type="module" src="/js/encuesta.js"></script>
+    <!-- H21 (ADR-010): la encuesta es una hoja sobre Para ti. Esta dirección se conserva por el contrato del menú (destinoPromociones). -->
+    <script>location.replace('/promociones.html?entrada=menu');</script>
     <link rel="manifest" href="/pwa/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/pwa/apple-touch-icon.png?v=sv-1">
     <link rel="icon" type="image/png" sizes="192x192" href="/pwa/icono-192.png?v=sv-1">
     <meta name="theme-color" content="#ffffff">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Bancoagrícola">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="stylesheet" href="/pwa/pwa.css">
     <script type="module" src="/pwa/pwa.js"></script>
   </head>
-  <body data-session="pending">
-    <div class="entry-loading module-loading" role="status" aria-label="Cargando acceso"><img class="loading-ring" src="/recursos/menu/carga.svg" alt=""><span>CARGANDO...</span></div>
-    <header>
-      <img class="brand-logo" src="/recursos/bancoagricola-logo.svg" alt="Bancoagrícola">
-      <div class="header-row">
-        <p>Los Extras</p>
-        <p id="session-profile" class="session-profile" hidden></p>
-      </div>
-    </header>
-    <main>
-      <h1>Tus intereses</h1>
-      <p>Antes de ver promociones por primera vez, cuéntanos qué te interesa.</p>
-      <form id="survey-form">
-        <fieldset>
-          <legend>Elige una o varias categorías</legend>
-          <div id="category-options"></div>
-        </fieldset>
-        <p id="survey-error" class="error" role="alert"></p>
-        <button type="submit">Guardar y ver promociones</button>
-        <a class="button secondary" href="/promociones.html">Omitir por ahora</a>
-        <a class="button secondary" href="/menu.html">Volver al menú</a>
-      </form>
-    </main>
+  <body>
     <noscript>Activa JavaScript para usar la aplicación.</noscript>
   </body>
 </html>

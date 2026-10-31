@@ -149,3 +149,18 @@ test('H22 las reglas de otras historias entran como funciones puras con efecto n
   const soloIntencion = ordenarParaTi({ ofertas: [oferta('z', 'm9', 'Z')], filtros: { categoria: 'Z' }, senales, reglas: { intencion: () => 1 } });
   assert.deepEqual(soloIntencion.promociones[0].razon, { tipo: 'intencion', texto: 'Por lo que buscas hoy' });
 });
+
+test('Explorar (alcance todo) no recorta por intereses: todo compite y lo de interés va primero', () => {
+  const ofertas = [oferta('x1', 'm2', 'X', '2026-10-20'), oferta('y1', 'm1', 'Y', '2026-10-01'), oferta('z1', 'm3', 'Z', '2026-10-21'),
+    oferta('y2', 'm5', 'Y', '2026-10-21')];
+  const senales = [interes('categoria', 'X'), interes('comercio', 'm1')];
+  const recortada = ordenarParaTi({ ofertas, senales });
+  assert.deepEqual(ids(recortada), ['y1', 'x1', 'y2'], 'Para ti deja fuera la categoría Z');
+  const todo = ordenarParaTi({ ofertas, senales, alcance: 'todo' });
+  assert.equal(todo.estrategia, 'personalizada');
+  assert.deepEqual(ids(todo).slice(0, 2), ['y1', 'x1'], 'lo elegido y lo de interés siguen primero');
+  assert.deepEqual(new Set(ids(todo)), new Set(['x1', 'y1', 'z1', 'y2']), 'y nada queda fuera');
+  assert.equal(todo.promociones.find(o => o.id === 'z1').razon, null);
+  // Sin intereses, Explorar es la estrategia base de siempre.
+  assert.deepEqual(ids(ordenarParaTi({ ofertas, alcance: 'todo' })), ids(ordenarParaTi({ ofertas })));
+});

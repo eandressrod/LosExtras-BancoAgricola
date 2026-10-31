@@ -87,24 +87,22 @@ test('H17 un error permite reintentar con Disponibles hoy activo', async () => {
   assert.equal(hoyActivo(p), 'true');
 });
 
-test('H17 cada tarjeta explica su disponibilidad de hoy cuando la tiene', async () => {
+test('H17 cada tarjeta dice si aplica hoy o qué días aplica', async () => {
   const p = await abrirListado({ responder: () => [
-    { id: 'cine', category: 'Entretenimiento', availableToday: true, usageDays: [1, 2, 3, 4] },
-    { id: 'tienda', category: 'Compras', availableToday: false }
+    { id: 'cine', category: 'Entretenimiento', availableToday: true, canUse: true, usageDays: [1, 2, 3, 4] },
+    { id: 'tienda', category: 'Compras', availableToday: false, canUse: true, usageDays: [3] }
   ] });
-  const [cine, tienda] = p.cards.hijos.map(oferta => oferta.querySelector('.promo-today'));
-  assert.equal(cine.textContent, 'Disponible hoy: es uno de sus días válidos.');
-  assert.equal(cine.hidden, false);
-  assert.equal(tienda.hidden, true);
+  const [cine, tienda] = p.cards.hijos.map(oferta => oferta.querySelector('.promo-cuando'));
+  assert.deepEqual([cine.textContent, cine.dataset.estado], ['Disponible hoy · lunes a jueves', 'hoy']);
+  assert.deepEqual([tienda.textContent, tienda.dataset.estado], ['Disponible los miércoles', 'otro-dia']);
 });
 
 test('H17 el detalle muestra la misma disponibilidad y vuelve a Disponibles hoy', async () => {
-  const p = await abrirDetalle({ search: '?id=tienda&hoy=1', promocion: { availableToday: true, usageDays: null } });
+  const p = await abrirDetalle({ search: '?id=tienda&hoy=1', promocion: { availableToday: true, canUse: true, usageDays: null } });
   assert.equal(p.history.url, '/detalle.html?id=tienda&hoy=1');
   assert.equal(p.volver(), '/promociones.html?hoy=1#promo-tienda');
-  assert.equal(p.obtener('#today').textContent, 'Disponible hoy: aplica todos los días de su vigencia.');
-  assert.equal(p.obtener('#today').hidden, false);
+  assert.deepEqual([p.obtener('#days').textContent, p.obtener('#days').dataset.estado], ['Disponible hoy · todos los días', 'hoy']);
   const otro = await abrirDetalle({ search: '?id=tienda&hoy=1', estado: { perfil: 'A', categoria: null }, perfil: 'B' });
   assert.equal(otro.volver(), '/promociones.html#promo-tienda');
-  assert.equal(otro.obtener('#today').hidden, true);
+  assert.equal(otro.obtener('#days').dataset.estado, 'neutro');
 });

@@ -29,23 +29,78 @@ export function textoVencePronto(promo, hoy) {
   return dias === 1 ? 'Vence mañana' : `Vence en ${dias} días`;
 }
 
+// Lunes a domingo (domingo = 0), en singular y en plural: «de lunes a sábado», «los sábados».
 const SEMANA = [
-  ['L', 'lunes', 1], ['M', 'martes', 2], ['M', 'miércoles', 3], ['J', 'jueves', 4], ['V', 'viernes', 5], ['S', 'sábado', 6], ['D', 'domingo', 0]
+  [1, 'lunes', 'lunes'], [2, 'martes', 'martes'], [3, 'miércoles', 'miércoles'], [4, 'jueves', 'jueves'],
+  [5, 'viernes', 'viernes'], [6, 'sábado', 'sábados'], [0, 'domingo', 'domingos']
 ];
+const mayuscula = texto => texto.charAt(0).toUpperCase() + texto.slice(1);
+const unir = nombres => nombres.length === 1 ? nombres[0] : nombres.slice(0, -1).join(', ') + ' y ' + nombres.at(-1);
 
-/** Sistema visual: días de lunes a domingo; sin días fijos (null) vale toda la semana. `diaHoy` usa domingo = 0. */
-export function tiraDias(dias, diaHoy) {
-  return SEMANA.map(([letra, nombre, numero]) => ({ letra, nombre, valido: !dias?.length || dias.includes(numero), hoy: numero === diaHoy }));
+/**
+ * Forma de los días fijos, ordenados de lunes a domingo: un día, un rango (tres o más seguidos) o una lista.
+ * null si no hay días fijos o están los siete. La usan la tarjeta, el detalle y la franja de avisos.
+ * @returns {{ forma: 'uno' | 'rango' | 'lista', plurales: string[], desde: string, hasta: string } | null}
+ */
+export function formaDias(dias) {
+  if (!dias?.length) return null;
+  const elegidos = SEMANA.filter(([numero]) => dias.includes(numero));
+  if (elegidos.length === SEMANA.length) return null;
+  const posiciones = elegidos.map(dia => SEMANA.indexOf(dia));
+  const seguidos = posiciones.every((posicion, indice) => indice === 0 || posicion === posiciones[indice - 1] + 1);
+  const forma = elegidos.length === 1 ? 'uno' : seguidos && elegidos.length > 2 ? 'rango' : 'lista';
+  return { forma, plurales: elegidos.map(dia => dia[2]), desde: elegidos[0][1], hasta: elegidos.at(-1)[1] };
 }
 
-/** H17: por qué se puede usar hoy. No afirma que ya se cumpla una compra mínima. */
-export function textoDisponibleHoy(promo) {
-  if (!promo.availableToday) return '';
-  const motivo = promo.usageDays?.length ? 'es uno de sus días válidos' : 'aplica todos los días de su vigencia';
-  return `Disponible hoy: ${motivo}${promo.minimumPurchase != null ? ', con la compra mínima indicada' : ''}.`;
+/** Frase corta de los días válidos: «Todos los miércoles», «Sábados y domingos», «Lunes a jueves» o «Todos los días». */
+export function textoDias(dias) {
+  const partes = formaDias(dias);
+  if (!partes) return 'Todos los días';
+  if (partes.forma === 'uno') return 'Todos los ' + partes.plurales[0];
+  return mayuscula(partes.forma === 'rango' ? `${partes.desde} a ${partes.hasta}` : unir(partes.plurales));
 }
 
-export function condicionesVisibles(promo, { dias: conDias = true } = {}) {
+/** Los días con artículo, para «Disponible los miércoles» o «Disponible de lunes a jueves». */
+function diasConArticulo(dias) {
+  const partes = formaDias(dias);
+  return partes.forma === 'rango' ? `de ${partes.desde} a ${partes.hasta}` : 'los ' + unir(partes.plurales);
+}
+
+/**
+ * Aviso de días de la tarjeta y del detalle (reloj). 'hoy' si aplica hoy; 'otro-dia' si está vigente pero hoy no
+ * es uno de sus días; 'neutro' fuera de vigencia o sin disponibilidad confirmada, donde solo se dicen los días.
+ */
+export function estadoDias(promo) {
+  const vigente = (promo.canUse ?? !(promo.expired || promo.upcoming)) && !promo.vencida;
+  if (vigente && promo.availableToday) {
+    const dias = textoDias(promo.usageDays);
+    return { estado: 'hoy', texto: 'Disponible hoy · ' + dias.charAt(0).toLowerCase() + dias.slice(1) };
+  }
+  if (vigente && formaDias(promo.usageDays)) return { estado: 'otro-dia', texto: 'Disponible ' + diasConArticulo(promo.usageDays) };
+  return { estado: 'neutro', texto: textoDias(promo.usageDays) };
+}
+
+const CANALES = { presencial: 'en tienda', delivery: 'a domicilio', 'en-linea': 'en línea' };
+
+/** Detalle: cómo usar la promoción, solo con datos del catálogo. Las instrucciones propias de la promoción van al final. */
+export function pasosDeUso(promo) {
+  const canales = (promo.channels ?? []).map(canal => CANALES[canal]).filter(Boolean);
+  const cuando = formaDias(promo.usageDays) ? 'Úsala ' + diasConArticulo(promo.usageDays) : 'Úsala cualquier día';
+  const pasos = [
+    { tipo: 'comercio', texto: `Compra en ${promo.merchant}` + (canales.length ? ', ' + unir(canales).replace(/ y (?=[^y]*$)/, ' o ') : '') },
+    { tipo: 'dias', texto: cuando + (promo.validUntil && !promo.expired ? ', hasta el ' + fecha(promo.validUntil) : '') },
+    { tipo: 'tarjeta', texto: 'Paga con tu tarjeta ' + (promo.applicableCard === 'black' ? 'Black' : 'Básica') }
+  ];
+  const montos = [
+    promo.minimumPurchase != null && 'Compra mínima de ' + dinero.format(promo.minimumPurchase),
+    promo.discountCap != null && 'descuento hasta ' + dinero.format(promo.discountCap)
+  ].filter(Boolean);
+  if (montos.length) pasos.push({ tipo: 'monto', texto: mayuscula(montos.join(' · ')) });
+  if (promo.instructions) pasos.push({ tipo: 'nota', texto: promo.instructions });
+  return pasos;
+}
+
+export function condicionesVisibles(promo, { dias: conDias = true, restricciones = true } = {}) {
   const condiciones = [];
   if (conDias && promo.usageDays?.length) {
     const diasOrdenados = [...new Set(promo.usageDays)].sort();
@@ -53,8 +108,13 @@ export function condicionesVisibles(promo, { dias: conDias = true } = {}) {
   }
   if (promo.minimumPurchase != null) condiciones.push('Compra mínima: ' + dinero.format(promo.minimumPurchase));
   if (promo.discountCap != null) condiciones.push('Tope de descuento: ' + dinero.format(promo.discountCap));
-  if (promo.restrictions) condiciones.push(promo.restrictions);
+  if (restricciones && promo.restrictions) condiciones.push(promo.restrictions);
   return condiciones;
+}
+
+/** Restricciones de la tarjeta (restrictions) y generales de la promoción (generalRestrictions), sin repetir. */
+export function restriccionesDe(promo) {
+  return [...new Set([promo.restrictions, promo.generalRestrictions].filter(Boolean))];
 }
 
 export function mostrarImagen(img, url, alt = '') {
@@ -77,28 +137,59 @@ export function mostrarCondiciones(lista, promo, opciones) {
   lista.hidden = lista.children.length === 0;
 }
 
+/** Detalle: lista de restricciones de «Cómo usarla»; se oculta si la promoción no trae ninguna. */
+export function mostrarRestricciones(lista, promo) {
+  lista.replaceChildren(...restriccionesDe(promo).map(texto => {
+    const item = document.createElement('li');
+    item.textContent = texto;
+    return item;
+  }));
+  lista.hidden = lista.children.length === 0;
+}
+
+/** Detalle: dibuja los pasos de uso; el tipo elige el icono y la nota final se distingue de los pasos numerados. */
+export function mostrarPasos(lista, promo) {
+  lista.replaceChildren();
+  for (const { tipo, texto } of pasosDeUso(promo)) {
+    const item = document.createElement('li');
+    item.className = 'pr-paso';
+    item.dataset.tipo = tipo;
+    item.textContent = texto;
+    lista.append(item);
+  }
+}
+
 /** Día de la semana (domingo = 0) de una fecha civil AAAA-MM-DD. */
 export function diaDeLaSemana(fecha) {
   return new Date(fecha + 'T12:00:00Z').getUTCDay();
 }
 
-/** Sistema visual: dibuja la tira L M M J V S D; solo aparece con días fijos. */
-export function mostrarDias(lista, promo, diaHoy = diaDeLaSemana(hoyEnElSalvador())) {
-  lista.replaceChildren();
-  lista.hidden = !promo.usageDays?.length;
-  if (lista.hidden) return;
-  for (const dia of tiraDias(promo.usageDays, diaHoy)) {
-    const item = document.createElement('li');
-    item.className = 'promo-dia';
-    item.textContent = dia.letra;
-    if (dia.valido) item.dataset.valido = '';
-    if (dia.hoy) item.dataset.hoy = '';
-    item.setAttribute('aria-label', dia.nombre + (dia.valido ? ', válido' : ', no válido') + (dia.hoy ? ', hoy' : ''));
-    lista.append(item);
-  }
+/** Aviso de días con reloj: verde si aplica hoy, rojo si es otro día, neutro fuera de vigencia. */
+export function mostrarDias(elemento, promo) {
+  const { estado, texto } = estadoDias(promo);
+  elemento.textContent = texto;
+  elemento.dataset.estado = estado;
 }
 
 const NOMBRE_TARJETA = { basica: 'Básica', black: 'Black' };
+
+/**
+ * Con qué tarjetas propias aplica la promoción. `totalTarjetas` es cuántas tiene el perfil: con más de una se dice si
+ * aplica a todas o solo a una. `tarjeta` elige la mini tarjeta del pie ('basica', 'black' o 'ambas').
+ */
+export function textoAplica(promo, totalTarjetas = 1) {
+  const propios = promo.mejorBeneficio ? [promo.mejorBeneficio, ...(promo.otrosBeneficios ?? [])] : [];
+  if (!propios.length) {
+    const tipo = promo.applicableCard === 'black' ? 'black' : 'basica';
+    return { texto: 'Aplica a tu tarjeta ' + NOMBRE_TARJETA[tipo], tarjeta: tipo };
+  }
+  const tipos = [...new Set(propios.map(beneficio => beneficio.tipoTarjeta))];
+  if (tipos.length > 1) return { texto: 'Aplica a tus tarjetas ' + tipos.map(tipo => NOMBRE_TARJETA[tipo] ?? tipo).join(' y '), tarjeta: 'ambas' };
+  const [tipo] = tipos;
+  const nombre = NOMBRE_TARJETA[tipo] ?? tipo;
+  if (propios.length > 1) return { texto: `Aplica a tus ${propios.length} tarjetas ${nombre}`, tarjeta: tipo };
+  return { texto: (totalTarjetas > 1 ? 'Solo con tu tarjeta ' : 'Aplica a tu tarjeta ') + nombre, tarjeta: tipo };
+}
 
 /** Todas las tarjetas (SCRUM-133): menciona otra tarjeta propia solo si su beneficio es distinto al mejor. */
 export function textoOtrasTarjetas(promo) {

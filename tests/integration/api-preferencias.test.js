@@ -63,6 +63,19 @@ test('POST y GET /api/preferencias guardan y recuperan datos exitosamente (200)'
   assert.equal(estadoMenu.destinoPromociones, '/promociones.html');
 });
 
+test('POST /api/preferencias guarda categorías repetidas una sola vez', async () => {
+  const cookie = await obtenerCookieValida();
+  const resPost = await preferencias.fetch(new Request(url('/api/preferencias'), {
+    method: 'POST', headers: { cookie, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ categorias: ['Compras', 'Compras'] })
+  }));
+  assert.equal(resPost.status, 200);
+  const data = await (await preferencias.fetch(new Request(url('/api/preferencias'), {
+    method: 'GET', headers: { cookie }
+  }))).json();
+  assert.deepEqual(data.categories, ['Compras']);
+});
+
 test('JSON null es una entrada inválida, no una caída del servicio', async () => {
   const cookie = await obtenerCookieValida();
   const res = await preferencias.fetch(new Request(url('/api/preferencias'), {

@@ -29,3 +29,21 @@ test('el endpoint de apertura exige sesión, ignora el propietario del cuerpo y 
   assert.equal((await api.fetch(request())).status,200); assert.equal((await api.fetch(request())).status,200);
   assert.equal(filas[0].promocionesAbiertas,true); assert.equal(filas[0].encuestaCompletada,false); assert.equal(filas[1].promocionesAbiertas,false);
 });
+
+test('H21 la apertura devuelve las marcas de la encuesta y guarda «hoja mostrada» o «aviso cerrado» solo de la sesión', async () => {
+  const { crearHandlerApertura }=await import('../../backend/handlers/promociones-apertura.js');
+  const { crearRepositorioUsuariosPruebaMock }=await import('../../backend/repositorios/usuarios-prueba.mock.js');
+  const filas=[{id:'A',promocionesAbiertas:false,encuestaCompletada:false},{id:'B',promocionesAbiertas:false}];
+  const api=crearHandlerApertura({accesos:()=>({estadoActividad,buscarPerfilPorId:async id=>({id}),sesionRevocada:async()=>false}),usuarios:()=>crearRepositorioUsuariosPruebaMock(filas)});
+  const post=(cuerpo,cookie=true)=>api.fetch(new Request('http://local/api/promociones-apertura',{method:'POST',
+    headers:cookie?{Cookie:NOMBRE_COOKIE+'='+crearToken('A'),'Content-Type':'application/json'}:{'Content-Type':'application/json'},body:cuerpo}));
+  assert.deepEqual(await (await post()).json(),{promocionesAbiertas:true,hojaMostrada:false,avisoCerrado:false});
+  assert.equal((await post(JSON.stringify({marca:'hoja-mostrada'}),false)).status,401);
+  assert.equal(filas[0].hojaMostrada,undefined);
+  assert.deepEqual(await (await post(JSON.stringify({marca:'hoja-mostrada',perfilId:'B'}))).json(),{promocionesAbiertas:true,hojaMostrada:true,avisoCerrado:false});
+  assert.deepEqual(await (await post(JSON.stringify({marca:'aviso-cerrado'}))).json(),{promocionesAbiertas:true,hojaMostrada:true,avisoCerrado:true});
+  for (const cuerpo of [JSON.stringify({marca:'encuesta-completada'}),JSON.stringify({marca:true}),'{no es json']) {
+    const res=await post(cuerpo); assert.equal(res.status,400); assert.match((await res.json()).error,/marca/i);
+  }
+  assert.equal(filas[0].encuestaCompletada,false); assert.equal(filas[1].hojaMostrada,undefined); assert.equal(filas[1].avisoCerrado,undefined);
+});

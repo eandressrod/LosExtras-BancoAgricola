@@ -125,11 +125,16 @@ test('perfil A completa el camino principal de Promociones sin errores', async (
 
   await test.step('entrada a Promociones con encuesta pendiente', async () => {
     await page.locator('#btn-promociones').click();
-    await expect(page).toHaveURL(/\/encuesta\.html/);
-    const primera = page.locator('#category-options input[name="category"]').first();
-    await expect(primera).toBeVisible();
-    await primera.check();
-    await page.locator('#survey-form button[type="submit"]').click();
+    // H21: la encuesta es una hoja de tres pasos sobre la lista (ADR-010).
+    await expect(page).toHaveURL(/\/promociones\.html/);
+    const hoja = page.locator('#survey-sheet');
+    await expect(hoja).toBeVisible({ timeout: 15000 });
+    await hoja.locator('.survey-option[role="checkbox"]').first().click();
+    const principal = hoja.locator('#survey-next');
+    await expect(principal).toHaveText('Siguiente');
+    while (await principal.textContent() !== 'Listo') await principal.click();
+    await principal.click();
+    await expect(hoja).toBeHidden();
   });
 
   let comercio, beneficio;

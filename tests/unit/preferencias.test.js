@@ -32,6 +32,13 @@ test('rechaza categorías que no existen en las opciones permitidas', async () =
   );
 });
 
+test('guarda una sola vez cada categoría repetida, conservando el orden', async () => {
+  let guardadas;
+  const repo = { async guardarPreferencias(_, categorias) { guardadas = categorias; } };
+  await validarYGuardarPreferencias('usuario-1', ['Compras', 'Restaurantes', 'Compras'], repo);
+  assert.deepEqual(guardadas, ['Compras', 'Restaurantes']);
+});
+
 test('guarda con éxito categorías permitidas en el repositorio aislando al propietario (Criterio 3)', async () => {
   let datosGuardados = null;
   // Mock del repositorio para simular la base de datos
