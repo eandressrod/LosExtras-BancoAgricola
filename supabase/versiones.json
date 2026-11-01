@@ -1,4 +1,8 @@
 {
+  "transicion": {
+    "motivo": "H24 Entrega 2 (SCRUM-124, PR 43) agrega la muestra de Restaurantes al catálogo. Las pruebas de H24 de las versiones anteriores comparan la base con su catálogo exacto, así que ninguna versión anterior es compatible: el regreso a PR 41 falla en 5 de esas pruebas. Este PR se registra como nuevo destino de regreso al fusionarse.",
+    "desde": "2026-11-01"
+  },
   "versiones": [
     { "pr": 1, "commit": "9a8b35ee93e6bc791107aeb0936cb78b78e88baf", "migracion": "20261008231036", "regreso": false },
     { "pr": 2, "commit": "ffdeeea1a41875d6376120d98dc1153f8394bd86", "migracion": "20261009042850", "regreso": false },
@@ -21,8 +25,8 @@
     { "pr": 29, "commit": "116da0f73b3dc22df23e40137c3ba54a8ff87fbf", "migracion": "20261023013727", "regreso": false },
     { "pr": 30, "commit": "3e80c92e69dbc52c95524dc6e6416659f35e4e58", "migracion": "20261023013727", "regreso": false },
     { "pr": 36, "commit": "f8cdee1c65de4cec4532338b57be67db7c2fa9b0", "migracion": "20261023013727", "regreso": false },
-    { "pr": 37, "commit": "f53ca30f0ffe0acb0bf0d27d189cc8ea68fd8ed6", "migracion": "20261026040041", "regreso": true },
-    { "pr": 40, "commit": "8269601f327ff4be10b527f2c4885475f37b5ea6", "migracion": "20261026220500", "regreso": true },
-    { "pr": 41, "commit": "fd4da7b70546c8375bffd15d589256bdbd01ccf1", "migracion": "20261026220500", "regreso": true }
+    { "pr": 37, "commit": "f53ca30f0ffe0acb0bf0d27d189cc8ea68fd8ed6", "migracion": "20261026040041", "regreso": false },
+    { "pr": 40, "commit": "8269601f327ff4be10b527f2c4885475f37b5ea6", "migracion": "20261026220500", "regreso": false },
+    { "pr": 41, "commit": "fd4da7b70546c8375bffd15d589256bdbd01ccf1", "migracion": "20261026220500", "regreso": false }
   ]
 }
