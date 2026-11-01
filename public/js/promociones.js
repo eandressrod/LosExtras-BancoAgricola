@@ -594,13 +594,22 @@ if (profile) {
 
   // Las opciones y la vista previa salen de todo lo vigente (Explorar, sin filtros): la lista de Para ti ya está recortada por
   // los intereses guardados y, al repetir la encuesta, solo ofrecería lo que ya se eligió. Si falla, se usa la lista visible.
+  // SCRUM-139: el aviso se retira cuando la hoja ya cubre la lista; si se ocultara antes, la lista subiría bajo el dedo
+  // y un segundo toque abriría la tarjeta de abajo. Mientras se abre, los toques repetidos se ignoran.
+  let abriendoEncuesta = false;
   async function abrirEncuesta() {
-    avisoEncuesta.hidden = true;
+    if (abriendoEncuesta) return;
+    abriendoEncuesta = true;
     let lista = listaActual;
     try {
       lista = (await getJSON(urlSeccion(conTarjeta(urlConsulta(null), filtroTarjeta?.id), 'explorar'))).promociones;
     } catch { /* La hoja funciona con la lista visible. */ }
-    abrirEncuestaHoja({ perfil: profile, lista, categorias, mostrarVistaPrevia, alCerrar: alCerrarEncuesta });
+    try {
+      abrirEncuestaHoja({ perfil: profile, lista, categorias, mostrarVistaPrevia, alCerrar: alCerrarEncuesta });
+      avisoEncuesta.hidden = true;
+    } finally {
+      abriendoEncuesta = false;
+    }
   }
 
   // Aviso de la lista (ADR-010): Empezar abre la hoja; cerrarlo una vez lo guarda y no vuelve.
