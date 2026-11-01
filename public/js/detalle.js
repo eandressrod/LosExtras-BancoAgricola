@@ -123,6 +123,11 @@ if (profile) {
       detail.hidden = false;
       status.textContent = '';
     } catch (error) {
+      // SCRUM-150: un enlace viejo o una promoción retirada no se arregla reintentando; queda «Volver al listado».
+      if (error.status === 404) {
+        status.textContent = 'Esta promoción ya no está disponible.';
+        return;
+      }
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;
