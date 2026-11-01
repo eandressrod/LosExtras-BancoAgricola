@@ -63,7 +63,13 @@ export default {
         ]);
         const propias = tarjetasDelUsuario(tarjetas, perfil);
         const resultado = await guardarPromocion(perfil.id, cuerpo.promocionId, repo, async id => {
-          return aplicaATarjetasPropias(catalogo, propias, id);
+          const existe = catalogo.some(promo => promo.id === id);
+          if (!existe) throw new Error('Promoción no encontrada.');
+          
+          if (!aplicaATarjetasPropias(catalogo, propias, id)) {
+            throw new Error('Esta promoción no aplica a tus tarjetas.');
+          }
+          return true;
         });
         return responderJson(resultado);
       }
@@ -72,6 +78,9 @@ export default {
     } catch (error) {
       if (error.message.includes('no encontrada')) {
         return responderJson({ error: error.message }, 404);
+      }
+      if (error.message.includes('no aplica a tus tarjetas')) {
+         return responderJson({ error: error.message }, 403);
       }
       if (error.message.includes('Falta el identificador')) {
         return responderJson({ error: error.message }, 400);
