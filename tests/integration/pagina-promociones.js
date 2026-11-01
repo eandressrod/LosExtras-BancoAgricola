@@ -49,6 +49,7 @@ export function elemento(extra = {}) {
     classList: { valores: new Set(), add(valor) { this.valores.add(valor); }, contains(valor) { return this.valores.has(valor); } },
     addEventListener(tipo, accion) { this.listeners[tipo] = accion; },
     click() { return this.listeners.click?.(); },
+    blur() { this.desenfocado = true; },
     input(valor) { this.value = valor; return this.listeners.input?.({ target: this }); },
     setAttribute(nombre, valor) { this.attributes[nombre] = String(valor); },
     removeAttribute(nombre) { delete this.attributes[nombre]; },
