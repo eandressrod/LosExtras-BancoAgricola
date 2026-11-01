@@ -1,4 +1,4 @@
-import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
+import { requireSession, getJSON, almacenSesion, revelarPagina } from './comun.js';
 import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { SECCIONES, seccionVecina, seccionPorDeslizamiento, leerSeccion, guardarSeccion, urlSeccion } from './pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from './filtros-activos.js';
@@ -16,7 +16,7 @@ import {
   leerCategoria, leerHoy, leerBusqueda, leerIntencion, normalizarBusqueda, categoriaVigente,
   estadoNavegacion, urlConsulta, urlListado, urlDetalle, CHIPS_HOY_BUSCO, textoPrimeroHoyBusco
 } from './filtro-categoria.js';
-import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
+import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjeta, conTarjeta, textoInsignia } from './tarjeta-elegida.js';
 import { crearCerca } from './cerca/pantalla.js';
 
 let idsGuardados = [];
@@ -344,8 +344,7 @@ if (profile) {
   // H16: el filtro de tarjeta se marca en la hoja Filtros y la cabecera dice qué tarjetas se consideran.
   function mostrarTarjeta() {
     for (const opcion of opcionesTarjeta) opcion.setAttribute('aria-pressed', String(opcion.dataset.card === (filtroTarjeta?.id ?? '')));
-    const descripcion = filtroTarjeta ? cardName(filtroTarjeta) : tarjetas.length === 1 ? cardName(tarjetas[0]) : `${tarjetas.length} tarjetas`;
-    if (sessionBadge) sessionBadge.textContent = `${profile.nombre} · ${descripcion}`;
+    if (sessionBadge) sessionBadge.textContent = textoInsignia(profile, tarjetas, filtroTarjeta?.id);
     pintarFiltrosActivos();
   }
 

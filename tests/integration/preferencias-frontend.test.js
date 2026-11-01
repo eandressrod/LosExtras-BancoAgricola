@@ -16,16 +16,21 @@ async function page({ categories = ['Compras'], loadFails = false, saveFails = f
   const els = new Map(); const inputs = ['Restaurantes','Compras','Entretenimiento'].map(value => ({ ...element(), value, checked: false }));
   const get = key => { if (!els.has(key)) els.set(key, element()); return els.get(key); };
   const location = { value: '', assign(value) { this.value = value; }, replace(value) { this.value = value; } };
-  const state = { loadFails, saveFails }; const requests = [];
+  const state = { loadFails, saveFails }; const requests = []; const insignias = [];
   const context = { document: { querySelector: get, querySelectorAll: () => inputs }, location,
     requireSession: async () => ({ id: 'A', tipoTarjeta: 'basica' }),
+    mostrarTarjetasSesion: async perfil => { insignias.push(perfil.id); },
     cargarCategorias: async () => { if (state.loadFails) throw new Error('Carga fallida'); return inputs; },
     getJSON: async () => { if (state.loadFails) throw new Error('Carga fallida'); return { completed: true, categories }; },
     fetch: async (url, options) => { requests.push({ url, options }); return { status: state.saveFails ? 503 : 200, ok: !state.saveFails, json: async () => ({ error: 'Guardado fallido' }) }; }
   };
   await vm.runInNewContext(`(async () => { ${await source()} })()`, context);
-  return { get, inputs, state, location, requests };
+  return { get, inputs, state, location, requests, insignias };
 }
+test('SCRUM-109 la insignia de Preferencias se completa con las tarjetas propias de la sesión', async () => {
+  const p = await page();
+  assert.deepEqual(p.insignias, ['A']);
+});
 test('H6 precarga las preferencias guardadas y guarda la selección nueva sin mandar propietario', async () => {
   const p = await page();
   assert.deepEqual(p.inputs.filter(i => i.checked).map(i => i.value), ['Compras']);
