@@ -1,6 +1,6 @@
 # ADR-011: Dar a Promociones un sistema visual propio, separado de las demás interfaces
 
-- Estado: propuesta. Implementada en la rama `hu/SCRUM-127-promociones-ui`, pendiente de aprobación del PO (David) y de PR.
+- Estado: aceptada. Aprobada por el PO operativo y fusionada en main con el [PR 29](https://github.com/eandressrod/LosExtras-BancoAgricola/pull/29) el 25 de octubre de 2026.
 - Fecha del registro: 23 de octubre de 2026.
 - Fecha de la decisión: 23 de octubre de 2026. El PO operativo rechazó el primer tramo (PR 28, cerrado sin merge) y pidió rehacerlo desde cero.
 - Decide: PO operativo (alcance y dirección) y equipo de desarrollo (forma técnica).
@@ -75,7 +75,6 @@ Los puntos 2 y 3 de la decisión original («cabecera según la tarjeta» y «ch
 
 **Negativas o pendientes**
 
-- **Rama dependiente:** depende del PR 25. Si este cambia, hay que integrar de nuevo.
 - **Criterio de tamaño:** el CDA 11 de H22 dice «objetivos de 48 dp». Los controles visibles son más pequeños por decisión del PO y su área táctil se amplía con pseudoelementos donde es posible. Conviene que el PO ajuste el texto del CDA en Jira.
 - **Navegadores:** `:has()`, `color-mix()` y `overflow-x: clip` requieren Safari 16+ y Chrome 105+.
 - **Comprobaciones pendientes:** falta probar con lector de pantalla y en un iPhone físico.
