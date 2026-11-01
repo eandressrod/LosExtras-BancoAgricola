@@ -209,6 +209,7 @@ export async function abrirDetalle(opciones = {}) {
     getJSON: async url => {
       consultas.push(url);
       if (opciones.falla) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');
+      if (opciones.error) throw opciones.error;
       const black = parametro(url, 'tarjeta') === 'cta-a-4';
       return { id: 'tienda', merchant: 'Siman', benefit: black ? '25 % de descuento' : '15 % de descuento', applicableCard: black ? 'black' : 'basica', ...opciones.promocion };
     }
