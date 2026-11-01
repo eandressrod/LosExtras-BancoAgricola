@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import login from '../../api/auth/login.js';
 import guardadas from '../../api/recursos.js';
 import { reiniciarGuardadasMock } from '../../backend/repositorios/guardadas.js';
+import preferencias from '../../api/preferencias.js';
 
 process.env.SESSION_SECRET = 'x'.repeat(40);
 process.env.DATA_SOURCE = 'mock';
@@ -127,4 +128,35 @@ test('una exclusiva de otra tarjeta queda guardada pero no se muestra como utili
   assert.deepEqual(lista.ids, ['siman-black']);
   assert.deepEqual(lista.promociones, []);
   assert.equal(lista.sinCoincidencias, true);
+});
+
+test('QA-AUD-03 al cambiar intereses en Mis preferencias, GET /api/guardadas informa que la causa es intereses y no la tarjeta', async () => {
+  reiniciarGuardadasMock();
+  const cookie = await cookieDe('h19.usuario.003', 'H19Prueba2026');
+  try {
+    assert.equal((await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'tienda' })).status, 200);
+    const antes = await (await pedir('/api/guardadas', 'GET', cookie)).json();
+    assert.deepEqual(antes.promociones.map(p => p.id), ['tienda']);
+    assert.equal(antes.sinCoincidencias, false);
+    assert.equal(antes.motivoSinCoincidencias, null);
+
+    const cambio = await preferencias.fetch(new Request(url('/api/preferencias'), {
+      method: 'POST',
+      headers: { cookie, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categorias: ['Restaurantes'] })
+    }));
+    assert.equal(cambio.status, 200);
+
+    const despues = await (await pedir('/api/guardadas', 'GET', cookie)).json();
+    assert.deepEqual(despues.ids, ['tienda']);
+    assert.deepEqual(despues.promociones, []);
+    assert.equal(despues.sinCoincidencias, true);
+    assert.equal(despues.motivoSinCoincidencias, 'intereses');
+  } finally {
+    await preferencias.fetch(new Request(url('/api/preferencias'), {
+      method: 'POST',
+      headers: { cookie, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categorias: ['Compras'] })
+    }));
+  }
 });

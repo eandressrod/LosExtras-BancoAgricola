@@ -78,3 +78,34 @@ test('sin guardadas no se presenta como falta de coincidencia', () => {
   assert.equal(visible.sinCoincidencias, false);
   assert.deepEqual(visible.promociones, []);
 });
+
+test('QA-AUD-03 distingue cuando las guardadas aplican a la tarjeta pero no coinciden con los intereses actuales', () => {
+  const porTarjeta = [
+    { id: 'tienda', category: 'Compras', canUse: true },
+    { id: 'cine', category: 'Entretenimiento', canUse: false }
+  ];
+  const porIntereses = seleccionarGuardadasVisibles([], ['tienda'], porTarjeta);
+  assert.deepEqual(porIntereses.ids, ['tienda']);
+  assert.deepEqual(porIntereses.promociones, []);
+  assert.equal(porIntereses.sinCoincidencias, true);
+  assert.equal(porIntereses.motivoSinCoincidencias, 'intereses');
+
+  const porTarjetaVencida = seleccionarGuardadasVisibles([], ['cine'], porTarjeta);
+  assert.equal(porTarjetaVencida.sinCoincidencias, true);
+  assert.equal(porTarjetaVencida.motivoSinCoincidencias, 'tarjeta');
+});
+
+test('QA-AUD-03 seleccionarGuardadasVisibles identifica caso mixto (intereses y tarjeta)', () => {
+  // Simula que el filtro de la UI por intereses ocultó todo
+  const filtradas = []; 
+  // El usuario tiene 2 guardadas históricas en base de datos
+  const idsGuardados = ['tienda', 'siman-black'];
+  // El catálogo indica que solo 1 de ellas aplica a su tarjeta actual
+  const aplicablesTarjeta = [{ id: 'tienda', canUse: true }]; 
+
+  const resultado = seleccionarGuardadasVisibles(filtradas, idsGuardados, aplicablesTarjeta);
+  
+  assert.equal(resultado.sinCoincidencias, true);
+  assert.equal(resultado.motivoSinCoincidencias, 'intereses');
+  assert.equal(resultado.tambienOcultasPorTarjeta, true);
+});
