@@ -95,6 +95,21 @@ test('QA-AUD-03 distingue cuando las guardadas aplican a la tarjeta pero no coin
   assert.equal(porTarjetaVencida.motivoSinCoincidencias, 'tarjeta');
 });
 
+test('QA-AUD-03 seleccionarGuardadasVisibles identifica caso mixto (intereses y tarjeta)', () => {
+  // Simula que el filtro de la UI por intereses ocultó todo
+  const filtradas = []; 
+  // El usuario tiene 2 guardadas históricas en base de datos
+  const idsGuardados = ['tienda', 'siman-black'];
+  // El catálogo indica que solo 1 de ellas aplica a su tarjeta actual
+  const aplicablesTarjeta = [{ id: 'tienda', canUse: true }]; 
+
+  const resultado = seleccionarGuardadasVisibles(filtradas, idsGuardados, aplicablesTarjeta);
+  
+  assert.equal(resultado.sinCoincidencias, true);
+  assert.equal(resultado.motivoSinCoincidencias, 'intereses');
+  assert.equal(resultado.tambienOcultasPorTarjeta, true);
+});
+
 test('QA-AUD-04 solo permite guardar promociones que apliquen a alguna tarjeta propia del usuario', async () => {
   const catalogo = [
     { id: 'tienda', beneficios: [{ tipo_tarjeta: 'basica' }, { tipo_tarjeta: 'black' }] },

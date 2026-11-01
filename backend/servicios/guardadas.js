@@ -25,22 +25,32 @@ export function seleccionarGuardadasVisibles(filtradas, idsGuardados, aplicables
   const ids = [];
   const promociones = [];
   let ocultasPorIntereses = false;
+  let ocultasPorTarjeta = false; 
+
   for (const id of idsGuardados || []) {
     if (ids.includes(id)) continue;
     ids.push(id);
     const promo = (filtradas || []).find(item => item.id === id && item.canUse === true);
     if (promo) {
       promociones.push(promo);
-    } else if ((aplicablesTarjeta || []).some(item => item.id === id && item.canUse === true)) {
-      ocultasPorIntereses = true;
+    } else {
+      const aplicaATarjeta = (aplicablesTarjeta || []).some(item => item.id === id && item.canUse === true);
+      if (aplicaATarjeta) {
+        ocultasPorIntereses = true; 
+      } else {
+        ocultasPorTarjeta = true; 
+      }
     }
   }
+
   const sinCoincidencias = ids.length > 0 && promociones.length === 0;
+
   return {
     ids,
     promociones,
     sinCoincidencias,
-    motivoSinCoincidencias: !sinCoincidencias ? null : (ocultasPorIntereses ? 'intereses' : 'tarjeta')
+    motivoSinCoincidencias: !sinCoincidencias ? null : (ocultasPorIntereses ? 'intereses' : 'tarjeta'),
+    tambienOcultasPorTarjeta: (sinCoincidencias && ocultasPorIntereses) ? ocultasPorTarjeta : false
   };
 }
 

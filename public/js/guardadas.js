@@ -25,9 +25,19 @@ function pintarVacio(datos, visibles) {
   const porIntereses = Boolean(datos.sinCoincidencias && datos.motivoSinCoincidencias === 'intereses');
   ninguna.hidden = hayVisibles || datos.sinCoincidencias || vacioPorBusqueda;
   filtro.hidden = !datos.sinCoincidencias;
-  filtro.textContent = porIntereses
-    ? 'Ninguna promoción guardada coincide con tus intereses actuales.'
-    : 'Ninguna promoción guardada aplica ahora a tu tarjeta.';
+  // --- INICIO DE LA LÓGICA DEL CASO MIXTO ---
+  if (datos.sinCoincidencias) {
+    if (porIntereses) {
+      let texto = 'Ninguna promoción guardada coincide con tus intereses actuales.';
+      if (datos.tambienOcultasPorTarjeta) {
+        texto += ' Algunas tampoco aplican a tu tarjeta.';
+      }
+      filtro.textContent = texto;
+    } else {
+      filtro.textContent = 'Ninguna promoción guardada aplica ahora a tu tarjeta.';
+    }
+  }
+  // --- FIN DE LA LÓGICA DEL CASO MIXTO ---
   if (sinBusqueda) sinBusqueda.hidden = !vacioPorBusqueda;
   if (limpiarVacio) limpiarVacio.hidden = !vacioPorBusqueda;
   if (cambiarPreferencias) cambiarPreferencias.hidden = !porIntereses;
