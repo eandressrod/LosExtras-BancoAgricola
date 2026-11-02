@@ -164,6 +164,8 @@ async function renovar() {
 }
 
 function actividad(event) {
+  // Cerrar sesión no renueva: la renovación llegaría tras el logout y respondería 401.
+  if (event.target?.closest?.('[data-cierra-sesion]')) { clearTimeout(envioPendiente); return; }
   if (!event.isTrusted || document.hidden || verificando || finalizada || dialogo.open || (aviso && !aviso.hidden)) return;
   if (Date.now() >= plazo) return terminar();
   clearTimeout(envioPendiente);
