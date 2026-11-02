@@ -257,8 +257,11 @@ if (profile) {
     panelLista.hidden = seccion === 'cerca';
     panelLista.setAttribute('aria-labelledby', 'tab-' + (seccion === 'explorar' ? 'explorar' : 'para-ti'));
     intentBox.hidden = !tarjetas.length || seccion !== 'para-ti';
-    if (seccion === 'cerca') cerca.mostrar();
-    else cerca.ocultar();
+    if (seccion === 'cerca') {
+      cerca.mostrar();
+      // Cerca de ti no pasa por loadPromotions: el contador de Guardadas se pide aquí (SCRUM-145).
+      refrescarContadorGuardadas();
+    } else cerca.ocultar();
   }
 
   function cambiarSeccion(nueva) {
@@ -369,6 +372,11 @@ if (profile) {
     todayFilter.hidden = true;
     searchBox.hidden = true;
     abrirFiltros.hidden = true;
+  }
+
+  async function refrescarContadorGuardadas() {
+    idsGuardados = await leerIdsGuardados();
+    pintarContadorGuardadas();
   }
 
   async function leerIdsGuardados() {
