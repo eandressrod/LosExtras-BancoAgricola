@@ -83,7 +83,8 @@ export function ordenarParaTi({ ofertas = [], senales = [], filtros = {}, config
     config
   });
   // 6. Cada oferta sale con sus componentes, su razón (o null) y sus insignias, en el orden armado.
+  // Explorar (alcance 'todo') no explica por intereses: sin razón, aunque las señales sigan ordenando.
   return responder('personalizada', lista.map(oferta => ({
-    ...oferta, componentes: de(oferta), razon: razonDe(oferta, de(oferta), config), insignias: insigniasDe(oferta, perfil)
+    ...oferta, componentes: de(oferta), razon: alcance === 'todo' ? null : razonDe(oferta, de(oferta), config), insignias: insigniasDe(oferta, perfil)
   })), vacio);
 }
