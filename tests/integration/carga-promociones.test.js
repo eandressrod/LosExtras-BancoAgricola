@@ -44,25 +44,26 @@ test('mientras la lista tarda se ve el aviso y al llegar se pinta sin él', asyn
   let lenta = false;
   let mientras;
   const p = await abrirListado({ conEspera: async (operacion, { alTardar }) => {
-    if (lenta) { alTardar('Está tardando más de lo normal…'); mientras = { ...p.obtener('#list-status') }; }
+    if (lenta) { alTardar('Está tardando más de lo normal…'); mientras = { conteo: p.obtener('#pr-conteo').textContent, estado: p.obtener('#list-status').textContent }; }
     return operacion();
   } });
   lenta = true;
   await p.chip('Compras').click();
-  assert.equal(mientras.textContent, 'Está tardando más de lo normal…');
-  assert.equal(mientras.className, 'note');
-  assert.equal(p.obtener('#list-status').textContent, '');
+  // El aviso va sobre los rectángulos de carga: el bloque de estado queda debajo de ellos, fuera de la vista.
+  assert.deepEqual(mientras, { conteo: 'Está tardando más de lo normal…', estado: '' });
+  assert.equal(p.obtener('#pr-conteo').textContent, '1 promoción');
   assert.equal(p.enlaces().length, 1);
 });
 
 test('si la lista se corta por tardar, queda el error con Reintentar y reintentar la carga', async () => {
   let corta = false;
-  const p = await abrirListado({ conEspera: async operacion => {
-    if (corta) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');
+  const p = await abrirListado({ conEspera: async (operacion, { alTardar }) => {
+    if (corta) { alTardar('Está tardando más de lo normal…'); throw new Error('No se pudieron cargar los datos. Intenta de nuevo.'); }
     return operacion();
   } });
   corta = true;
   await p.chip('Compras').click();
+  assert.equal(p.obtener('#pr-conteo').textContent, '', 'el aviso de espera no queda junto al error');
   assert.equal(p.obtener('#list-status').textContent, 'No se pudieron cargar los datos. Intenta de nuevo.');
   assert.equal(p.obtener('#retry').hidden, false);
   assert.equal(p.obtener('#promotions-loading').hidden, true);
