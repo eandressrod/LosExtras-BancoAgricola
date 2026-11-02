@@ -38,6 +38,8 @@ function marcarGuardada(boton, guardada) {
 
 // Guardar o quitar. Con aviso, el cambio se puede deshacer una vez; deshacer no abre otro aviso.
 async function alternarGuardada(boton, error, id, conAviso) {
+  if (boton.disabled) return;
+  boton.disabled = true;
   error.textContent = '';
   const quitar = boton.dataset.guardada === 'si';
   try {
@@ -60,6 +62,8 @@ async function alternarGuardada(boton, error, id, conAviso) {
     });
   } catch (fallo) {
     error.textContent = fallo.message;
+  } finally {
+    boton.disabled = false;
   }
 }
 

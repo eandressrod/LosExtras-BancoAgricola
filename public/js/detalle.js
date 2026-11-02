@@ -102,6 +102,8 @@ if (profile) {
         boton.textContent = guardada ? 'Quitar' : 'Guardar';
         boton.onclick = async event => {
           event.preventDefault();
+          if (boton.disabled) return;
+          boton.disabled = true;
           const aviso = document.querySelector('#guardar-error');
           if (aviso) aviso.textContent = '';
           const quitar = boton.dataset.guardada === 'si';
@@ -117,6 +119,8 @@ if (profile) {
             boton.textContent = quitar ? 'Guardar' : 'Quitar';
           } catch (error) {
             if (aviso) aviso.textContent = error.message;
+          } finally {
+            boton.disabled = false;
           }
         };
       }
