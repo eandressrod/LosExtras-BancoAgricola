@@ -120,6 +120,18 @@ test('una tarjeta ajena, vacía o repetida no se puede usar en Guardadas', async
   assert.equal((await pedir('/api/guardadas?tarjeta=cta-a-3&tarjeta=cta-a-4', 'GET', cookie)).status, 400);
 });
 
+test('SCRUM-140 sin ?tarjeta=, Guardadas muestra la promo que solo aplica a la otra tarjeta propia', async () => {
+  reiniciarGuardadasMock();
+  const cookie = await cookieDe('demo.basica', 'Basica2026');
+  assert.equal((await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'siman-black' })).status, 200);
+  assert.equal((await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'tienda' })).status, 200);
+  const lista = await (await pedir('/api/guardadas', 'GET', cookie)).json();
+  assert.deepEqual(lista.ids, ['siman-black', 'tienda']);
+  assert.equal(lista.promociones.length, lista.ids.length);
+  assert.equal(lista.promociones.some(promo => promo.id === 'siman-black'), true);
+  assert.equal(lista.promociones.some(promo => promo.id === 'tienda'), true);
+});
+
 test('una exclusiva de otra tarjeta queda guardada pero no se muestra como utilizable', async () => {
   reiniciarGuardadasMock();
   const cookie = await cookieDe('demo.basica', 'Basica2026');
