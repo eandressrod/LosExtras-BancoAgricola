@@ -125,6 +125,51 @@ test('el icono de Guardadas de la cabecera cuenta las guardadas y se actualiza a
   assert.equal(contador.hidden, false);
 });
 
+test('SCRUM-138 un doble toque en Guardar envía un solo POST y el contador sube en 1', async () => {
+  const p = await abrirListado();
+  const boton = p.cards.hijos[0].querySelector('.guardar-promo');
+  const contador = p.obtener('#pr-contador-guardadas');
+  const metodos = [];
+  let continuar;
+  const espera = new Promise(resolve => { continuar = resolve; });
+  p.contexto.fetch = async (_url, init = {}) => {
+    metodos.push(init.method);
+    await espera;
+    return respuesta();
+  };
+  const primero = clic(boton);
+  const segundo = clic(boton);
+  continuar();
+  await Promise.all([primero, segundo]);
+  assert.deepEqual(metodos, ['POST']);
+  assert.equal(contador.textContent, '1');
+  assert.equal(boton.dataset.guardada, 'si');
+});
+
+test('SCRUM-138 un doble toque en el detalle envía un solo POST', async () => {
+  let esperar = false;
+  const posts = [];
+  let continuar;
+  const espera = new Promise(resolve => { continuar = resolve; });
+  const p = await abrirDetalle({
+    search: '?id=tienda',
+    fetch: async (_url, init = {}) => {
+      if (init.method !== 'POST') return { ok: true, status: 200, json: async () => ({ ids: [] }) };
+      posts.push(init.method);
+      if (esperar) await espera;
+      return { ok: true, status: 200, json: async () => ({}) };
+    }
+  });
+  esperar = true;
+  const boton = p.obtener('#guardar-promo');
+  const primero = clic(boton);
+  const segundo = clic(boton);
+  continuar();
+  await Promise.all([primero, segundo]);
+  assert.deepEqual(posts, ['POST']);
+  assert.equal(boton.textContent, 'Quitar');
+});
+
 test('el detalle muestra la categoría con su acento, vence pronto y las otras tarjetas propias', async () => {
   const p = await abrirDetalle({ search: '?id=tienda', promocion: {
     category: 'Compras', categoryName: 'Compras', validUntil: enDias(2), applicableCard: 'black',
