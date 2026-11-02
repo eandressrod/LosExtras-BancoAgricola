@@ -489,11 +489,8 @@ if (profile) {
       volverDelDetalle = false;
       // La lista y las guardadas se piden juntas. SCRUM-144: si tardan se avisa, y a los 20 s se cortan con Reintentar.
       const [respuesta, ids] = await conEspera(signal => Promise.all([guardada ?? getJSON(consulta, { signal }), leerIdsGuardados(signal)]), {
-        alTardar: texto => {
-          if (turno !== consultaActual) return;
-          status.textContent = texto;
-          status.className = 'note';
-        }
+        // Sobre los rectángulos de carga: el bloque de estado queda debajo de ellos, fuera de la vista.
+        alTardar: texto => { if (turno === consultaActual) conteo.textContent = texto; }
       });
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
       if (!guardada) guardarInstantanea(sesion, profile.id, consulta, respuesta);
@@ -516,6 +513,7 @@ if (profile) {
     } catch (error) {
       if (turno !== consultaActual) return;
       pintarFranja([]);
+      conteo.textContent = '';
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;
