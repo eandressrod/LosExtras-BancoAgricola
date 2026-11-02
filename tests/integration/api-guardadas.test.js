@@ -132,9 +132,9 @@ test('SCRUM-140 sin ?tarjeta=, Guardadas muestra la promo que solo aplica a la o
   assert.equal(lista.promociones.some(promo => promo.id === 'tienda'), true);
 });
 
-test('una exclusiva de otra tarjeta queda guardada pero no se muestra como utilizable', async () => {
+test('una exclusiva que no aplica a ninguna tarjeta propia queda guardada pero no se muestra', async () => {
   reiniciarGuardadasMock();
-  const cookie = await cookieDe('demo.basica', 'Basica2026');
+  const cookie = await cookieDe('h19.usuario.001', 'H19Prueba2026');
   assert.equal((await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'siman-black' })).status, 200);
   const lista = await (await pedir('/api/guardadas', 'GET', cookie)).json();
   assert.deepEqual(lista.ids, ['siman-black']);

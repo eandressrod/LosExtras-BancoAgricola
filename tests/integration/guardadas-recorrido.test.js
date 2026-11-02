@@ -139,11 +139,13 @@ test('SCRUM-140 sin tarjeta elegida, Guardadas no consulta una sola tarjeta', as
   const fuente = (await readFile(new URL('../../public/js/guardadas.js', import.meta.url), 'utf8')).replace(/^import[^\n]+\n/gm, '');
   const consultas = [];
   const sesion = almacen();
-  const partes = new Map();
-  const card = { querySelector(selector) {
-    if (!partes.has(selector)) partes.set(selector, { hidden: false, textContent: '', href: '', dataset: {}, setAttribute() {} });
-    return partes.get(selector);
-  } };
+  const nuevaTarjeta = () => {
+    const partes = new Map();
+    return { querySelector(selector) {
+      if (!partes.has(selector)) partes.set(selector, { hidden: false, textContent: '', href: '', dataset: {}, setAttribute() {} });
+      return partes.get(selector);
+    } };
+  };
   const cards = { hijos: [], append(nodo) { this.hijos.push(nodo); }, replaceChildren() { this.hijos = []; } };
   const badge = { hidden: false, textContent: '' };
   const elemento = () => ({ hidden: true, textContent: '', className: '', addEventListener() {} });
@@ -181,7 +183,7 @@ test('SCRUM-140 sin tarjeta elegida, Guardadas no consulta una sola tarjeta', as
     document: { querySelector(selector) {
       if (selector === '#cards') return cards;
       if (selector === '#session-profile') return badge;
-      if (selector === '#promotion-card') return { content: { cloneNode: () => card } };
+      if (selector === '#promotion-card') return { content: { cloneNode: nuevaTarjeta } };
       return elemento();
     } }
   });
