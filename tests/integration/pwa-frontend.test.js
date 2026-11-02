@@ -28,7 +28,7 @@ function pagina({ pathname='/menu.html', lecturaMensaje=false, fallaActividad=fa
       return {ok:!fallaActividad,status:sesionVencida?401:200,json:async()=>({perfil:{id:'A'},sesion:{...estado,ahora:tiempo,inactivaEn:tiempo+120000}})};}
   };
   vm.runInNewContext(source+'\nactualizarSesion('+JSON.stringify(estado)+'); iniciarInactividad();',context);
-  return {document,dialogoLectura,eventos,nodos,atributos,llamadas,opciones,get destino(){return destino;},reloj(ms){tiempo=ms;},avanzar(ms){tiempo=ms;intervalo();},finalizarSalida(){for(const fn of tareas.values())fn();tareas.clear();},async enviarActividad(){await eventos.pointerdown({isTrusted:true});for(const [key,fn] of tareas){tareas.delete(key);await fn();}},async ejecutar(t){await eventos[t]();},dialogo:()=>nodos.find(n=>n.className==='pwa-sesion')};
+  return {document,storage,dialogoLectura,eventos,nodos,atributos,llamadas,opciones,get destino(){return destino;},reloj(ms){tiempo=ms;},avanzar(ms){tiempo=ms;intervalo();},finalizarSalida(){for(const fn of tareas.values())fn();tareas.clear();},async enviarActividad(){await eventos.pointerdown({isTrusted:true});for(const [key,fn] of tareas){tareas.delete(key);await fn();}},async ejecutar(t){await eventos[t]();},dialogo:()=>nodos.find(n=>n.className==='pwa-sesion')};
 }
 
 test('volver al detalle antes de veinte segundos hace fade a la misma vista', async () => {
@@ -42,6 +42,39 @@ test('tras veinte segundos fuera revoca la sesión antes de revelar datos, aunqu
   p.document.hidden=false;await p.ejecutar('visibilitychange');for(let i=0;i<12;i++)await Promise.resolve();p.finalizarSalida();
   assert.equal(p.destino,'/index.html');assert.ok(p.llamadas.includes('/api/auth/logout'));assert.equal(p.llamadas.includes('fade-carga'),false);
 });
+// SCRUM-136: la página que vuelve con Atrás desde la caché no estuvo en segundo plano, sino en otra pantalla de la app.
+function salirAOtraPantalla(p, instante) {
+  p.reloj(instante);p.document.hidden=true;p.eventos.visibilitychange();p.eventos.pagehide({persisted:true});
+  // La pantalla siguiente limpia el registro al cargar.
+  modelo.limpiarSegundoPlano('sesion',p.storage);
+}
+async function volverConAtras(p, instante) {
+  // La pantalla que se deja al pulsar Atrás registra su salida justo antes de restaurar esta.
+  p.reloj(instante);modelo.registrarSegundoPlano('sesion',p.storage,instante-100);
+  p.avanzar(instante);p.document.hidden=false;p.eventos.visibilitychange();p.avanzar(instante);
+  for(let i=0;i<12;i++)await Promise.resolve();p.finalizarSalida();
+}
+
+test('volver con Atrás tras más de veinte segundos en otra pantalla conserva la sesión', async () => {
+  const p=pagina({pathname:'/promociones.html'});salirAOtraPantalla(p,10000);
+  await volverConAtras(p,35000);
+  assert.equal(p.destino,'');assert.deepEqual(p.llamadas,['/api/auth/sesion','fade-carga']);
+});
+
+test('volver con Atrás tras renovar en otra pantalla más allá del plazo propio espera la verificación', async () => {
+  const p=pagina({pathname:'/promociones.html'});salirAOtraPantalla(p,10000);
+  await volverConAtras(p,200000);
+  assert.equal(p.destino,'');assert.deepEqual(p.llamadas,['/api/auth/sesion','fade-carga']);
+});
+
+test('volver con Atrás tras veinte segundos de la app en segundo plano sí cierra la sesión', async () => {
+  const p=pagina({pathname:'/promociones.html'});
+  p.reloj(10000);p.document.hidden=true;p.eventos.visibilitychange();p.eventos.pagehide({persisted:true});
+  p.reloj(30000);p.document.hidden=false;p.eventos.visibilitychange();
+  for(let i=0;i<12;i++)await Promise.resolve();p.finalizarSalida();
+  assert.equal(p.destino,'/index.html');assert.ok(p.llamadas.includes('/api/auth/logout'));
+});
+
 test('el primer toque envía actividad antes de navegar y conserva la petición al salir', () => {
   const p=pagina();p.avanzar(10000);p.eventos.pointerdown({isTrusted:true});
   assert.deepEqual(p.llamadas,['/api/auth/actividad']);assert.equal(p.opciones[0].keepalive,true);
