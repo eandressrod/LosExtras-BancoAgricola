@@ -151,6 +151,8 @@ export async function abrirListado(opciones = {}) {
     abrirEncuestaHoja: datos => { hojas.push(datos); },
     repintarConMovimiento: (_lista, _id, pintar) => pintar(),
     crearAviso: () => aviso,
+    // SCRUM-144: los plazos de espera tienen pruebas unitarias; aquí la prueba decide cuándo avisa o corta.
+    conEspera: opciones.conEspera ?? (operacion => operacion()),
     diapositivasFranja, filtrosActivos, textoBotonFiltros,
     montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },
     document: {

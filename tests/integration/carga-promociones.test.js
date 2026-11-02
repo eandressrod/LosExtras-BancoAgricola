@@ -39,6 +39,39 @@ test('una respuesta antigua no retira el aro de la selección más reciente', as
   assert.equal(p.obtener('#promotions-loading').hidden, true);
 });
 
+// SCRUM-144: si Para ti tarda, la lista avisa; si se corta, queda el error con Reintentar.
+test('mientras la lista tarda se ve el aviso y al llegar se pinta sin él', async () => {
+  let lenta = false;
+  let mientras;
+  const p = await abrirListado({ conEspera: async (operacion, { alTardar }) => {
+    if (lenta) { alTardar('Está tardando más de lo normal…'); mientras = { ...p.obtener('#list-status') }; }
+    return operacion();
+  } });
+  lenta = true;
+  await p.chip('Compras').click();
+  assert.equal(mientras.textContent, 'Está tardando más de lo normal…');
+  assert.equal(mientras.className, 'note');
+  assert.equal(p.obtener('#list-status').textContent, '');
+  assert.equal(p.enlaces().length, 1);
+});
+
+test('si la lista se corta por tardar, queda el error con Reintentar y reintentar la carga', async () => {
+  let corta = false;
+  const p = await abrirListado({ conEspera: async operacion => {
+    if (corta) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');
+    return operacion();
+  } });
+  corta = true;
+  await p.chip('Compras').click();
+  assert.equal(p.obtener('#list-status').textContent, 'No se pudieron cargar los datos. Intenta de nuevo.');
+  assert.equal(p.obtener('#retry').hidden, false);
+  assert.equal(p.obtener('#promotions-loading').hidden, true);
+  corta = false;
+  await p.obtener('#retry').click();
+  assert.equal(p.enlaces().length, 1);
+  assert.equal(p.obtener('#retry').hidden, true);
+});
+
 // H21 (ADR-010): la encuesta es una hoja sobre la lista real. La hoja se abre sola solo la primera vez (marca del servidor);
 // después queda un aviso en la lista hasta cerrarlo una vez, y la encuesta sigue disponible desde «Mis preferencias».
 const PRIMERA_VEZ={hojaMostrada:false,avisoCerrado:false};
