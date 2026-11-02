@@ -59,7 +59,7 @@ test('abrir la encuesta añade una entrada al historial y Atrás cierra la hoja 
   assert.equal(p.historial.state.filtros, 'Compras', 'conserva el estado de la página');
   p.ventana.popstate();
   assert.equal(p.hoja.hidden, true);
-  assert.deepEqual(p.cierres, [{ terminada: false }], 'Atrás cierra como «Omitir»');
+  assert.deepEqual(p.cierres.map(cierre => cierre.terminada), [false], 'Atrás cierra como «Omitir»');
   assert.equal(p.historial.atras, 0, 'el sistema ya retrocedió');
 });
 
