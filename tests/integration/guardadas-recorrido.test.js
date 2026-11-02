@@ -117,6 +117,7 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
     },
     marcarBoton() {},
     alPulsarGuardar() {},
+    crearAviso: () => ({ mostrar() {}, cerrar() {} }),
     textoVigencia: () => '',
     textoAplica,
     mostrarImagen() {},
