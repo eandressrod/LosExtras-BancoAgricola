@@ -151,6 +151,8 @@ export async function abrirListado(opciones = {}) {
     abrirEncuestaHoja: datos => { hojas.push(datos); },
     repintarConMovimiento: (_lista, _id, pintar) => pintar(),
     crearAviso: () => aviso,
+    // Las guardadas se leen con fetch; sin él, la página las da por vacías.
+    fetch: opciones.fetch,
     diapositivasFranja, filtrosActivos, textoBotonFiltros,
     montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },
     document: {
