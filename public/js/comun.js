@@ -161,9 +161,9 @@ export function loadPreferences(profileId) {
   return { completed: false, categories: [] };
 }
 
-export async function getJSON(url) {
+export async function getJSON(url, { signal } = {}) {
   const errorCarga = 'No se pudieron cargar los datos. Intenta de nuevo.';
-  const response = await fetch(url, { cache: 'no-store' }).catch(() => { throw new Error(errorCarga); });
+  const response = await fetch(url, { cache: 'no-store', signal }).catch(() => { throw new Error(errorCarga); });
   if (response.status === 401) {
     volverAlLogin();
     throw new Error('Inicia sesión para continuar.');
