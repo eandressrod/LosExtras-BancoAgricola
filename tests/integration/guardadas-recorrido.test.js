@@ -117,6 +117,8 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
     },
     marcarBoton() {},
     alPulsarGuardar() {},
+    // SCRUM-142: la flecha vuelve por el historial; volver.js tiene sus pruebas.
+    volverConHistorial() {},
     textoVigencia: () => '',
     textoAplica,
     mostrarImagen() {},

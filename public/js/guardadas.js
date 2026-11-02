@@ -2,6 +2,7 @@ import { requireSession, almacenSesion, cardName, getJSON } from './comun.js';
 import { textoVigencia, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
 import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
+import { volverConHistorial } from './volver.js';
 
 let ultimoDatos = null;
 let busqueda = '';
@@ -120,6 +121,7 @@ async function loadSaved(tarjetaId) {
 
 const profile = await requireSession();
 if (profile) {
+  volverConHistorial(document.querySelector('.pr-volver'));
   const searchInput = document.querySelector('#merchant-search');
   const clearSearch = document.querySelector('#clear-search');
   const clearSearchEmpty = document.querySelector('#clear-search-empty');
