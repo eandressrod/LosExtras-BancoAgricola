@@ -22,6 +22,8 @@ let cuentaDiscreta;
 let mensajeDiscreto;
 let versionCubierta = 0;
 let ocultaDesde = null;
+// En la caché de Atrás: al volver, sus relojes en memoria cuentan el tiempo pasado en otras pantallas de la app.
+let enCacheAtras = false;
 
 function ocultarAviso() {
   aviso?.hidePopover?.();
@@ -121,11 +123,12 @@ async function cerrarVoluntariamente() {
 }
 
 function revisar() {
-  if (!sesion || finalizada) return;
+  // Mientras se verifica, el plazo en memoria puede venir de antes de salir de la página; decide el backend.
+  if (!sesion || finalizada || enCacheAtras || verificando) return;
   if (vencioSegundoPlano(ocultaDesde,Date.now())) return terminar();
   const estado = estadoInactividad(plazo);
   if (estado.estado === 'vencida') return terminar();
-  if (document.hidden || verificando) return;
+  if (document.hidden) return;
   if (estado.estado === 'aviso') {
     if (avisoDiscreto(location.pathname, document.body.dataset?.lecturaMensaje === 'true')) {
       if (dialogo.open) dialogo.close();
@@ -239,13 +242,15 @@ export function iniciarInactividad() {
       registrarSegundoPlano(sesion.id,localStorage,ocultaDesde);
       bloquear();
     } else {
-      const desde=ocultaDesde??leerSegundoPlano(sesion.id,localStorage);
+      // Al volver con Atrás solo cuenta el registro compartido, que deja la pantalla que pasó a segundo plano.
+      const desde=enCacheAtras?leerSegundoPlano(sesion.id,localStorage):ocultaDesde??leerSegundoPlano(sesion.id,localStorage);
+      enCacheAtras=false;
       if (vencioSegundoPlano(desde,Date.now())) return terminar();
       ocultaDesde=null;limpiarSegundoPlano(sesion.id,localStorage);
       verificar();
     }
   });
-  addEventListener('pagehide', () => bloquear());
+  addEventListener('pagehide', event => { if (event?.persisted) enCacheAtras = true; bloquear(); });
   setInterval(revisar, 250);
   revisar();
 }
