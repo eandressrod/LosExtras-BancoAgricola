@@ -87,10 +87,15 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
   // retardos asíncronos entre contextos VM que no se puedan awaitar desde el host.
   let timerIdActual = 0;
   const timerFake = { flush: async () => {} }; // no-op; las callbacks ya se ejecutan solas
+  // SCRUM-142: enlaces que vuelven por el historial (volver.js tiene sus pruebas) y eventos de la ventana, como pageshow.
+  const volverPorHistorial = [];
+  const ventana = {};
   const contexto = {
     URLSearchParams,
     location,
     history,
+    volverConHistorial: enlace => { volverPorHistorial.push(enlace); },
+    addEventListener: (tipo, accion) => { ventana[tipo] = accion; },
     setTimeout: (fn, _ms) => { ++timerIdActual; Promise.resolve().then(() => fn()); return timerIdActual; },
     clearTimeout: (_id) => { /* no se puede cancelar una microtarea ya encolada */ },
     requireSession: async ({revelar=true}={}) => {
@@ -107,7 +112,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     mostrarDonde: () => {},
     ...vista, ...filtro, ...tarjeta, ...instantanea, ...pestanas
   };
-  return { obtener, history, contexto, elementos, sesion, timerFake };
+  return { obtener, history, contexto, elementos, sesion, timerFake, volverPorHistorial, ventana };
 }
 
 export async function abrirListado(opciones = {}) {
@@ -151,12 +156,15 @@ export async function abrirListado(opciones = {}) {
     abrirEncuestaHoja: datos => { hojas.push(datos); },
     repintarConMovimiento: (_lista, _id, pintar) => pintar(),
     crearAviso: () => aviso,
+    // Las guardadas se leen con fetch; sin él, la página las da por vacías.
+    fetch: opciones.fetch,
     diapositivasFranja, filtrosActivos, textoBotonFiltros,
     montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },
     document: {
       body: { dataset: {} },
       querySelector: nav.obtener,
-      querySelectorAll: selector => selector === '.filter-chip' ? [todas] : [],
+      querySelectorAll: selector => selector === '.filter-chip' ? [todas]
+        : selector === '.guardar-promo' ? cards.hijos.map(oferta => oferta.querySelector('.guardar-promo')) : [],
       getElementById: () => null,
       createElement: tagName => elemento({ tagName })
     },
