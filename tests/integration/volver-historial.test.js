@@ -16,7 +16,10 @@ test('la flecha de Guardadas vuelve a Para ti por el historial', async () => {
 test('al restaurarse con Atrás, Promociones relee las guardadas que cambiaron fuera de ella', async () => {
   let ids = [];
   let lecturas = 0;
-  const p = await abrirListado({ fetch: async () => { lecturas += 1; return { ok: true, status: 200, json: async () => ({ ids }) }; } });
+  const p = await abrirListado({ fetch: async () => {
+    lecturas += 1;
+    return { ok: true, status: 200, json: async () => ({ ids, promociones: ids.map(id => ({ id, canUse: true })) }) };
+  } });
   const tienda = p.cards.hijos[1].querySelector('.guardar-promo');
   assert.equal(tienda.textContent, 'Guardar');
   const antes = lecturas;

@@ -1,7 +1,7 @@
 import { requireSession, almacenSesion, cardName, getJSON } from './comun.js';
 import { llenarTarjetaPromocion } from './tarjeta-promocion.js';
 import { consultarGuardadas, marcarBoton, cambiarGuardada, alPulsarGuardar } from './guardar-promo.js';
-import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
+import { leerTarjetaElegida, descripcionTarjetas } from './tarjeta-elegida.js';
 import { volverConHistorial } from './volver.js';
 import { crearAviso } from './aviso-deshacer.js';
 
@@ -130,11 +130,17 @@ if (profile) {
   }
   let tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
   try {
-    const activa = tarjetaActiva(await getJSON('/api/tarjetas'), tarjetaId);
-    if (activa) {
-      tarjetaId = activa.id;
-      const badge = document.querySelector('#session-profile');
-      if (badge) badge.textContent = `${profile.nombre} · ${cardName(activa)}`;
+    const tarjetas = await getJSON('/api/tarjetas');
+    const lista = Array.isArray(tarjetas) ? tarjetas : [];
+    const elegida = lista.find(tarjeta => tarjeta.id === tarjetaId) ?? null;
+    const badge = document.querySelector('#session-profile');
+    if (elegida) {
+      tarjetaId = elegida.id;
+      if (badge) badge.textContent = `${profile.nombre} · ${cardName(elegida)}`;
+    } else {
+      tarjetaId = null;
+      const descripcion = descripcionTarjetas(lista, null);
+      if (badge && descripcion) badge.textContent = `${profile.nombre} · ${descripcion}`;
     }
   } catch { /* si las tarjetas fallan, la lista sigue con la elección guardada */ }
 

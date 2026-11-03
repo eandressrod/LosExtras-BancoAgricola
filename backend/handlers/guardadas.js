@@ -32,12 +32,13 @@ export default {
           return responderJson(cuerpo, estado);
         }
         const categorias = preferencias.completed ? preferencias.categories : [];
-        const porTarjeta = eleccion.tarjeta
-          ? filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, [])
-          : [];
-        const filtradas = eleccion.tarjeta
-          ? filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, categorias)
-          : [];
+        // Sin ?tarjeta=, entran las promociones que aplican a cualquiera de las tarjetas propias.
+        // Con ?tarjeta=, solo las de esa tarjeta.
+        const alcance = parametros.has('tarjeta')
+          ? eleccion.tarjeta?.tipoTarjeta ?? null
+          : (propias.length ? { tarjetas: propias, predeterminadaId: eleccion.tarjeta?.id ?? null } : null);
+        const porTarjeta = alcance ? filtrarPromociones(catalogo, alcance, []) : [];
+        const filtradas = alcance ? filtrarPromociones(catalogo, alcance, categorias) : [];
         // H10 y QA-AUD-03: sinCoincidencias distingue entre tarjeta e intereses; la búsqueda solo recorta la lista visible.
         const visibles = seleccionarGuardadasVisibles(filtradas, ids, porTarjeta);
         return responderJson({ ...visibles, promociones: filtrarPorComercio(visibles.promociones, busqueda.comercio) });

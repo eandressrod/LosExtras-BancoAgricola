@@ -1,5 +1,18 @@
 import { volverAlLogin } from './comun.js';
 
+/** Ids que Guardadas pinta. ids sigue trayendo también las ocultas por tarjeta o intereses. */
+export function idsVisiblesGuardadas(datos) {
+  if (!Array.isArray(datos?.promociones)) return [];
+  return datos.promociones.map(promo => promo?.id).filter(id => typeof id === 'string');
+}
+
+/** Cuenta en el icono si se puede usar y, cuando hay intereses, su categoría está entre ellos. */
+export function cuentaEnGuardadas(promotion, categorias) {
+  if (!promotion || promotion.canUse === false) return false;
+  const intereses = Array.isArray(categorias) ? categorias : [];
+  return intereses.length === 0 || intereses.includes(promotion.category);
+}
+
 export async function consultarGuardadas(tarjetaId, comercio) {
   let ruta = tarjetaId ? '/api/guardadas?tarjeta=' + encodeURIComponent(tarjetaId) : '/api/guardadas';
   if (comercio) ruta += (ruta.includes('?') ? '&' : '?') + 'comercio=' + encodeURIComponent(comercio);
