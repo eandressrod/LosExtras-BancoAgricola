@@ -30,22 +30,12 @@ export function crearRepositorioSupabase(client) {
       if (error) throw new Error('No se pudieron consultar los perfiles.');
       return data;
     },
-    async listarPromociones() {
-      const { data, error } = await client.from('promociones').select(CAMPOS_PROMOCION).order('orden').order('id');
-      if (error) throw new Error('No se pudieron consultar las promociones.');
-      return data;
-    },
     async listarPromocionesConBeneficios() {
       const { data, error } = await client.from('promociones')
         .select(CAMPOS_CATALOGO)
         .order('orden').order('id');
       if (error) throw new Error('No se pudieron consultar los beneficios.');
       return data.map(ordenarRelaciones);
-    },
-    async buscarPromocion(id) {
-      const { data, error } = await client.from('promociones').select(CAMPOS_PROMOCION).eq('id', id).maybeSingle();
-      if (error) throw new Error('No se pudo consultar la promoción.');
-      return data;
     },
     async listarZonas() {
       const { data, error } = await client.from('zonas').select('id, nombre, latitud, longitud').order('orden').order('id');

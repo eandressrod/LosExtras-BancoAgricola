@@ -1,4 +1,4 @@
-import { perfiles } from '../datos.js';
+import { perfiles } from '../perfiles-prueba.js';
 
 // Repositorio de accesos con datos locales; mismo contrato que accesos.supabase.js.
 const aPerfil = ({ id, nombre, tipoTarjeta }) => ({ id, nombre, tipoTarjeta });

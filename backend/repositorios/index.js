@@ -1,6 +1,6 @@
-import { repositorioMock } from './mock.js';
+import { repositorioMock } from './catalogo.mock.js';
 import { crearRepositorioPreferenciasMock } from './preferencias.mock.js';
-import { crearRepositorioSupabase } from './supabase.js';
+import { crearRepositorioSupabase } from './catalogo.supabase.js';
 import * as accesosMock from './accesos.mock.js';
 import { crearRepositorioAccesosSupabase } from './accesos.supabase.js';
 import { crearRepositorioCuentasMock } from './cuentas.mock.js';
@@ -19,7 +19,9 @@ import { crearRepositorioSenalesSupabase } from './senales.supabase.js';
 
 let repositorioSupabase;
 let accesosSupabase;
+let cuentasMock;
 let cuentasSupabase;
+let estadoEncuestaMock;
 let estadoEncuestaSupabase;
 let preferenciasMock;
 let preferenciasSupabase;
@@ -61,13 +63,13 @@ export function obtenerRepositorioAccesos() {
 }
 
 export function obtenerRepositorioCuentas() {
-  if (fuenteDeDatos() === 'mock') return crearRepositorioCuentasMock();
+  if (fuenteDeDatos() === 'mock') return cuentasMock ??= crearRepositorioCuentasMock();
   cuentasSupabase ??= crearRepositorioCuentasSupabase(obtenerClienteSupabase());
   return cuentasSupabase;
 }
 
 export function obtenerRepositorioEstadoEncuesta() {
-  if (fuenteDeDatos() === 'mock') return crearRepositorioEstadoEncuestaMock();
+  if (fuenteDeDatos() === 'mock') return estadoEncuestaMock ??= crearRepositorioEstadoEncuestaMock();
   estadoEncuestaSupabase ??= crearRepositorioEstadoEncuestaSupabase(obtenerClienteSupabase());
   return estadoEncuestaSupabase;
 }

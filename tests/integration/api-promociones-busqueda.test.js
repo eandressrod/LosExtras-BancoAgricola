@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { crearHandlerPromociones } from '../../api/promociones.js';
 import guardadas from '../../backend/handlers/guardadas.js';
 import preferencias from '../../api/preferencias.js';
-import { repositorioMock } from '../../backend/repositorios/mock.js';
+import { repositorioMock } from '../../backend/repositorios/catalogo.mock.js';
 import { crearToken } from '../../backend/servicios/sesion.js';
 import { soloH4 } from '../promociones-h4.js';
 

@@ -2,11 +2,11 @@
 // La autenticación también consulta las revocaciones persistidas en el repositorio.
 // Solo el backend conoce SESSION_SECRET; un identificador escrito a mano no autentica.
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { HOSTS_LOCALES } from '../config/hosts-locales.js';
 
 export const NOMBRE_COOKIE = 'sesion_extras';
 export const DURACION_SESION_SEGUNDOS = 2 * 60 * 60;
 const LONGITUD_MINIMA_SECRETO = 32;
-const HOSTS_LOCALES = ['localhost', '127.0.0.1', '[::1]'];
 
 function leerSecreto() {
   const secreto = process.env.SESSION_SECRET;
