@@ -11,6 +11,7 @@ import { textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mos
 import * as pestanas from '../../public/js/pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
 import { diapositivasFranja } from '../../public/js/franja.js';
+import { idsVisiblesGuardadas, cuentaEnGuardadas } from '../../public/js/guardar-promo.js';
 import * as instantanea from '../../public/js/instantanea.js';
 
 export const CATEGORIAS = ['Restaurantes', 'Compras', 'Entretenimiento'].map((id, orden) => ({ id, nombre: id, orden }));
@@ -159,6 +160,13 @@ export async function abrirListado(opciones = {}) {
       querySelectorAll: selector => selector === '.filter-chip' ? [todas] : [],
       getElementById: () => null,
       createElement: tagName => elemento({ tagName })
+    },
+    idsVisiblesGuardadas,
+    cuentaEnGuardadas,
+    fetch: opciones.guardadas == null ? undefined : async url => {
+      consultas.push(url);
+      const datos = typeof opciones.guardadas === 'function' ? await opciones.guardadas(url) : opciones.guardadas;
+      return { ok: true, status: 200, json: async () => datos };
     },
     getJSON: async url => {
       if (url === '/api/preferencias') return preferencias();

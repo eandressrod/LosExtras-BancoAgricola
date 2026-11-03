@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { abrirListado, abrirDetalle, abrirGuardadas } from './pagina-promociones.js';
+import { abrirListado, abrirDetalle, abrirGuardadas, almacen } from './pagina-promociones.js';
 import { hoyEnElSalvador } from '../../public/js/promocion-vista.js';
 
 const clic = boton => boton.onclick({ preventDefault() {}, stopPropagation() {} });
@@ -113,6 +113,34 @@ test('con todas las tarjetas la tarjeta dice con cuáles aplica y menciona la ot
   assert.equal(oferta.querySelector('.promo-applicability').dataset.tarjeta, 'ambas');
   assert.equal(oferta.querySelector('.promo-otras').textContent, 'También 15 % con tu Básica');
   assert.equal(oferta.querySelector('.promo-otras').hidden, false);
+});
+
+test('el contador de Guardadas cuenta solo las visibles con la tarjeta y los intereses', async () => {
+  const pedidas = [];
+  const p = await abrirListado({
+    sesion: almacen({ 'los-extras-tarjeta:A': 'cta-a-4' }),
+    guardadas: url => {
+      pedidas.push(url);
+      return { ids: ['tienda', 'dominos-lunes'], promociones: [{ id: 'dominos-lunes' }] };
+    }
+  });
+  const contador = p.obtener('#pr-contador-guardadas');
+  assert.equal(pedidas[0], '/api/guardadas?tarjeta=cta-a-4');
+  assert.equal(contador.hidden, false);
+  assert.equal(contador.textContent, '1');
+});
+
+test('guardar una promoción fuera de los intereses no aumenta el contador', async () => {
+  const p = await abrirListado({
+    preferencias: () => ({ completed: true, categories: ['Restaurantes'] }),
+    responder: () => [{ id: 'tienda', category: 'Compras', canUse: true }],
+    guardadas: { ids: ['dominos-lunes'], promociones: [{ id: 'dominos-lunes' }] }
+  });
+  assert.equal(p.obtener('#pr-contador-guardadas').textContent, '1');
+  p.contexto.fetch = async () => respuesta();
+  await clic(p.cards.hijos[0].querySelector('.guardar-promo'));
+  assert.equal(p.cards.hijos[0].querySelector('.guardar-promo').textContent, 'Quitar');
+  assert.equal(p.obtener('#pr-contador-guardadas').textContent, '1');
 });
 
 test('el icono de Guardadas de la cabecera cuenta las guardadas y se actualiza al guardar', async () => {
