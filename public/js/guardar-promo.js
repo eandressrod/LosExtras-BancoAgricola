@@ -42,6 +42,8 @@ export function alPulsarGuardar(boton, id, alTerminar, aviso) {
   boton.onclick = async event => {
     event.preventDefault();
     event.stopPropagation();
+    // SCRUM-138: un segundo toque mientras la petición sigue en curso no cuenta.
+    if (boton.disabled) return;
     const destino = aviso ?? boton.parentElement?.querySelector('.guardar-error');
     boton.disabled = true;
     if (destino) destino.textContent = '';
