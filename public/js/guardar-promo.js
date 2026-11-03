@@ -35,7 +35,7 @@ export function alPulsarGuardar(boton, id, alTerminar) {
       }
       if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
       marcarBoton(boton, !estabaGuardada);
-      if (alTerminar) alTerminar(!estabaGuardada);
+      if (alTerminar) await alTerminar(!estabaGuardada);
     } catch (error) {
       if (aviso) aviso.textContent = error.message;
     } finally {

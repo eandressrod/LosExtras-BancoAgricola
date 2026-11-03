@@ -2,8 +2,11 @@ import { requireSession, almacenSesion, cardName, getJSON } from './comun.js';
 import { textoVigencia, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
 import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
 import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
+import { volverConHistorial } from './volver.js';
+import { crearAviso } from './aviso-deshacer.js';
 
 let ultimoDatos = null;
+let avisoQuitar = null;
 let busqueda = '';
 let timerBusqueda = null;
 
@@ -72,8 +75,29 @@ function tarjeta(promotion, tarjetaId) {
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
   const boton = card.querySelector('.guardar-promo');
   marcarBoton(boton, true);
-  alPulsarGuardar(boton, promotion.id, guardada => {
-    if (!guardada) loadSaved(tarjetaId);
+  alPulsarGuardar(boton, promotion.id, async guardada => {
+    if (guardada) return;
+    avisoQuitar.mostrar({
+      texto: 'Promoción quitada de Guardadas.',
+      alDeshacer: async () => {
+        try {
+          const response = await fetch('/api/guardadas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ promocionId: promotion.id })
+          });
+          if (response.status === 401) { location.replace('/index.html'); return; }
+          if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
+          await loadSaved(tarjetaId);
+          boton.focus?.();
+        } catch (error) {
+          const estado = document.querySelector('#list-status');
+          estado.textContent = error.message;
+          estado.className = 'error';
+        }
+      }
+    });
+    await loadSaved(tarjetaId);
   });
   return card;
 }
@@ -120,6 +144,8 @@ async function loadSaved(tarjetaId) {
 
 const profile = await requireSession();
 if (profile) {
+  volverConHistorial(document.querySelector('.pr-volver'));
+  avisoQuitar = crearAviso(document.querySelector('#pr-aviso'));
   const searchInput = document.querySelector('#merchant-search');
   const clearSearch = document.querySelector('#clear-search');
   const clearSearchEmpty = document.querySelector('#clear-search-empty');
