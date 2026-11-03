@@ -3,7 +3,7 @@
 //
 // Cada página se confirma con el botón principal y entonces escribe sus señales con origen encuesta.
 // Antes de confirmar, la selección solo alimenta la vista previa, calculada en el navegador con el motor de H22.
-import { getJSON } from './comun.js';
+import { getJSON, volverAlLogin } from './comun.js';
 import { ordenarParaTi } from './motor/index.js';
 import { controlarAtras } from './cerca/atras.js';
 import {
@@ -27,7 +27,7 @@ const FILAS_CRITERIOS = [
 async function enviar(url, metodo, cuerpo) {
   const respuesta = await fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) })
     .catch(() => { throw new Error(ERROR_GUARDAR); });
-  if (respuesta.status === 401) { location.replace('/index.html'); throw new Error('Inicia sesión para continuar.'); }
+  if (respuesta.status === 401) { volverAlLogin(); throw new Error('Inicia sesión para continuar.'); }
   if (!respuesta.ok) throw new Error(ERROR_GUARDAR);
   return respuesta.json();
 }

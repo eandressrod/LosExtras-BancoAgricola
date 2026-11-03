@@ -1,9 +1,11 @@
+import { volverAlLogin } from './comun.js';
+
 export async function consultarGuardadas(tarjetaId, comercio) {
   let ruta = tarjetaId ? '/api/guardadas?tarjeta=' + encodeURIComponent(tarjetaId) : '/api/guardadas';
   if (comercio) ruta += (ruta.includes('?') ? '&' : '?') + 'comercio=' + encodeURIComponent(comercio);
   const response = await fetch(ruta, { cache: 'no-store' });
   if (response.status === 401) {
-    location.replace('/index.html');
+    volverAlLogin();
     return null;
   }
   if (!response.ok) throw new Error('No se pudieron cargar las promociones guardadas. Intenta de nuevo.');
@@ -15,29 +17,39 @@ export function marcarBoton(boton, guardada) {
   boton.textContent = guardada ? 'Quitar' : 'Guardar';
 }
 
-export function alPulsarGuardar(boton, id, alTerminar) {
+/** Guarda o quita según el estado del botón. Devuelve el estado nuevo, o null si la sesión terminó; lanza si no se pudo. */
+export async function cambiarGuardada(boton, id) {
+  const estabaGuardada = boton.dataset.guardada === 'si';
+  const response = await fetch('/api/guardadas', {
+    method: estabaGuardada ? 'DELETE' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ promocionId: id })
+  });
+  if (response.status === 401) {
+    volverAlLogin();
+    return null;
+  }
+  if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
+  marcarBoton(boton, !estabaGuardada);
+  return !estabaGuardada;
+}
+
+/**
+ * Guardar o Quitar del listado, Guardadas y el detalle. El botón queda desactivado hasta terminar, así un segundo
+ * toque no repite la petición. `aviso` es donde se muestra el error; por defecto, el `.guardar-error` vecino.
+ */
+export function alPulsarGuardar(boton, id, alTerminar, aviso) {
   boton.onclick = async event => {
     event.preventDefault();
     event.stopPropagation();
-    const estabaGuardada = boton.dataset.guardada === 'si';
-    const aviso = boton.parentElement.querySelector('.guardar-error');
+    const destino = aviso ?? boton.parentElement?.querySelector('.guardar-error');
     boton.disabled = true;
-    if (aviso) aviso.textContent = '';
+    if (destino) destino.textContent = '';
     try {
-      const response = await fetch('/api/guardadas', {
-        method: estabaGuardada ? 'DELETE' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promocionId: id })
-      });
-      if (response.status === 401) {
-        location.replace('/index.html');
-        return;
-      }
-      if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
-      marcarBoton(boton, !estabaGuardada);
-      if (alTerminar) await alTerminar(!estabaGuardada);
+      const guardada = await cambiarGuardada(boton, id);
+      if (guardada !== null && alTerminar) await alTerminar(guardada);
     } catch (error) {
-      if (aviso) aviso.textContent = error.message;
+      if (destino) destino.textContent = error.message;
     } finally {
       boton.disabled = false;
     }

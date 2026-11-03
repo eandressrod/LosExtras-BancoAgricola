@@ -87,7 +87,11 @@ test('un fallo al guardar o quitar se ve en la tarjeta ya montada y el reintento
 });
 
 test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
-  const fuente = (await readFile(new URL('../../public/js/guardadas.js', import.meta.url), 'utf8')).replace(/^import[^\n]+\n/gm, '');
+  // SCRUM-129: la tarjeta se llena con tarjeta-promocion.js; se carga junto con la página.
+  const leer = async archivo => (await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8'))
+    .replace(/^import[^\n]+\n/gm, '')
+    .replace(/^export /gm, '');
+  const fuente = (await leer('tarjeta-promocion.js')) + '\n' + (await leer('guardadas.js'));
   const consultas = [];
   const sesion = almacen({ 'los-extras-tarjeta:A': 'cta-a-4' });
   const partes = new Map();
@@ -121,6 +125,9 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
     volverConHistorial() {},
     crearAviso: () => ({ mostrar() {}, cerrar() {} }),
     textoVigencia: () => '',
+    textoVencePronto: () => '',
+    hoyEnElSalvador: () => '2026-11-03',
+    textoOtrasTarjetas: () => '',
     textoAplica,
     mostrarImagen() {},
     mostrarCondiciones() {},
@@ -193,7 +200,11 @@ test('SCRUM-146 quitar en Guardadas avisa y Deshacer vuelve a guardar la promoci
     } };
   };
   const elemento = () => ({ hidden: true, textContent: '', className: '', addEventListener() {} });
-  await vm.runInNewContext(`(async () => { ${await leer('guardar-promo.js')}\n${await leer('guardadas.js')} })()`, {
+  await vm.runInNewContext(`(async () => { ${await leer('tarjeta-promocion.js')}\n${await leer('guardar-promo.js')}\n${await leer('guardadas.js')} })()`, {
+    volverAlLogin() {},
+    textoVencePronto: () => '',
+    hoyEnElSalvador: () => '2026-11-03',
+    textoOtrasTarjetas: () => '',
     requireSession: async () => ({ id: 'A', nombre: 'Usuario A' }),
     almacenSesion: () => almacen(),
     cardName,

@@ -4,6 +4,7 @@ import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, 
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { mostrarDonde } from './cerca/donde.js';
 import { volverConHistorial } from './volver.js';
+import { marcarBoton, alPulsarGuardar } from './guardar-promo.js';
 
 const profile = await requireSession();
 if (profile) {
@@ -100,27 +101,8 @@ if (profile) {
           const lista = await fetch('/api/guardadas', { cache: 'no-store' });
           if (lista.ok) guardada = ((await lista.json()).ids || []).includes(id);
         } catch { /* el detalle sigue visible aunque no se lean las guardadas */ }
-        boton.dataset.guardada = guardada ? 'si' : 'no';
-        boton.textContent = guardada ? 'Quitar' : 'Guardar';
-        boton.onclick = async event => {
-          event.preventDefault();
-          const aviso = document.querySelector('#guardar-error');
-          if (aviso) aviso.textContent = '';
-          const quitar = boton.dataset.guardada === 'si';
-          try {
-            const response = await fetch('/api/guardadas', {
-              method: quitar ? 'DELETE' : 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ promocionId: id })
-            });
-            if (response.status === 401) { location.replace('/index.html'); return; }
-            if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
-            boton.dataset.guardada = quitar ? 'no' : 'si';
-            boton.textContent = quitar ? 'Guardar' : 'Quitar';
-          } catch (error) {
-            if (aviso) aviso.textContent = error.message;
-          }
-        };
+        marcarBoton(boton, guardada);
+        alPulsarGuardar(boton, id, null, document.querySelector('#guardar-error'));
       }
       detail.hidden = false;
       status.textContent = '';
