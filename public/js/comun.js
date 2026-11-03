@@ -168,6 +168,7 @@ export async function getJSON(url) {
     volverAlLogin();
     throw new Error('Inicia sesión para continuar.');
   }
-  if (!response.ok) throw new Error(errorCarga);
+  // SCRUM-150: el estado acompaña al error para que cada pantalla distinga «no existe» (404) de un fallo temporal.
+  if (!response.ok) throw Object.assign(new Error(errorCarga), { status: response.status });
   return response.json().catch(() => { throw new Error(errorCarga); });
 }
