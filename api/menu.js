@@ -1,8 +1,6 @@
 import { obtenerRepositorioAccesos, obtenerRepositorioCuentas, obtenerRepositorioEstadoEncuesta, obtenerRepositorioPreferencias, obtenerRepositorioProductosMenu } from '../backend/repositorios/index.js';
-import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
 import { obtenerDatosMenu } from '../backend/servicios/menu.js';
-import { leerCookie } from '../backend/servicios/sesion.js';
-import { responderJson, metodoNoPermitido } from '../backend/http.js';
+import { exigirPerfil, responderJson, metodoNoPermitido } from '../backend/http.js';
 
 export function crearHandlerMenu(repositorios = {
   accesos: obtenerRepositorioAccesos,
@@ -15,8 +13,8 @@ export function crearHandlerMenu(repositorios = {
     async fetch(request) {
       if (request.method !== 'GET') return metodoNoPermitido('GET');
       try {
-        const perfil = await perfilDeSesion(leerCookie(request), repositorios.accesos());
-        if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
+        const { perfil, respuesta } = await exigirPerfil(request, repositorios.accesos());
+        if (respuesta) return respuesta;
         
         // Protegemos las pruebas viejas: si no inyectaron preferencias, pasamos null
         const repoPreferencias = repositorios.preferencias ? repositorios.preferencias() : null;

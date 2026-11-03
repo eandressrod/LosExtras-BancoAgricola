@@ -1,7 +1,5 @@
 import { obtenerRepositorioAccesos, obtenerRepositorioUsuariosPrueba } from '../repositorios/index.js';
-import { perfilDeSesion } from '../servicios/autenticacion.js';
-import { leerCookie } from '../servicios/sesion.js';
-import { responderJson, metodoNoPermitido } from '../http.js';
+import { exigirPerfil, responderJson, metodoNoPermitido } from '../http.js';
 
 // H21 (ADR-010): marcas que el cliente puede pedir guardar junto con la apertura.
 const MARCAS_ENCUESTA = ['hoja-mostrada', 'aviso-cerrado'];
@@ -20,8 +18,8 @@ export function crearHandlerApertura(repos = { accesos:obtenerRepositorioAccesos
   return { async fetch(request) {
     if (request.method !== 'POST') return metodoNoPermitido('POST');
     try {
-      const perfil = await perfilDeSesion(leerCookie(request), repos.accesos());
-      if (!perfil) return responderJson({ error:'Inicia sesión para continuar.' },401);
+      const { perfil, respuesta } = await exigirPerfil(request, repos.accesos());
+      if (respuesta) return respuesta;
       const marca = await leerMarca(request);
       if (marca === null) return responderJson({ error:'Marca de encuesta no válida.' },400);
       const estado = await repos.usuarios().marcarApertura(perfil.id, marca);

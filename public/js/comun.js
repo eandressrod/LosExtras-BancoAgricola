@@ -2,10 +2,8 @@ import { actualizarSesion, iniciarInactividad, avisarCierre, expirarSesion } fro
 import { leerSegundoPlano, limpiarSegundoPlano, vencioSegundoPlano } from '../pwa/inactividad-modelo.js';
 import { olvidarInstantaneas } from './instantanea.js';
 import { limpiarEleccion } from './cerca/origen.js';
-export const categories = ['Restaurantes', 'Compras', 'Entretenimiento'];
 const CARD_NAMES = { basica: 'Básica', black: 'Black' };
 const LOGIN_HINT_KEY = 'los-extras-sesion-iniciada';
-const PREFERENCES_KEY = 'los-extras-preferencias';
 const CARD_CHOICE_PREFIX = 'los-extras-tarjeta:';
 
 export function readStorage(storage, key) {
@@ -114,9 +112,10 @@ export async function requireSession({ revelar = true } = {}) {
     volverAlLogin();
     return null;
   }
+  // SCRUM-109: el tipo del perfil es heredado; cada página añade sus tarjetas propias a la insignia.
   const badge = document.querySelector('#session-profile');
   if (badge) {
-    badge.textContent = `${profile.nombre} · ${cardName(profile)}`;
+    badge.textContent = profile.nombre;
     badge.hidden = false;
   }
   if (revelar) revelarPagina();
@@ -147,26 +146,14 @@ export async function logout() {
   avisarCierre();
 }
 
-// Preferencias locales separadas por perfil: el otro perfil no hereda la encuesta.
-const preferencesKey = profileId => `${PREFERENCES_KEY}:${profileId}`;
-
-export function loadPreferences(profileId) {
-  try {
-    const saved = JSON.parse(readStorage(localStorage, preferencesKey(profileId)));
-    if (saved?.completed === true && Array.isArray(saved.categories)) {
-      return { completed: true, categories: saved.categories.filter(category => categories.includes(category)) };
-    }
-  } catch { /* Un dato inválido deja la encuesta pendiente. */ }
-  return { completed: false, categories: [] };
-}
-
-export async function getJSON(url) {
+export async function getJSON(url, { signal } = {}) {
   const errorCarga = 'No se pudieron cargar los datos. Intenta de nuevo.';
-  const response = await fetch(url, { cache: 'no-store' }).catch(() => { throw new Error(errorCarga); });
+  const response = await fetch(url, { cache: 'no-store', signal }).catch(() => { throw new Error(errorCarga); });
   if (response.status === 401) {
     volverAlLogin();
     throw new Error('Inicia sesión para continuar.');
   }
-  if (!response.ok) throw new Error(errorCarga);
+  // SCRUM-150: el estado acompaña al error para que cada pantalla distinga «no existe» (404) de un fallo temporal.
+  if (!response.ok) throw Object.assign(new Error(errorCarga), { status: response.status });
   return response.json().catch(() => { throw new Error(errorCarga); });
 }

@@ -88,9 +88,11 @@ test('H22 un cuerpo mal formado responde 400', async () => {
 test('H22 /api/senales y /api/para-ti entran por la función compartida en Vercel y en el servidor local', async () => {
   const raiz = new URL('../../', import.meta.url);
   const config = JSON.parse(await readFile(new URL('vercel.json', raiz), 'utf8'));
-  const servidor = await readFile(new URL('scripts/dev.js', raiz), 'utf8');
+  const { rutasDesdeVercel, cargarFunciones } = await import('../../scripts/rutas-locales.js');
+  const funciones = await cargarFunciones();
+  const rutas = rutasDesdeVercel(config, funciones);
   for (const recurso of ['senales', 'para-ti']) {
     assert.ok(config.rewrites.some(ruta => ruta.source === '/api/' + recurso && ruta.destination === '/api/recursos?recurso=' + recurso), recurso);
-    assert.ok(servidor.includes(`'/api/${recurso}': recursos`), recurso);
+    assert.equal(rutas['/api/' + recurso], funciones['/api/recursos'], recurso);
   }
 });

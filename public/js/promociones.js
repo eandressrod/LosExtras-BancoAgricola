@@ -1,5 +1,7 @@
-import { requireSession, getJSON, almacenSesion, cardName, revelarPagina } from './comun.js';
-import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
+import { requireSession, getJSON, almacenSesion, revelarPagina, volverAlLogin } from './comun.js';
+import { hoyEnElSalvador } from './promocion-vista.js';
+import { llenarTarjetaPromocion } from './tarjeta-promocion.js';
+import { marcarBoton, cambiarGuardada, alPulsarGuardar, idsVisiblesGuardadas, cuentaEnGuardadas } from './guardar-promo.js';
 import { SECCIONES, seccionVecina, seccionPorDeslizamiento, leerSeccion, guardarSeccion, urlSeccion } from './pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from './filtros-activos.js';
 import { crearAviso } from './aviso-deshacer.js';
@@ -16,107 +18,64 @@ import {
   leerCategoria, leerHoy, leerBusqueda, leerIntencion, normalizarBusqueda, categoriaVigente,
   estadoNavegacion, urlConsulta, urlListado, urlDetalle, CHIPS_HOY_BUSCO, textoPrimeroHoyBusco
 } from './filtro-categoria.js';
-import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjeta, conTarjeta } from './tarjeta-elegida.js';
+import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjeta, conTarjeta, textoInsignia } from './tarjeta-elegida.js';
 import { crearCerca } from './cerca/pantalla.js';
+import { conEspera } from './espera-carga.js';
 
 let idsGuardados = [];
+let idsVisibles = [];
+let categoriasContador = [];
 // Cuántas tarjetas tiene el perfil: con más de una, cada promoción dice con cuáles aplica.
 let totalTarjetas = 1;
 let avisoGuardar = null;
 
-// Cabecera: el icono de Guardadas cuenta las guardadas de la sesión.
+function fijarCategoriasContador(datos) {
+  categoriasContador = datos?.completed && Array.isArray(datos.categories) ? datos.categories : [];
+}
+
+// Cabecera: el icono cuenta las guardadas que se ven con la tarjeta y los intereses.
 function pintarContadorGuardadas() {
   const contador = document.querySelector('#pr-contador-guardadas');
-  contador.textContent = idsGuardados.length ? String(idsGuardados.length) : '';
-  contador.hidden = !idsGuardados.length;
+  contador.textContent = idsVisibles.length ? String(idsVisibles.length) : '';
+  contador.hidden = !idsVisibles.length;
 }
 
-function marcarGuardada(boton, guardada) {
-  boton.dataset.guardada = guardada ? 'si' : 'no';
-  boton.textContent = guardada ? 'Quitar' : 'Guardar';
-}
-
-// Guardar o quitar. Con aviso, el cambio se puede deshacer una vez; deshacer no abre otro aviso.
-async function alternarGuardada(boton, error, id, conAviso) {
-  error.textContent = '';
-  const quitar = boton.dataset.guardada === 'si';
-  try {
-    const response = await fetch('/api/guardadas', {
-      method: quitar ? 'DELETE' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ promocionId: id })
-    });
-    if (response.status === 401) { location.replace('/index.html'); return; }
-    if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
-    marcarGuardada(boton, !quitar);
-    idsGuardados = quitar ? idsGuardados.filter(guardado => guardado !== id) : [...idsGuardados, id];
-    pintarContadorGuardadas();
-    if (conAviso) avisoGuardar.mostrar({
-      texto: quitar ? 'Promoción quitada de Guardadas.' : 'Promoción guardada.',
-      alDeshacer: async () => {
-        await alternarGuardada(boton, error, id, false);
-        boton.focus?.();
-      }
-    });
-  } catch (fallo) {
-    error.textContent = fallo.message;
-  }
+function anotarGuardada(promotion, guardada) {
+  const id = promotion.id;
+  idsGuardados = guardada ? [...idsGuardados, id] : idsGuardados.filter(guardado => guardado !== id);
+  // SCRUM-140: el icono cuenta las que se ven con la tarjeta y los intereses.
+  if (!guardada) idsVisibles = idsVisibles.filter(guardado => guardado !== id);
+  else if (cuentaEnGuardadas(promotion, categoriasContador) && !idsVisibles.includes(id)) idsVisibles = [...idsVisibles, id];
+  pintarContadorGuardadas();
 }
 
 function crearOferta(promotion, categoria, hoy, busqueda, intencion) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
-  const link = card.querySelector('a');
-  link.id = 'promo-' + promotion.id;
-  link.href = urlDetalle(promotion.id, categoria, hoy, busqueda, intencion);
-  link.setAttribute('aria-label', `${promotion.merchant}: ${promotion.benefit}. Ver promoción`);
-  // Sistema visual: el acento de la tarjeta sale de su categoría y las exclusivas Black van en oscuro.
-  const articulo = card.querySelector('article');
-  articulo.dataset.categoria = promotion.category ?? '';
-  if (promotion.exclusive) articulo.dataset.exclusiva = 'si';
-  card.querySelector('h2').textContent = promotion.merchant;
-  card.querySelector('.promo-benefit').textContent = promotion.benefit;
-  card.querySelector('.promo-description').textContent = promotion.description;
-  card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
-  card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
-  const vence = card.querySelector('.promo-ending');
-  vence.textContent = textoVencePronto(promotion, hoyEnElSalvador());
-  vence.hidden = !vence.textContent;
-  // H22: una sola razón del motor; los criterios declarados solo como insignias.
-  const razon = card.querySelector('.promo-reason');
-  razon.textContent = promotion.razon?.texto ?? '';
-  razon.hidden = !razon.textContent;
-  const insignias = card.querySelector('.promo-badges');
-  insignias.textContent = (promotion.insignias ?? []).map(insignia => insignia.texto).join(' · ');
-  insignias.hidden = !insignias.textContent;
-  const vencida = card.querySelector('.promo-expired');
-  vencida.textContent = 'Vencida';
-  vencida.hidden = !promotion.vencida;
-  const aplica = card.querySelector('.promo-applicability');
   // Con varias tarjetas, el pie dice con cuáles aplica; la otra tarjeta se menciona aparte si su beneficio cambia.
-  const { texto: textoTarjetas, tarjeta } = textoAplica(promotion, totalTarjetas);
-  aplica.textContent = textoTarjetas;
-  aplica.dataset.tarjeta = tarjeta;
-  // Todas las tarjetas (SCRUM-133): la otra tarjeta propia solo se menciona si su beneficio cambia.
-  const otras = card.querySelector('.promo-otras');
-  otras.textContent = textoOtrasTarjetas(promotion);
-  otras.hidden = !otras.textContent;
-  const badge = card.querySelector('.promo-exclusive');
-  badge.hidden = !promotion.exclusive;
-  badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
+  const link = llenarTarjetaPromocion(card, promotion, { href: urlDetalle(promotion.id, categoria, hoy, busqueda, intencion), totalTarjetas });
+  link.id = 'promo-' + promotion.id;
   if (promotion.expired || promotion.upcoming || promotion.vencida) link.classList.add('promo-card--inactive');
-  mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
-  mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
-  // H17 y sistema visual: el reloj dice si aplica hoy o qué días; las condiciones no repiten los días.
-  mostrarDias(card.querySelector('.promo-cuando'), promotion);
-  mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
   const boton = card.querySelector('.guardar-promo');
   const error = card.querySelector('.guardar-error');
-  marcarGuardada(boton, idsGuardados.includes(promotion.id));
-  boton.onclick = event => {
-    event.preventDefault();
-    event.stopPropagation();
-    return alternarGuardada(boton, error, promotion.id, true);
-  };
+  boton.dataset.promocion = promotion.id;
+  marcarBoton(boton, idsGuardados.includes(promotion.id));
+  // El cambio se puede deshacer una vez desde el aviso; deshacer no abre otro aviso.
+  alPulsarGuardar(boton, promotion.id, guardada => {
+    anotarGuardada(promotion, guardada);
+    avisoGuardar.mostrar({
+      texto: guardada ? 'Promoción guardada.' : 'Promoción quitada de Guardadas.',
+      alDeshacer: async () => {
+        error.textContent = '';
+        try {
+          const deshecha = await cambiarGuardada(boton, promotion.id);
+          if (deshecha !== null) anotarGuardada(promotion, deshecha);
+        } catch (fallo) {
+          error.textContent = fallo.message;
+        }
+        boton.focus?.();
+      }
+    });
+  }, error);
   return card;
 }
 
@@ -257,8 +216,11 @@ if (profile) {
     panelLista.hidden = seccion === 'cerca';
     panelLista.setAttribute('aria-labelledby', 'tab-' + (seccion === 'explorar' ? 'explorar' : 'para-ti'));
     intentBox.hidden = !tarjetas.length || seccion !== 'para-ti';
-    if (seccion === 'cerca') cerca.mostrar();
-    else cerca.ocultar();
+    if (seccion === 'cerca') {
+      cerca.mostrar();
+      // Cerca de ti no pasa por loadPromotions: el contador de Guardadas se pide aquí (SCRUM-145).
+      refrescarContadorGuardadas();
+    } else cerca.ocultar();
   }
 
   function cambiarSeccion(nueva) {
@@ -344,8 +306,7 @@ if (profile) {
   // H16: el filtro de tarjeta se marca en la hoja Filtros y la cabecera dice qué tarjetas se consideran.
   function mostrarTarjeta() {
     for (const opcion of opcionesTarjeta) opcion.setAttribute('aria-pressed', String(opcion.dataset.card === (filtroTarjeta?.id ?? '')));
-    const descripcion = filtroTarjeta ? cardName(filtroTarjeta) : tarjetas.length === 1 ? cardName(tarjetas[0]) : `${tarjetas.length} tarjetas`;
-    if (sessionBadge) sessionBadge.textContent = `${profile.nombre} · ${descripcion}`;
+    if (sessionBadge) sessionBadge.textContent = textoInsignia(profile, tarjetas, filtroTarjeta?.id);
     pintarFiltrosActivos();
   }
 
@@ -372,21 +333,48 @@ if (profile) {
     abrirFiltros.hidden = true;
   }
 
-  async function leerIdsGuardados() {
-    if (typeof fetch !== 'function') return [];
+  async function refrescarContadorGuardadas() {
+    const guardadas = await leerIdsGuardados();
+    idsGuardados = guardadas.ids;
+    idsVisibles = guardadas.visibles;
+    pintarContadorGuardadas();
+  }
+
+  async function leerIdsGuardados(signal) {
+    if (typeof fetch !== 'function') return { ids: [], visibles: [] };
     const aviso = document.querySelector('#saved-status');
+    const ruta = filtroTarjeta?.id
+      ? '/api/guardadas?tarjeta=' + encodeURIComponent(filtroTarjeta.id)
+      : '/api/guardadas';
     try {
-      const response = await fetch('/api/guardadas', { cache: 'no-store' });
-      if (response.status === 401) { location.replace('/index.html'); return []; }
-      if (!response.ok) throw new Error('No se pudieron cargar las promociones guardadas.');
+      const response = await fetch(ruta, { cache: 'no-store', signal });
+      if (response.status === 401) { volverAlLogin(); return { ids: [], visibles: [] }; }
+      if (!response.ok) throw new Error();
       const datos = await response.json();
       if (aviso) aviso.textContent = '';
-      return datos.ids || [];
-    } catch (error) {
-      if (aviso) aviso.textContent = error.message;
-      return [];
+      return {
+        ids: Array.isArray(datos.ids) ? datos.ids : [],
+        visibles: idsVisiblesGuardadas(datos)
+      };
+    } catch {
+      // Cortada por tardar: el error de la lista ya ofrece Reintentar.
+      if (signal?.aborted) return { ids: [], visibles: [] };
+      // Sin conexión, fetch rechaza con un texto técnico del navegador: siempre se muestra el propio.
+      if (aviso) aviso.textContent = 'No se pudieron cargar las promociones guardadas.';
+      return { ids: [], visibles: [] };
     }
   }
+
+  // SCRUM-142: al volver con Atrás o «Volver al listado», la página se restaura tal como estaba; las guardadas pudieron
+  // cambiar en el detalle o en Guardadas, así que se releen.
+  addEventListener('pageshow', async event => {
+    if (!event.persisted) return;
+    const guardadas = await leerIdsGuardados();
+    idsGuardados = guardadas.ids;
+    idsVisibles = guardadas.visibles;
+    pintarContadorGuardadas();
+    for (const boton of document.querySelectorAll('.guardar-promo')) marcarBoton(boton, idsGuardados.includes(boton.dataset.promocion));
+  });
 
   // Categorías vigentes (H5) y tarjetas propias (H16) se cargan juntas; si algo falla, Reintentar.
   async function prepararPagina() {
@@ -400,6 +388,7 @@ if (profile) {
       [marcas, preferencias, categorias, lista] = await Promise.all([
         marcas ?? registrarAperturaPromociones(), getJSON('/api/preferencias'), getJSON('/api/categorias'), getJSON('/api/tarjetas')
       ]);
+      fijarCategoriasContador(preferencias);
       ofertaDeEncuesta = ofertaEncuesta({ pendiente: !preferencias.completed, pedida: encuestaPedida, ...marcas });
       // La hoja va sobre la lista de Para ti, aunque la visita anterior quedara en otra sección.
       if (ofertaDeEncuesta === 'hoja') seccion = 'para-ti';
@@ -459,7 +448,7 @@ if (profile) {
     carrusel?.parar();
     carrusel = null;
     const diapositivas = promociones.length ? diapositivasFranja({
-      promociones, hoy: hoyEnElSalvador(), estrategia, guardadas: idsGuardados
+      promociones, hoy: hoyEnElSalvador(), estrategia, guardadas: idsVisibles
     }) : [];
     franja.hidden = diapositivas.length === 0;
     if (diapositivas.length) carrusel = montarCarrusel(franja, diapositivas, { enlace: enlaceAviso, alPulsar: irAPromocion });
@@ -485,13 +474,17 @@ if (profile) {
       // H22 y H25: al volver del detalle se conserva el orden de la visita; entrar o cambiar un filtro o chip lo recalcula.
       const guardada = volverDelDetalle ? leerInstantanea(sesion, profile.id, consulta) : null;
       volverDelDetalle = false;
-      // La lista y las guardadas se piden juntas.
-      const [respuesta, ids] = await Promise.all([guardada ?? getJSON(consulta), leerIdsGuardados()]);
+      // La lista y las guardadas se piden juntas. SCRUM-144: si tardan se avisa, y a los 20 s se cortan con Reintentar.
+      const [respuesta, guardadas] = await conEspera(signal => Promise.all([guardada ?? getJSON(consulta, { signal }), leerIdsGuardados(signal)]), {
+        // Sobre los rectángulos de carga: el bloque de estado queda debajo de ellos, fuera de la vista.
+        alTardar: texto => { if (turno === consultaActual) conteo.textContent = texto; }
+      });
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
       if (!guardada) guardarInstantanea(sesion, profile.id, consulta, respuesta);
       const promotions = marcarVencidas(respuesta.promociones);
       listaActual = promotions;
-      idsGuardados = ids;
+      idsGuardados = guardadas.ids;
+      idsVisibles = guardadas.visibles;
       pintarContadorGuardadas();
       for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda, intencion));
       const vacio = promotions.length === 0;
@@ -508,6 +501,7 @@ if (profile) {
     } catch (error) {
       if (turno !== consultaActual) return;
       pintarFranja([]);
+      conteo.textContent = '';
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;
@@ -575,7 +569,10 @@ if (profile) {
   // Al cerrar la hoja, el orden vuelve a pedirse a /api/para-ti con lo que quedó guardado.
   async function alCerrarEncuesta({ terminada = false } = {}) {
     delete cards.dataset.previa;
-    if (terminada) preferencias = await getJSON('/api/preferencias');
+    if (terminada) {
+      preferencias = await getJSON('/api/preferencias');
+      fijarCategoriasContador(preferencias);
+    }
     await loadPromotions();
     surveyNotice.hidden = !terminada;
   }
@@ -595,13 +592,22 @@ if (profile) {
 
   // Las opciones y la vista previa salen de todo lo vigente (Explorar, sin filtros): la lista de Para ti ya está recortada por
   // los intereses guardados y, al repetir la encuesta, solo ofrecería lo que ya se eligió. Si falla, se usa la lista visible.
+  // SCRUM-139: el aviso se retira cuando la hoja ya cubre la lista; si se ocultara antes, la lista subiría bajo el dedo
+  // y un segundo toque abriría la tarjeta de abajo. Mientras se abre, los toques repetidos se ignoran.
+  let abriendoEncuesta = false;
   async function abrirEncuesta() {
-    avisoEncuesta.hidden = true;
+    if (abriendoEncuesta) return;
+    abriendoEncuesta = true;
     let lista = listaActual;
     try {
       lista = (await getJSON(urlSeccion(conTarjeta(urlConsulta(null), filtroTarjeta?.id), 'explorar'))).promociones;
     } catch { /* La hoja funciona con la lista visible. */ }
-    abrirEncuestaHoja({ perfil: profile, lista, categorias, mostrarVistaPrevia, alCerrar: alCerrarEncuesta });
+    try {
+      abrirEncuestaHoja({ perfil: profile, lista, categorias, mostrarVistaPrevia, alCerrar: alCerrarEncuesta });
+      avisoEncuesta.hidden = true;
+    } finally {
+      abriendoEncuesta = false;
+    }
   }
 
   // Aviso de la lista (ADR-010): Empezar abre la hoja; cerrarlo una vez lo guarda y no vuelve.
@@ -618,6 +624,12 @@ if (profile) {
   todayFilter.addEventListener('click', () => cambiarHoy(!hoy));
   exitToday.addEventListener('click', () => cambiarHoy(false));
   searchInput.addEventListener('input', () => buscarComercio(searchInput.value));
+  // SCRUM-152: la tecla Buscar del teclado quita el foco para cerrarlo; la lista ya se filtra al escribir.
+  searchInput.addEventListener('keydown', evento => {
+    if (evento.key !== 'Enter') return;
+    evento.preventDefault();
+    searchInput.blur();
+  });
   clearSearch.addEventListener('click', () => buscarComercio(''));
   clearSearchEmpty.addEventListener('click', () => buscarComercio(''));
   retry.addEventListener('click', cargar);

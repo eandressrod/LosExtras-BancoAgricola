@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { guardarPromocion, quitarPromocion, seleccionarGuardadasVisibles } from '../../backend/servicios/guardadas.js';
+import { guardarPromocion, quitarPromocion, seleccionarGuardadasVisibles, aplicaATarjetasPropias } from '../../backend/servicios/guardadas.js';
 import { crearRepositorioGuardadasMemoria } from '../../backend/repositorios/guardadas.js';
 
 function repoNuevo() {
@@ -93,4 +93,40 @@ test('QA-AUD-03 distingue cuando las guardadas aplican a la tarjeta pero no coin
   const porTarjetaVencida = seleccionarGuardadasVisibles([], ['cine'], porTarjeta);
   assert.equal(porTarjetaVencida.sinCoincidencias, true);
   assert.equal(porTarjetaVencida.motivoSinCoincidencias, 'tarjeta');
+});
+
+test('QA-AUD-03 seleccionarGuardadasVisibles identifica caso mixto (intereses y tarjeta)', () => {
+  // Simula que el filtro de la UI por intereses ocultó todo
+  const filtradas = []; 
+  // El usuario tiene 2 guardadas históricas en base de datos
+  const idsGuardados = ['tienda', 'siman-black'];
+  // El catálogo indica que solo 1 de ellas aplica a su tarjeta actual
+  const aplicablesTarjeta = [{ id: 'tienda', canUse: true }]; 
+
+  const resultado = seleccionarGuardadasVisibles(filtradas, idsGuardados, aplicablesTarjeta);
+  
+  assert.equal(resultado.sinCoincidencias, true);
+  assert.equal(resultado.motivoSinCoincidencias, 'intereses');
+  assert.equal(resultado.tambienOcultasPorTarjeta, true);
+});
+
+test('QA-AUD-04 solo permite guardar promociones que apliquen a alguna tarjeta propia del usuario', async () => {
+  const catalogo = [
+    { id: 'tienda', beneficios: [{ tipo_tarjeta: 'basica' }, { tipo_tarjeta: 'black' }] },
+    { id: 'siman-black', beneficios: [{ tipo_tarjeta: 'black' }] }
+  ];
+  const soloBasica = [{ id: 'cta-demo-3', tipoTarjeta: 'basica' }];
+  const basicaYBlack = [{ id: 'cta-a-3', tipoTarjeta: 'basica' }, { id: 'cta-a-4', tipoTarjeta: 'black' }];
+
+  assert.equal(aplicaATarjetasPropias(catalogo, soloBasica, 'tienda'), true);
+  assert.equal(aplicaATarjetasPropias(catalogo, soloBasica, 'siman-black'), false);
+  assert.equal(aplicaATarjetasPropias(catalogo, basicaYBlack, 'siman-black'), true);
+  assert.equal(aplicaATarjetasPropias(catalogo, [], 'tienda'), false);
+
+  const repo = repoNuevo();
+  await assert.rejects(
+    guardarPromocion('demo', 'siman-black', repo, async id => aplicaATarjetasPropias(catalogo, soloBasica, id)),
+    error => error.message.includes('Promoción no encontrada')
+  );
+  assert.deepEqual(await repo.listar('demo'), []);
 });

@@ -13,7 +13,7 @@ test('H16 con dos tarjetas empieza con todas y ofrece filtrar por tipo y referen
   assert.ok(p.opciones().every(opcion => opcion.type === 'button'));
   assert.deepEqual(p.tarjetaActiva(), ['Todas mis tarjetas']);
   assert.deepEqual(p.consultas, ['/api/para-ti']);
-  assert.equal(p.obtener('#session-profile').textContent, 'Usuario A · 2 tarjetas');
+  assert.equal(p.obtener('#session-profile').textContent, 'Usuario A · Básica y Black');
   assert.equal(p.sesion.getItem('los-extras-tarjeta:A'), null);
 });
 

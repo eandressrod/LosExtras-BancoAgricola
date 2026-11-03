@@ -1,4 +1,4 @@
-import { perfiles } from '../datos.js';
+import { perfiles } from '../perfiles-prueba.js';
 
 // H21 (ADR-010): cada marca de la encuesta y su campo en el perfil.
 const CAMPOS_MARCA = { 'hoja-mostrada':'hojaMostrada', 'aviso-cerrado':'avisoCerrado' };

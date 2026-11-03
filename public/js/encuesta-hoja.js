@@ -3,8 +3,9 @@
 //
 // Cada página se confirma con el botón principal y entonces escribe sus señales con origen encuesta.
 // Antes de confirmar, la selección solo alimenta la vista previa, calculada en el navegador con el motor de H22.
-import { getJSON } from './comun.js';
+import { getJSON, volverAlLogin } from './comun.js';
 import { ordenarParaTi } from './motor/index.js';
+import { controlarAtras } from './cerca/atras.js';
 import {
   opcionesIntereses, categoriasAfinar, opcionesAfinar, alternar, seleccionVacia, textoBotonPrincipal, pasosEncuesta,
   senalesDePagina, cambiosSenales, buscarOpciones, textoContador, anuncioVistaPrevia, cupoOpciones
@@ -26,7 +27,7 @@ const FILAS_CRITERIOS = [
 async function enviar(url, metodo, cuerpo) {
   const respuesta = await fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) })
     .catch(() => { throw new Error(ERROR_GUARDAR); });
-  if (respuesta.status === 401) { location.replace('/index.html'); throw new Error('Inicia sesión para continuar.'); }
+  if (respuesta.status === 401) { volverAlLogin(); throw new Error('Inicia sesión para continuar.'); }
   if (!respuesta.ok) throw new Error(ERROR_GUARDAR);
   return respuesta.json();
 }
@@ -67,6 +68,9 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
   let temporizador = null;
   // Posición de la última opción tocada: tras repintar, solo esa hace su pequeño salto al marcarse.
   let tocada = -1;
+  // SCRUM-141: el «atrás» del sistema cierra la hoja como «Omitir», en vez de salir de Promociones.
+  const atrasSistema = controlarAtras(history, () => cerrar(false), 'encuestaAbierta');
+  const alNavegar = () => atrasSistema.alNavegar();
 
   const actual = () => pasos[indice];
   const ultima = () => indice === pasos.length - 1;
@@ -331,6 +335,9 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
 
   function cerrar(terminada) {
     clearTimeout(temporizador);
+    removeEventListener('popstate', alNavegar);
+    // Cerrada con un botón, deshace la entrada añadida; cerrada con «atrás», el sistema ya retrocedió.
+    atrasSistema.cerrar();
     hoja.hidden = true;
     for (const elemento of fondo) elemento.inert = false;
     return alCerrar({ terminada });
@@ -397,6 +404,8 @@ export function abrirEncuestaHoja({ perfil, lista, categorias, mostrarVistaPrevi
 
   for (const elemento of fondo) elemento.inert = true;
   hoja.hidden = false;
+  atrasSistema.abrir();
+  addEventListener('popstate', alNavegar);
   // Detrás de la hoja deben verse el contador y las primeras tarjetas, no la cabecera del módulo.
   document.querySelector('#pr-conteo')?.scrollIntoView({ block: 'start' });
   paso.textContent = 'Paso 1 de 3';

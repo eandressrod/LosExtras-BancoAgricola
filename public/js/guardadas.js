@@ -1,9 +1,12 @@
 import { requireSession, almacenSesion, cardName, getJSON } from './comun.js';
-import { textoVigencia, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
-import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
-import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
+import { llenarTarjetaPromocion } from './tarjeta-promocion.js';
+import { consultarGuardadas, marcarBoton, cambiarGuardada, alPulsarGuardar } from './guardar-promo.js';
+import { leerTarjetaElegida, descripcionTarjetas } from './tarjeta-elegida.js';
+import { volverConHistorial } from './volver.js';
+import { crearAviso } from './aviso-deshacer.js';
 
 let ultimoDatos = null;
+let avisoQuitar = null;
 let busqueda = '';
 let timerBusqueda = null;
 
@@ -25,9 +28,19 @@ function pintarVacio(datos, visibles) {
   const porIntereses = Boolean(datos.sinCoincidencias && datos.motivoSinCoincidencias === 'intereses');
   ninguna.hidden = hayVisibles || datos.sinCoincidencias || vacioPorBusqueda;
   filtro.hidden = !datos.sinCoincidencias;
-  filtro.textContent = porIntereses
-    ? 'Ninguna promoción guardada coincide con tus intereses actuales.'
-    : 'Ninguna promoción guardada aplica ahora a tu tarjeta.';
+  // --- INICIO DE LA LÓGICA DEL CASO MIXTO ---
+  if (datos.sinCoincidencias) {
+    if (porIntereses) {
+      let texto = 'Ninguna promoción guardada coincide con tus intereses actuales.';
+      if (datos.tambienOcultasPorTarjeta) {
+        texto += ' Algunas tampoco aplican a tu tarjeta.';
+      }
+      filtro.textContent = texto;
+    } else {
+      filtro.textContent = 'Ninguna promoción guardada aplica ahora a tu tarjeta.';
+    }
+  }
+  // --- FIN DE LA LÓGICA DEL CASO MIXTO ---
   if (sinBusqueda) sinBusqueda.hidden = !vacioPorBusqueda;
   if (limpiarVacio) limpiarVacio.hidden = !vacioPorBusqueda;
   if (cambiarPreferencias) cambiarPreferencias.hidden = !porIntereses;
@@ -36,34 +49,28 @@ function pintarVacio(datos, visibles) {
 
 function tarjeta(promotion, tarjetaId) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
-  const link = card.querySelector('a');
   const extra = busqueda ? '&comercio=' + encodeURIComponent(busqueda) : '';
-  link.href = '/detalle.html?id=' + encodeURIComponent(promotion.id) + '&desde=guardadas' + extra;
-  link.setAttribute('aria-label', `${promotion.merchant}: ${promotion.benefit}. Ver promoción`);
-  card.querySelector('h2').textContent = promotion.merchant;
-  card.querySelector('.promo-benefit').textContent = promotion.benefit;
-  card.querySelector('.promo-description').textContent = promotion.description;
-  card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
-  card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
-  const aplica = card.querySelector('.promo-applicability');
-  const { texto: textoTarjetas, tarjeta } = textoAplica(promotion);
-  aplica.textContent = textoTarjetas;
-  aplica.dataset.tarjeta = tarjeta;
-  // Sistema visual: acento por categoría y exclusivas Black en oscuro, como en Para ti.
-  const articulo = card.querySelector('article');
-  articulo.dataset.categoria = promotion.category ?? '';
-  if (promotion.exclusive) articulo.dataset.exclusiva = 'si';
-  const badge = card.querySelector('.promo-exclusive');
-  badge.hidden = !promotion.exclusive;
-  badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
-  mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
-  mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
-  mostrarDias(card.querySelector('.promo-cuando'), promotion);
-  mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
+  llenarTarjetaPromocion(card, promotion, { href: '/detalle.html?id=' + encodeURIComponent(promotion.id) + '&desde=guardadas' + extra });
   const boton = card.querySelector('.guardar-promo');
   marcarBoton(boton, true);
-  alPulsarGuardar(boton, promotion.id, guardada => {
-    if (!guardada) loadSaved(tarjetaId);
+  alPulsarGuardar(boton, promotion.id, async guardada => {
+    if (guardada) return;
+    avisoQuitar.mostrar({
+      texto: 'Promoción quitada de Guardadas.',
+      alDeshacer: async () => {
+        try {
+          // Tras quitar, el botón quedó en «Guardar»: volver a pulsarlo la guarda otra vez.
+          if (await cambiarGuardada(boton, promotion.id) === null) return;
+          await loadSaved(tarjetaId);
+          boton.focus?.();
+        } catch (error) {
+          const estado = document.querySelector('#list-status');
+          estado.textContent = error.message;
+          estado.className = 'error';
+        }
+      }
+    });
+    await loadSaved(tarjetaId);
   });
   return card;
 }
@@ -110,6 +117,8 @@ async function loadSaved(tarjetaId) {
 
 const profile = await requireSession();
 if (profile) {
+  volverConHistorial(document.querySelector('.pr-volver'));
+  avisoQuitar = crearAviso(document.querySelector('#pr-aviso'));
   const searchInput = document.querySelector('#merchant-search');
   const clearSearch = document.querySelector('#clear-search');
   const clearSearchEmpty = document.querySelector('#clear-search-empty');
@@ -121,11 +130,17 @@ if (profile) {
   }
   let tarjetaId = leerTarjetaElegida(almacenSesion(), profile.id);
   try {
-    const activa = tarjetaActiva(await getJSON('/api/tarjetas'), tarjetaId);
-    if (activa) {
-      tarjetaId = activa.id;
-      const badge = document.querySelector('#session-profile');
-      if (badge) badge.textContent = `${profile.nombre} · ${cardName(activa)}`;
+    const tarjetas = await getJSON('/api/tarjetas');
+    const lista = Array.isArray(tarjetas) ? tarjetas : [];
+    const elegida = lista.find(tarjeta => tarjeta.id === tarjetaId) ?? null;
+    const badge = document.querySelector('#session-profile');
+    if (elegida) {
+      tarjetaId = elegida.id;
+      if (badge) badge.textContent = `${profile.nombre} · ${cardName(elegida)}`;
+    } else {
+      tarjetaId = null;
+      const descripcion = descripcionTarjetas(lista, null);
+      if (badge && descripcion) badge.textContent = `${profile.nombre} · ${descripcion}`;
     }
   } catch { /* si las tarjetas fallan, la lista sigue con la elección guardada */ }
 
@@ -152,6 +167,12 @@ if (profile) {
   }
 
   if (searchInput) searchInput.addEventListener('input', () => actualizarBusqueda(searchInput.value));
+  // SCRUM-152: la tecla Buscar del teclado quita el foco para cerrarlo; la lista ya se filtra al escribir.
+  if (searchInput) searchInput.addEventListener('keydown', evento => {
+    if (evento.key !== 'Enter') return;
+    evento.preventDefault();
+    searchInput.blur();
+  });
   if (clearSearch) clearSearch.addEventListener('click', () => actualizarBusqueda(''));
   if (clearSearchEmpty) clearSearchEmpty.addEventListener('click', () => actualizarBusqueda(''));
   document.querySelector('#retry').addEventListener('click', () => loadSaved(tarjetaId));

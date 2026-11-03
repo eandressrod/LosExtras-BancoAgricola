@@ -3,6 +3,8 @@ import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, t
 import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { mostrarDonde } from './cerca/donde.js';
+import { volverConHistorial } from './volver.js';
+import { marcarBoton, alPulsarGuardar } from './guardar-promo.js';
 
 const profile = await requireSession();
 if (profile) {
@@ -16,6 +18,7 @@ if (profile) {
   const busqueda = leerBusqueda(location.search, history.state, profile.id);
   const intencion = leerIntencion(location.search, history.state, profile.id);
   const back = document.querySelector('#back-to-list');
+  volverConHistorial(back);
   const retornoGuardadas = '/guardadas.html' + (busqueda ? '?comercio=' + encodeURIComponent(busqueda) : '');
   const destino = id ? urlDetalle(id, categoria, hoy, busqueda, intencion) + (desdeGuardadas ? '&desde=guardadas' : '') : location.href;
   history.replaceState(estadoNavegacion(profile.id, categoria), '', destino);
@@ -98,31 +101,17 @@ if (profile) {
           const lista = await fetch('/api/guardadas', { cache: 'no-store' });
           if (lista.ok) guardada = ((await lista.json()).ids || []).includes(id);
         } catch { /* el detalle sigue visible aunque no se lean las guardadas */ }
-        boton.dataset.guardada = guardada ? 'si' : 'no';
-        boton.textContent = guardada ? 'Quitar' : 'Guardar';
-        boton.onclick = async event => {
-          event.preventDefault();
-          const aviso = document.querySelector('#guardar-error');
-          if (aviso) aviso.textContent = '';
-          const quitar = boton.dataset.guardada === 'si';
-          try {
-            const response = await fetch('/api/guardadas', {
-              method: quitar ? 'DELETE' : 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ promocionId: id })
-            });
-            if (response.status === 401) { location.replace('/index.html'); return; }
-            if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
-            boton.dataset.guardada = quitar ? 'no' : 'si';
-            boton.textContent = quitar ? 'Guardar' : 'Quitar';
-          } catch (error) {
-            if (aviso) aviso.textContent = error.message;
-          }
-        };
+        marcarBoton(boton, guardada);
+        alPulsarGuardar(boton, id, null, document.querySelector('#guardar-error'));
       }
       detail.hidden = false;
       status.textContent = '';
     } catch (error) {
+      // SCRUM-150: un enlace viejo o una promoción retirada no se arregla reintentando; queda «Volver al listado».
+      if (error.status === 404) {
+        status.textContent = 'Esta promoción ya no está disponible.';
+        return;
+      }
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;

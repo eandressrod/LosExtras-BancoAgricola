@@ -123,10 +123,9 @@ test('Explorar (?explorar=1) devuelve todo lo vigente de las tarjetas propias, c
   const explorar = await consultar('/api/para-ti?explorar=1', 'A');
   assert.equal(explorar.estrategia, 'personalizada');
   assert.deepEqual(new Set(explorar.promociones.map(p => p.id)), new Set([...conTarjeta('basica'), ...conTarjeta('black')]));
-  // Lo de interés abre la lista con su razón; el resto entra sin razón (el motor mantiene su regla de variedad por comercio).
+  // SCRUM-149: Explorar no explica por intereses. Lo de interés sigue primero por el puntaje, pero sin razón.
   assert.equal(explorar.promociones[0].category, 'Salud');
-  assert.deepEqual(new Set(explorar.promociones.filter(p => p.razon).map(p => p.id)), new Set(paraTiA.promociones.map(p => p.id)));
-  assert.ok(explorar.promociones.filter(p => p.category !== 'Salud').every(p => p.razon === null));
+  assert.ok(explorar.promociones.every(p => p.razon === null));
   assert.ok(explorar.promociones.length > paraTiA.promociones.length, 'Para ti recorta por intereses; Explorar no');
   // Los filtros explícitos siguen restringiendo y la intención del día no reordena Explorar.
   const compras = await consultar('/api/para-ti?explorar=1&categoria=Compras', 'A');

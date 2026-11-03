@@ -1,11 +1,9 @@
 import { filtrarPromociones, leerBusquedaComercio, filtrarPorComercio } from '../promociones.js';
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioPreferencias, obtenerRepositorioProductosMenu } from '../repositorios/index.js';
 import { obtenerRepositorioGuardadas } from '../repositorios/guardadas.js';
-import { guardarPromocion, quitarPromocion, seleccionarGuardadasVisibles } from '../servicios/guardadas.js';
-import { perfilDeSesion } from '../servicios/autenticacion.js';
+import { guardarPromocion, quitarPromocion, seleccionarGuardadasVisibles, aplicaATarjetasPropias } from '../servicios/guardadas.js';
 import { tarjetasDelUsuario, elegirTarjeta, rechazoDeTarjeta } from '../servicios/tarjetas.js';
-import { leerCookie } from '../servicios/sesion.js';
-import { responderJson, metodoNoPermitido } from '../http.js';
+import { exigirPerfil, responderJson, metodoNoPermitido } from '../http.js';
 
 export default {
   async fetch(request) {
@@ -14,8 +12,8 @@ export default {
     }
 
     try {
-      const perfil = await perfilDeSesion(leerCookie(request), obtenerRepositorioAccesos());
-      if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
+      const { perfil, respuesta } = await exigirPerfil(request, obtenerRepositorioAccesos());
+      if (respuesta) return respuesta;
 
       const repo = obtenerRepositorioGuardadas();
 
@@ -34,12 +32,13 @@ export default {
           return responderJson(cuerpo, estado);
         }
         const categorias = preferencias.completed ? preferencias.categories : [];
-        const porTarjeta = eleccion.tarjeta
-          ? filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, [])
-          : [];
-        const filtradas = eleccion.tarjeta
-          ? filtrarPromociones(catalogo, eleccion.tarjeta.tipoTarjeta, categorias)
-          : [];
+        // Sin ?tarjeta=, entran las promociones que aplican a cualquiera de las tarjetas propias.
+        // Con ?tarjeta=, solo las de esa tarjeta.
+        const alcance = parametros.has('tarjeta')
+          ? eleccion.tarjeta?.tipoTarjeta ?? null
+          : (propias.length ? { tarjetas: propias, predeterminadaId: eleccion.tarjeta?.id ?? null } : null);
+        const porTarjeta = alcance ? filtrarPromociones(catalogo, alcance, []) : [];
+        const filtradas = alcance ? filtrarPromociones(catalogo, alcance, categorias) : [];
         // H10 y QA-AUD-03: sinCoincidencias distingue entre tarjeta e intereses; la búsqueda solo recorta la lista visible.
         const visibles = seleccionarGuardadasVisibles(filtradas, ids, porTarjeta);
         return responderJson({ ...visibles, promociones: filtrarPorComercio(visibles.promociones, busqueda.comercio) });
@@ -57,16 +56,32 @@ export default {
 
       // perfil.id sale de la cookie. Si el cuerpo trae otro usuarioId, no se usa.
       if (request.method === 'POST') {
-        const catalogo = await obtenerRepositorio().listarPromocionesConBeneficios();
+        const [catalogo, tarjetas] = await Promise.all([
+          obtenerRepositorio().listarPromocionesConBeneficios(), 
+          obtenerRepositorioProductosMenu().listarTarjetas(perfil.id)
+        ]);
+        const propias = tarjetasDelUsuario(tarjetas, perfil);
         const resultado = await guardarPromocion(perfil.id, cuerpo.promocionId, repo, async id => {
-          return catalogo.some(promo => promo.id === id);
+          const existe = catalogo.some(promo => promo.id === id);
+          if (!existe) throw new Error('Promoción no encontrada.');
+          
+          if (!aplicaATarjetasPropias(catalogo, propias, id)) {
+            throw new Error('Esta promoción no aplica a tus tarjetas.');
+          }
+          return true;
         });
         return responderJson(resultado);
       }
 
       return responderJson(await quitarPromocion(perfil.id, cuerpo.promocionId, repo));
     } catch (error) {
-      if (error.message.includes('Falta el identificador') || error.message.includes('no encontrada')) {
+      if (error.message.includes('no encontrada')) {
+        return responderJson({ error: error.message }, 404);
+      }
+      if (error.message.includes('no aplica a tus tarjetas')) {
+         return responderJson({ error: error.message }, 403);
+      }
+      if (error.message.includes('Falta el identificador')) {
         return responderJson({ error: error.message }, 400);
       }
       return responderJson({ error: 'No se pudieron actualizar las promociones guardadas.' }, 503);

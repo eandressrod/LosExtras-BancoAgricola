@@ -1,7 +1,10 @@
-import { requireSession, getJSON } from './comun.js';
+import { requireSession, getJSON, volverAlLogin } from './comun.js';
 import { cargarCategorias } from './categorias.js';
+import { mostrarTarjetasSesion } from './tarjeta-elegida.js';
 
-if (await requireSession()) {
+const perfil = await requireSession();
+if (perfil) {
+  mostrarTarjetasSesion(perfil);
   const form = document.querySelector('#preferences-form');
   const status = document.querySelector('#preferences-status');
   const error = document.querySelector('#preferences-error');
@@ -49,7 +52,7 @@ if (await requireSession()) {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categorias })
       }).catch(() => { throw new Error('No se pudieron guardar tus preferencias. Revisa tu conexión e intenta de nuevo.'); });
-      if (response.status === 401) { location.replace('/index.html'); return; }
+      if (response.status === 401) { volverAlLogin(); return; }
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.error || 'No se pudieron guardar tus preferencias. Intenta de nuevo.');

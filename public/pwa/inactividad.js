@@ -22,6 +22,8 @@ let cuentaDiscreta;
 let mensajeDiscreto;
 let versionCubierta = 0;
 let ocultaDesde = null;
+// En la caché de Atrás: al volver, sus relojes en memoria cuentan el tiempo pasado en otras pantallas de la app.
+let enCacheAtras = false;
 
 function ocultarAviso() {
   aviso?.hidePopover?.();
@@ -121,17 +123,22 @@ async function cerrarVoluntariamente() {
 }
 
 function revisar() {
-  if (!sesion || finalizada) return;
+  // Mientras se verifica, el plazo en memoria puede venir de antes de salir de la página; decide el backend.
+  if (!sesion || finalizada || enCacheAtras || verificando) return;
   if (vencioSegundoPlano(ocultaDesde,Date.now())) return terminar();
   const estado = estadoInactividad(plazo);
   if (estado.estado === 'vencida') return terminar();
-  if (document.hidden || verificando) return;
+  if (document.hidden) return;
   if (estado.estado === 'aviso') {
     if (avisoDiscreto(location.pathname, document.body.dataset?.lecturaMensaje === 'true')) {
       if (dialogo.open) dialogo.close();
-      // Un botón fuera de un diálogo modal sería inerte aunque su popover fuese visible.
-      const contenedor = document.querySelector?.('#menu-dialog[open]') || document.body;
-      if (aviso.parentNode !== contenedor) contenedor.append(aviso);
+      // Un botón fuera de un diálogo modal (mensajes, Filtros, hojas de Cerca de ti) sería inerte aunque su popover fuese visible.
+      const contenedor = document.querySelector?.('dialog[open]:not(.pwa-privacidad)') || document.body;
+      if (aviso.parentNode !== contenedor) {
+        contenedor.append(aviso);
+        // Moverlo lo retira de la capa superior: si ya se mostraba, se vuelve a mostrar.
+        if (!aviso.hidden) aviso.showPopover?.();
+      }
       cuentaDiscreta.textContent = `${estado.segundos} s`;
       if (aviso.hidden) { aviso.hidden = false; aviso.showPopover?.(); }
     } else {
@@ -164,6 +171,8 @@ async function renovar() {
 }
 
 function actividad(event) {
+  // Cerrar sesión no renueva: la renovación llegaría tras el logout y respondería 401.
+  if (event.target?.closest?.('[data-cierra-sesion]')) { clearTimeout(envioPendiente); return; }
   if (!event.isTrusted || document.hidden || verificando || finalizada || dialogo.open || (aviso && !aviso.hidden)) return;
   if (Date.now() >= plazo) return terminar();
   clearTimeout(envioPendiente);
@@ -239,13 +248,15 @@ export function iniciarInactividad() {
       registrarSegundoPlano(sesion.id,localStorage,ocultaDesde);
       bloquear();
     } else {
-      const desde=ocultaDesde??leerSegundoPlano(sesion.id,localStorage);
+      // Al volver con Atrás solo cuenta el registro compartido, que deja la pantalla que pasó a segundo plano.
+      const desde=enCacheAtras?leerSegundoPlano(sesion.id,localStorage):ocultaDesde??leerSegundoPlano(sesion.id,localStorage);
+      enCacheAtras=false;
       if (vencioSegundoPlano(desde,Date.now())) return terminar();
       ocultaDesde=null;limpiarSegundoPlano(sesion.id,localStorage);
       verificar();
     }
   });
-  addEventListener('pagehide', () => bloquear());
+  addEventListener('pagehide', event => { if (event?.persisted) enCacheAtras = true; bloquear(); });
   setInterval(revisar, 250);
   revisar();
 }

@@ -25,21 +25,43 @@ export function seleccionarGuardadasVisibles(filtradas, idsGuardados, aplicables
   const ids = [];
   const promociones = [];
   let ocultasPorIntereses = false;
+  let ocultasPorTarjeta = false; 
+
   for (const id of idsGuardados || []) {
     if (ids.includes(id)) continue;
     ids.push(id);
     const promo = (filtradas || []).find(item => item.id === id && item.canUse === true);
     if (promo) {
       promociones.push(promo);
-    } else if ((aplicablesTarjeta || []).some(item => item.id === id && item.canUse === true)) {
-      ocultasPorIntereses = true;
+    } else {
+      const aplicaATarjeta = (aplicablesTarjeta || []).some(item => item.id === id && item.canUse === true);
+      if (aplicaATarjeta) {
+        ocultasPorIntereses = true; 
+      } else {
+        ocultasPorTarjeta = true; 
+      }
     }
   }
+
   const sinCoincidencias = ids.length > 0 && promociones.length === 0;
+
   return {
     ids,
     promociones,
     sinCoincidencias,
-    motivoSinCoincidencias: !sinCoincidencias ? null : (ocultasPorIntereses ? 'intereses' : 'tarjeta')
+    motivoSinCoincidencias: !sinCoincidencias ? null : (ocultasPorIntereses ? 'intereses' : 'tarjeta'),
+    tambienOcultasPorTarjeta: (sinCoincidencias && ocultasPorIntereses) ? ocultasPorTarjeta : false
   };
+}
+
+// QA-AUD-04: comprueba que la promoción exista y tenga beneficio para al menos una tarjeta propia del usuario.
+export function aplicaATarjetasPropias(catalogo, tarjetasPropias, promocionId) {
+  const tipos = new Set((tarjetasPropias || []).map(tarjeta => tarjeta.tipoTarjeta).filter(Boolean));
+  if (tipos.size === 0) return false;
+  return (catalogo || []).some(promo =>
+    promo.id === promocionId && (
+      (Array.isArray(promo.beneficios) && promo.beneficios.some(beneficio => tipos.has(beneficio.tipo_tarjeta))) ||
+      (typeof promo.applicableCard === 'string' && tipos.has(promo.applicableCard))
+    )
+  );
 }

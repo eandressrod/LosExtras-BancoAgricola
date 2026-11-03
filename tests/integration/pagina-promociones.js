@@ -11,6 +11,7 @@ import { textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mos
 import * as pestanas from '../../public/js/pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from '../../public/js/filtros-activos.js';
 import { diapositivasFranja } from '../../public/js/franja.js';
+import { idsVisiblesGuardadas, cuentaEnGuardadas } from '../../public/js/guardar-promo.js';
 import * as instantanea from '../../public/js/instantanea.js';
 
 export const CATEGORIAS = ['Restaurantes', 'Compras', 'Entretenimiento'].map((id, orden) => ({ id, nombre: id, orden }));
@@ -35,8 +36,12 @@ const fuente = async archivo => {
   // Primero elimina imports multilínea: import { ... } from '...'; que abarcan varias líneas.
   const sinMultilinea = texto.replace(/^import\s*\{[^}]*\}\s*from\s*['"][^'"]+['"]\s*;?\s*\n/gms, '');
   // Luego elimina imports de una sola línea que puedan haber quedado.
-  return sinMultilinea.replace(/^import[^\n]+\n/gm, '');
+  return sinMultilinea.replace(/^import[^\n]+\n/gm, '').replace(/^export /gm, '');
 };
+// SCRUM-129: las páginas comparten la tarjeta y el Guardar; se cargan junto con la página, con la misma vista de prueba.
+// Guardadas reemplaza el Guardar por dobles propios, así que solo recibe la tarjeta.
+const conCompartidos = async (archivo, { guardar = true } = {}) =>
+  [await fuente('tarjeta-promocion.js'), guardar ? await fuente('guardar-promo.js') : '', await fuente(archivo)].join('\n');
 const vista = {
   textoVigencia: () => '', textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarDias,
   mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarPasos: () => {}, mostrarRestricciones: () => {}
@@ -49,6 +54,7 @@ export function elemento(extra = {}) {
     classList: { valores: new Set(), add(valor) { this.valores.add(valor); }, contains(valor) { return this.valores.has(valor); } },
     addEventListener(tipo, accion) { this.listeners[tipo] = accion; },
     click() { return this.listeners.click?.(); },
+    blur() { this.desenfocado = true; },
     input(valor) { this.value = valor; return this.listeners.input?.({ target: this }); },
     setAttribute(nombre, valor) { this.attributes[nombre] = String(valor); },
     removeAttribute(nombre) { delete this.attributes[nombre]; },
@@ -87,10 +93,16 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
   // retardos asíncronos entre contextos VM que no se puedan awaitar desde el host.
   let timerIdActual = 0;
   const timerFake = { flush: async () => {} }; // no-op; las callbacks ya se ejecutan solas
+  // SCRUM-142: enlaces que vuelven por el historial (volver.js tiene sus pruebas) y eventos de la ventana, como pageshow.
+  const volverPorHistorial = [];
+  const ventana = {};
   const contexto = {
     URLSearchParams,
     location,
     history,
+    volverConHistorial: enlace => { volverPorHistorial.push(enlace); },
+    volverAlLogin: () => location.replace('/index.html'),
+    addEventListener: (tipo, accion) => { ventana[tipo] = accion; },
     setTimeout: (fn, _ms) => { ++timerIdActual; Promise.resolve().then(() => fn()); return timerIdActual; },
     clearTimeout: (_id) => { /* no se puede cancelar una microtarea ya encolada */ },
     requireSession: async ({revelar=true}={}) => {
@@ -107,7 +119,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     mostrarDonde: () => {},
     ...vista, ...filtro, ...tarjeta, ...instantanea, ...pestanas
   };
-  return { obtener, history, contexto, elementos, sesion, timerFake };
+  return { obtener, history, contexto, elementos, sesion, timerFake, volverPorHistorial, ventana };
 }
 
 export async function abrirListado(opciones = {}) {
@@ -146,20 +158,32 @@ export async function abrirListado(opciones = {}) {
   const tarjetas = opciones.tarjetas ?? (() => TARJETAS[perfil] ?? []);
   const responder = opciones.responder ?? (url => PROMOS[parametro(url, 'categoria') ?? 'todas']);
   Object.assign(nav.contexto, {
+    fetch: opciones.fetch,
     registrarAperturaPromociones: async () => { pedidas.aperturas++; return { promocionesAbiertas: true, hojaMostrada: true, avisoCerrado: true, ...opciones.marcas }; },
     marcarEncuesta: async marca => { marcasEnviadas.push(marca); },
     abrirEncuestaHoja: datos => { hojas.push(datos); },
     repintarConMovimiento: (_lista, _id, pintar) => pintar(),
     crearAviso: () => aviso,
+    // SCRUM-144: los plazos de espera tienen pruebas unitarias; aquí la prueba decide cuándo avisa o corta.
+    conEspera: opciones.conEspera ?? (operacion => operacion()),
     diapositivasFranja, filtrosActivos, textoBotonFiltros,
     montarCarrusel: (_raiz, diapositivas) => { franja.montajes.push(diapositivas); return { parar() { franja.paradas += 1; } }; },
     document: {
       body: { dataset: {} },
       querySelector: nav.obtener,
-      querySelectorAll: selector => selector === '.filter-chip' ? [todas] : [],
+      querySelectorAll: selector => selector === '.filter-chip' ? [todas]
+        : selector === '.guardar-promo' ? cards.hijos.map(oferta => oferta.querySelector('.guardar-promo')) : [],
       getElementById: () => null,
       createElement: tagName => elemento({ tagName })
     },
+    idsVisiblesGuardadas,
+    cuentaEnGuardadas,
+    // Las guardadas se leen con fetch; sin él, la página las da por vacías.
+    fetch: opciones.fetch ?? (opciones.guardadas == null ? undefined : async url => {
+      consultas.push(url);
+      const datos = typeof opciones.guardadas === 'function' ? await opciones.guardadas(url) : opciones.guardadas;
+      return { ok: true, status: 200, json: async () => datos };
+    }),
     getJSON: async url => {
       if (url === '/api/preferencias') return preferencias();
       if (url === '/api/categorias') { pedidas.categorias += 1; return categorias(); }
@@ -170,7 +194,7 @@ export async function abrirListado(opciones = {}) {
       return Array.isArray(datos) ? { version: 'prueba', estrategia: 'base', vacio: datos.length ? null : 'filtros', promociones: datos } : datos;
     }
   });
-  await vm.runInNewContext(`(async () => { ${await fuente('promociones.js')} })()`, nav.contexto);
+  await vm.runInNewContext(`(async () => { ${await conCompartidos('promociones.js')} })()`, nav.contexto);
   const chips = () => [todas, ...filtros.hijos];
   const pulsados = lista => lista.filter(boton => boton.attributes['aria-pressed'] === 'true').map(boton => boton.textContent);
   // Envuelve obtener para que input() espere a que las microtareas del debounce completen
@@ -209,11 +233,12 @@ export async function abrirDetalle(opciones = {}) {
     getJSON: async url => {
       consultas.push(url);
       if (opciones.falla) throw new Error('No se pudieron cargar los datos. Intenta de nuevo.');
+      if (opciones.error) throw opciones.error;
       const black = parametro(url, 'tarjeta') === 'cta-a-4';
       return { id: 'tienda', merchant: 'Siman', benefit: black ? '25 % de descuento' : '15 % de descuento', applicableCard: black ? 'black' : 'basica', ...opciones.promocion };
     }
   });
-  await vm.runInNewContext(`(async () => { ${await fuente('detalle.js')} })()`, nav.contexto);
+  await vm.runInNewContext(`(async () => { ${await conCompartidos('detalle.js')} })()`, nav.contexto);
   return { ...nav, consultas, volver: () => nav.obtener('#back-to-list').href };
 }
 
@@ -250,6 +275,7 @@ export async function abrirGuardadas(opciones = {}) {
       consultas.push(url);
       return null;
     },
+    crearAviso: () => ({ mostrar() {}, cerrar() {} }),
     consultarGuardadas: async (tarjetaId, comercio) => {
       consultas.push(`/api/guardadas?tarjeta=${tarjetaId ?? ''}&comercio=${comercio ?? ''}`);
       return responderGuardadas(tarjetaId, comercio);
@@ -265,7 +291,7 @@ export async function abrirGuardadas(opciones = {}) {
     tarjetaActiva: (lista, id) => lista.find(t => t.id === id) ?? lista.find(t => t.predeterminada) ?? lista[0] ?? null,
     cardName
   });
-  await vm.runInNewContext(`(async () => { ${await fuente('guardadas.js')} })()`, nav.contexto);
+  await vm.runInNewContext(`(async () => { ${await conCompartidos('guardadas.js', { guardar: false })} })()`, nav.contexto);
   const esperarMicrotareas = () => new Promise(r => setImmediate(r));
   const obtenerConFlush = selector => {
     const el = nav.obtener(selector);

@@ -4,41 +4,12 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
-import perfiles from '../api/perfiles.js';
-import promociones from '../api/promociones.js';
-import promocion from '../api/promocion.js';
-import login from '../api/auth/login.js';
-import sesion from '../api/auth/sesion.js';
-import logout from '../api/auth/logout.js';
-import menu from '../api/menu.js';
-import preferencias from '../api/preferencias.js';
-import categorias from '../api/categorias.js';
-import recursos from '../api/recursos.js';
-import actividad from '../api/auth/actividad.js';
-import tarjetas from '../api/tarjetas.js';
+import { cargarFunciones, rutasDesdeVercel, cabecerasEstaticas } from './rutas-locales.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
-const routes = {
-  '/api/auth/actividad': actividad,
-  '/api/perfiles': perfiles,
-  '/api/promociones': promociones,
-  '/api/promocion': promocion,
-  '/api/auth/login': login,
-  '/api/auth/sesion': sesion,
-  '/api/auth/logout': logout,
-  '/api/menu': menu,
-  '/api/preferencias': preferencias,
-  '/api/categorias': categorias,
-  '/api/recursos': recursos,
-  '/api/mensajes': recursos,
-  '/api/metas': recursos,
-  '/api/promociones-apertura': recursos,
-  '/api/guardadas': recursos,
-  '/api/para-ti': recursos,
-  '/api/senales': recursos,
-  '/api/zonas': recursos,
-  '/api/tarjetas': tarjetas
-};
+// Las rutas y cabeceras salen de api/ y vercel.json, como en Vercel (SCRUM-130).
+const vercel = JSON.parse(await readFile(fileURLToPath(new URL('../vercel.json', import.meta.url)), 'utf8'));
+const routes = rutasDesdeVercel(vercel, await cargarFunciones());
 const types = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -95,7 +66,7 @@ createServer(async (req, res) => {
     }
     const content = await readFile(path);
     res.writeHead(200, { 'Content-Type': types[extname(path)] || 'application/octet-stream',
-      ...(url.pathname === '/pwa/sw.js' ? { 'Service-Worker-Allowed': '/', 'Cache-Control': 'no-cache' } : {}) });
+      ...cabecerasEstaticas(vercel, url.pathname) });
     res.end(req.method === 'HEAD' ? undefined : content);
   } catch (error) {
     const status = ['ENOENT', 'EISDIR'].includes(error.code) ? 404 : 500;
