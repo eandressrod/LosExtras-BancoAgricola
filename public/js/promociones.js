@@ -20,6 +20,7 @@ import {
 } from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjeta, conTarjeta, textoInsignia } from './tarjeta-elegida.js';
 import { crearCerca } from './cerca/pantalla.js';
+import { conEspera } from './espera-carga.js';
 
 let idsGuardados = [];
 // Cuántas tarjetas tiene el perfil: con más de una, cada promoción dice con cuáles aplica.
@@ -327,17 +328,19 @@ if (profile) {
     pintarContadorGuardadas();
   }
 
-  async function leerIdsGuardados() {
+  async function leerIdsGuardados(signal) {
     if (typeof fetch !== 'function') return [];
     const aviso = document.querySelector('#saved-status');
     try {
-      const response = await fetch('/api/guardadas', { cache: 'no-store' });
+      const response = await fetch('/api/guardadas', { cache: 'no-store', signal });
       if (response.status === 401) { volverAlLogin(); return []; }
       if (!response.ok) throw new Error();
       const datos = await response.json();
       if (aviso) aviso.textContent = '';
       return datos.ids || [];
     } catch {
+      // Cortada por tardar: el error de la lista ya ofrece Reintentar.
+      if (signal?.aborted) return [];
       // Sin conexión, fetch rechaza con un texto técnico del navegador: siempre se muestra el propio.
       if (aviso) aviso.textContent = 'No se pudieron cargar las promociones guardadas.';
       return [];
@@ -450,8 +453,11 @@ if (profile) {
       // H22 y H25: al volver del detalle se conserva el orden de la visita; entrar o cambiar un filtro o chip lo recalcula.
       const guardada = volverDelDetalle ? leerInstantanea(sesion, profile.id, consulta) : null;
       volverDelDetalle = false;
-      // La lista y las guardadas se piden juntas.
-      const [respuesta, ids] = await Promise.all([guardada ?? getJSON(consulta), leerIdsGuardados()]);
+      // La lista y las guardadas se piden juntas. SCRUM-144: si tardan se avisa, y a los 20 s se cortan con Reintentar.
+      const [respuesta, ids] = await conEspera(signal => Promise.all([guardada ?? getJSON(consulta, { signal }), leerIdsGuardados(signal)]), {
+        // Sobre los rectángulos de carga: el bloque de estado queda debajo de ellos, fuera de la vista.
+        alTardar: texto => { if (turno === consultaActual) conteo.textContent = texto; }
+      });
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
       if (!guardada) guardarInstantanea(sesion, profile.id, consulta, respuesta);
       const promotions = marcarVencidas(respuesta.promociones);
@@ -473,6 +479,7 @@ if (profile) {
     } catch (error) {
       if (turno !== consultaActual) return;
       pintarFranja([]);
+      conteo.textContent = '';
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;

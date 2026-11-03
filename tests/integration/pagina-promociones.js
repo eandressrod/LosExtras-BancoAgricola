@@ -163,6 +163,8 @@ export async function abrirListado(opciones = {}) {
     abrirEncuestaHoja: datos => { hojas.push(datos); },
     repintarConMovimiento: (_lista, _id, pintar) => pintar(),
     crearAviso: () => aviso,
+    // SCRUM-144: los plazos de espera tienen pruebas unitarias; aquí la prueba decide cuándo avisa o corta.
+    conEspera: opciones.conEspera ?? (operacion => operacion()),
     // Las guardadas se leen con fetch; sin él, la página las da por vacías.
     fetch: opciones.fetch,
     diapositivasFranja, filtrosActivos, textoBotonFiltros,

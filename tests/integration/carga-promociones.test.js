@@ -45,6 +45,40 @@ test('sin conexión las guardadas no muestran el texto técnico del navegador', 
   assert.equal(p.obtener('#saved-status').textContent, 'No se pudieron cargar las promociones guardadas.');
 });
 
+// SCRUM-144: si Para ti tarda, la lista avisa; si se corta, queda el error con Reintentar.
+test('mientras la lista tarda se ve el aviso y al llegar se pinta sin él', async () => {
+  let lenta = false;
+  let mientras;
+  const p = await abrirListado({ conEspera: async (operacion, { alTardar }) => {
+    if (lenta) { alTardar('Está tardando más de lo normal…'); mientras = { conteo: p.obtener('#pr-conteo').textContent, estado: p.obtener('#list-status').textContent }; }
+    return operacion();
+  } });
+  lenta = true;
+  await p.chip('Compras').click();
+  // El aviso va sobre los rectángulos de carga: el bloque de estado queda debajo de ellos, fuera de la vista.
+  assert.deepEqual(mientras, { conteo: 'Está tardando más de lo normal…', estado: '' });
+  assert.equal(p.obtener('#pr-conteo').textContent, '1 promoción');
+  assert.equal(p.enlaces().length, 1);
+});
+
+test('si la lista se corta por tardar, queda el error con Reintentar y reintentar la carga', async () => {
+  let corta = false;
+  const p = await abrirListado({ conEspera: async (operacion, { alTardar }) => {
+    if (corta) { alTardar('Está tardando más de lo normal…'); throw new Error('No se pudieron cargar los datos. Intenta de nuevo.'); }
+    return operacion();
+  } });
+  corta = true;
+  await p.chip('Compras').click();
+  assert.equal(p.obtener('#pr-conteo').textContent, '', 'el aviso de espera no queda junto al error');
+  assert.equal(p.obtener('#list-status').textContent, 'No se pudieron cargar los datos. Intenta de nuevo.');
+  assert.equal(p.obtener('#retry').hidden, false);
+  assert.equal(p.obtener('#promotions-loading').hidden, true);
+  corta = false;
+  await p.obtener('#retry').click();
+  assert.equal(p.enlaces().length, 1);
+  assert.equal(p.obtener('#retry').hidden, true);
+});
+
 // H21 (ADR-010): la encuesta es una hoja sobre la lista real. La hoja se abre sola solo la primera vez (marca del servidor);
 // después queda un aviso en la lista hasta cerrarlo una vez, y la encuesta sigue disponible desde «Mis preferencias».
 const PRIMERA_VEZ={hojaMostrada:false,avisoCerrado:false};
