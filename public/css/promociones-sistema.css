@@ -658,7 +658,7 @@ button.pr-marcador--sucursal:focus-visible { outline: 3px solid var(--pr-tinta);
    <dialog class="pr-hoja"> con showModal(); Esc cierra y el foco vuelve al control que la abrió.
    .pr-hoja--sin-velo deja ver la lista detrás sin oscurecerla (ADR-010 para la encuesta). */
 .pr-hoja {
-  position: fixed; inset: auto 0 0; display: flex; flex-direction: column; gap: 12px; width: min(100%, 480px); max-width: none; max-height: 85dvh;
+  position: fixed; inset: auto 0 0; display: flex; flex-direction: column; gap: 12px; width: min(100%, 480px); height: auto; max-width: none; max-height: 85dvh;
   margin: 0 auto; padding: 8px 18px max(18px, env(safe-area-inset-bottom)); border: 0; border-radius: 26px 26px 0 0;
   background: var(--pr-superficie); color: var(--pr-tinta); box-shadow: 0 -6px 30px rgb(0 0 0 / .16); animation: pr-hoja-entra var(--pr-lento) var(--pr-curva);
 }

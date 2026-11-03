@@ -46,6 +46,17 @@ test('el primer toque envía actividad antes de navegar y conserva la petición 
   const p=pagina();p.avanzar(10000);p.eventos.pointerdown({isTrusted:true});
   assert.deepEqual(p.llamadas,['/api/auth/actividad']);assert.equal(p.opciones[0].keepalive,true);
 });
+// SCRUM-148: el toque en «Cerrar sesión» no renueva; si renovara, la petición llegaría tras el logout y respondería 401.
+test('tocar Cerrar sesión no envía actividad y cancela la que estaba pendiente', async () => {
+  const p=pagina();const cerrar={closest:selector=>selector==='[data-cierra-sesion]'?cerrar:null};
+  p.avanzar(10000);p.eventos.pointerdown({isTrusted:true});assert.deepEqual(p.llamadas,['/api/auth/actividad']);
+  for(let i=0;i<6;i++)await Promise.resolve();
+  p.reloj(10500);p.eventos.pointerdown({isTrusted:true});
+  p.reloj(10600);p.eventos.pointerdown({isTrusted:true,target:cerrar});
+  p.finalizarSalida();for(let i=0;i<6;i++)await Promise.resolve();
+  assert.deepEqual(p.llamadas,['/api/auth/actividad']);
+});
+
 test('sin interacción no renueva; avisa y bloquea al vencer', () => {
   const p=pagina(); p.avanzar(100000); assert.equal(p.dialogo().open,true);
   assert.deepEqual(p.llamadas,[]); p.avanzar(120000);
