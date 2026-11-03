@@ -323,7 +323,12 @@
   height: 52px; min-height: 0; margin: 0; padding: 0 4px; border: 0; border-radius: 0; background: none; color: var(--pr-texto-3);
   font: inherit; font-size: .95rem; font-weight: 700; letter-spacing: -.01em; transition: color var(--pr-rapido);
 }
-.pr-pestana:hover { background: rgb(29 27 26 / .04); color: var(--pr-tinta); }
+/* Solo con puntero: en pantallas táctiles el hover se quedaba pegado tras tocar la pestaña (SCRUM-151).
+   El reinicio evita además el fondo amarillo de button:hover de styles.css. */
+.pr-pestana:hover { background: none; }
+@media (hover: hover) {
+  .pr-pestana:hover { background: rgb(29 27 26 / .04); color: var(--pr-tinta); }
+}
 .pr-pestana[aria-selected="true"] { color: var(--pr-tinta); }
 .pr-pestana:focus-visible { outline-offset: -3px; }
 .pr-panel:not([hidden]) { animation: pr-panel-entra var(--pr-medio) var(--pr-curva); }
