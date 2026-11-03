@@ -78,7 +78,7 @@ test('un id inexistente no rompe la lista', async () => {
   reiniciarGuardadasMock();
   const cookie = await cookieDe('demo.basica', 'Basica2026');
   const alta = await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'no-existe' });
-  assert.equal(alta.status, 400);
+  assert.equal(alta.status, 404);
   const lista = await pedir('/api/guardadas', 'GET', cookie);
   assert.equal(lista.status, 200);
   assert.deepEqual((await lista.json()).ids, []);
@@ -132,14 +132,16 @@ test('SCRUM-140 sin ?tarjeta=, Guardadas muestra la promo que solo aplica a la o
   assert.equal(lista.promociones.some(promo => promo.id === 'tienda'), true);
 });
 
-test('una exclusiva que no aplica a ninguna tarjeta propia queda guardada pero no se muestra', async () => {
+test('una exclusiva que no aplica a ninguna tarjeta propia se rechaza y no queda guardada', async () => {
   reiniciarGuardadasMock();
   const cookie = await cookieDe('h19.usuario.001', 'H19Prueba2026');
-  assert.equal((await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'siman-black' })).status, 200);
+  const intento = await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'siman-black' });
+  assert.equal(intento.status, 403);
+  const error = await intento.json();
+  assert.match(error.error, /Esta promoción no aplica a tus tarjetas/);
   const lista = await (await pedir('/api/guardadas', 'GET', cookie)).json();
-  assert.deepEqual(lista.ids, ['siman-black']);
+  assert.deepEqual(lista.ids, []);
   assert.deepEqual(lista.promociones, []);
-  assert.equal(lista.sinCoincidencias, true);
 });
 
 test('QA-AUD-03 al cambiar intereses en Mis preferencias, GET /api/guardadas informa que la causa es intereses y no la tarjeta', async () => {
@@ -171,4 +173,28 @@ test('QA-AUD-03 al cambiar intereses en Mis preferencias, GET /api/guardadas inf
       body: JSON.stringify({ categorias: ['Compras'] })
     }));
   }
+});
+
+test('QA-AUD-04 rechaza guardar una promoción exclusiva Black si el usuario solo tiene tarjeta Básica', async () => {
+  reiniciarGuardadasMock();
+  const cookieDemo = await cookieDe('demo', 'demo123');
+  const intento = await pedir('/api/guardadas', 'POST', cookieDemo, { promocionId: 'siman-black' });
+  assert.equal(intento.status, 403);
+  const error = await intento.json();
+  assert.match(error.error, /Esta promoción no aplica a tus tarjetas/);
+  const lista = await (await pedir('/api/guardadas', 'GET', cookieDemo)).json();
+  assert.deepEqual(lista.ids, []);
+  assert.deepEqual(lista.promociones, []);
+});
+
+test('QA-AUD-04 rechaza guardar una promoción no existente', async () => {
+  reiniciarGuardadasMock();
+  const cookieDemo = await cookieDe('demo', 'demo123');
+  const intento = await pedir('/api/guardadas', 'POST', cookieDemo, { promocionId: 'omnisport' });
+  assert.equal(intento.status, 404);
+  const error = await intento.json();
+  assert.match(error.error, /Promoción no encontrada/);
+  const lista = await (await pedir('/api/guardadas', 'GET', cookieDemo)).json();
+  assert.deepEqual(lista.ids, []);
+  assert.deepEqual(lista.promociones, []);
 });
