@@ -1,7 +1,7 @@
 import { requireSession, getJSON, almacenSesion, revelarPagina, volverAlLogin } from './comun.js';
 import { hoyEnElSalvador } from './promocion-vista.js';
 import { llenarTarjetaPromocion } from './tarjeta-promocion.js';
-import { marcarBoton, cambiarGuardada, alPulsarGuardar } from './guardar-promo.js';
+import { marcarBoton, cambiarGuardada, alPulsarGuardar, idsVisiblesGuardadas, cuentaEnGuardadas } from './guardar-promo.js';
 import { SECCIONES, seccionVecina, seccionPorDeslizamiento, leerSeccion, guardarSeccion, urlSeccion } from './pestanas.js';
 import { filtrosActivos, textoBotonFiltros } from './filtros-activos.js';
 import { crearAviso } from './aviso-deshacer.js';
@@ -20,21 +20,32 @@ import {
 } from './filtro-categoria.js';
 import { leerTarjetaElegida, guardarTarjetaElegida, etiquetaTarjeta, textoTarjeta, conTarjeta, textoInsignia } from './tarjeta-elegida.js';
 import { crearCerca } from './cerca/pantalla.js';
+import { conEspera } from './espera-carga.js';
 
 let idsGuardados = [];
+let idsVisibles = [];
+let categoriasContador = [];
 // Cuántas tarjetas tiene el perfil: con más de una, cada promoción dice con cuáles aplica.
 let totalTarjetas = 1;
 let avisoGuardar = null;
 
-// Cabecera: el icono de Guardadas cuenta las guardadas de la sesión.
-function pintarContadorGuardadas() {
-  const contador = document.querySelector('#pr-contador-guardadas');
-  contador.textContent = idsGuardados.length ? String(idsGuardados.length) : '';
-  contador.hidden = !idsGuardados.length;
+function fijarCategoriasContador(datos) {
+  categoriasContador = datos?.completed && Array.isArray(datos.categories) ? datos.categories : [];
 }
 
-function anotarGuardada(id, guardada) {
+// Cabecera: el icono cuenta las guardadas que se ven con la tarjeta y los intereses.
+function pintarContadorGuardadas() {
+  const contador = document.querySelector('#pr-contador-guardadas');
+  contador.textContent = idsVisibles.length ? String(idsVisibles.length) : '';
+  contador.hidden = !idsVisibles.length;
+}
+
+function anotarGuardada(promotion, guardada) {
+  const id = promotion.id;
   idsGuardados = guardada ? [...idsGuardados, id] : idsGuardados.filter(guardado => guardado !== id);
+  // SCRUM-140: el icono cuenta las que se ven con la tarjeta y los intereses.
+  if (!guardada) idsVisibles = idsVisibles.filter(guardado => guardado !== id);
+  else if (cuentaEnGuardadas(promotion, categoriasContador) && !idsVisibles.includes(id)) idsVisibles = [...idsVisibles, id];
   pintarContadorGuardadas();
 }
 
@@ -50,14 +61,14 @@ function crearOferta(promotion, categoria, hoy, busqueda, intencion) {
   marcarBoton(boton, idsGuardados.includes(promotion.id));
   // El cambio se puede deshacer una vez desde el aviso; deshacer no abre otro aviso.
   alPulsarGuardar(boton, promotion.id, guardada => {
-    anotarGuardada(promotion.id, guardada);
+    anotarGuardada(promotion, guardada);
     avisoGuardar.mostrar({
       texto: guardada ? 'Promoción guardada.' : 'Promoción quitada de Guardadas.',
       alDeshacer: async () => {
         error.textContent = '';
         try {
           const deshecha = await cambiarGuardada(boton, promotion.id);
-          if (deshecha !== null) anotarGuardada(promotion.id, deshecha);
+          if (deshecha !== null) anotarGuardada(promotion, deshecha);
         } catch (fallo) {
           error.textContent = fallo.message;
         }
@@ -323,23 +334,34 @@ if (profile) {
   }
 
   async function refrescarContadorGuardadas() {
-    idsGuardados = await leerIdsGuardados();
+    const guardadas = await leerIdsGuardados();
+    idsGuardados = guardadas.ids;
+    idsVisibles = guardadas.visibles;
     pintarContadorGuardadas();
   }
 
-  async function leerIdsGuardados() {
-    if (typeof fetch !== 'function') return [];
+  async function leerIdsGuardados(signal) {
+    if (typeof fetch !== 'function') return { ids: [], visibles: [] };
     const aviso = document.querySelector('#saved-status');
+    const ruta = filtroTarjeta?.id
+      ? '/api/guardadas?tarjeta=' + encodeURIComponent(filtroTarjeta.id)
+      : '/api/guardadas';
     try {
-      const response = await fetch('/api/guardadas', { cache: 'no-store' });
-      if (response.status === 401) { volverAlLogin(); return []; }
-      if (!response.ok) throw new Error('No se pudieron cargar las promociones guardadas.');
+      const response = await fetch(ruta, { cache: 'no-store', signal });
+      if (response.status === 401) { volverAlLogin(); return { ids: [], visibles: [] }; }
+      if (!response.ok) throw new Error();
       const datos = await response.json();
       if (aviso) aviso.textContent = '';
-      return datos.ids || [];
-    } catch (error) {
-      if (aviso) aviso.textContent = error.message;
-      return [];
+      return {
+        ids: Array.isArray(datos.ids) ? datos.ids : [],
+        visibles: idsVisiblesGuardadas(datos)
+      };
+    } catch {
+      // Cortada por tardar: el error de la lista ya ofrece Reintentar.
+      if (signal?.aborted) return { ids: [], visibles: [] };
+      // Sin conexión, fetch rechaza con un texto técnico del navegador: siempre se muestra el propio.
+      if (aviso) aviso.textContent = 'No se pudieron cargar las promociones guardadas.';
+      return { ids: [], visibles: [] };
     }
   }
 
@@ -347,7 +369,9 @@ if (profile) {
   // cambiar en el detalle o en Guardadas, así que se releen.
   addEventListener('pageshow', async event => {
     if (!event.persisted) return;
-    idsGuardados = await leerIdsGuardados();
+    const guardadas = await leerIdsGuardados();
+    idsGuardados = guardadas.ids;
+    idsVisibles = guardadas.visibles;
     pintarContadorGuardadas();
     for (const boton of document.querySelectorAll('.guardar-promo')) marcarBoton(boton, idsGuardados.includes(boton.dataset.promocion));
   });
@@ -364,6 +388,7 @@ if (profile) {
       [marcas, preferencias, categorias, lista] = await Promise.all([
         marcas ?? registrarAperturaPromociones(), getJSON('/api/preferencias'), getJSON('/api/categorias'), getJSON('/api/tarjetas')
       ]);
+      fijarCategoriasContador(preferencias);
       ofertaDeEncuesta = ofertaEncuesta({ pendiente: !preferencias.completed, pedida: encuestaPedida, ...marcas });
       // La hoja va sobre la lista de Para ti, aunque la visita anterior quedara en otra sección.
       if (ofertaDeEncuesta === 'hoja') seccion = 'para-ti';
@@ -423,7 +448,7 @@ if (profile) {
     carrusel?.parar();
     carrusel = null;
     const diapositivas = promociones.length ? diapositivasFranja({
-      promociones, hoy: hoyEnElSalvador(), estrategia, guardadas: idsGuardados
+      promociones, hoy: hoyEnElSalvador(), estrategia, guardadas: idsVisibles
     }) : [];
     franja.hidden = diapositivas.length === 0;
     if (diapositivas.length) carrusel = montarCarrusel(franja, diapositivas, { enlace: enlaceAviso, alPulsar: irAPromocion });
@@ -449,13 +474,17 @@ if (profile) {
       // H22 y H25: al volver del detalle se conserva el orden de la visita; entrar o cambiar un filtro o chip lo recalcula.
       const guardada = volverDelDetalle ? leerInstantanea(sesion, profile.id, consulta) : null;
       volverDelDetalle = false;
-      // La lista y las guardadas se piden juntas.
-      const [respuesta, ids] = await Promise.all([guardada ?? getJSON(consulta), leerIdsGuardados()]);
+      // La lista y las guardadas se piden juntas. SCRUM-144: si tardan se avisa, y a los 20 s se cortan con Reintentar.
+      const [respuesta, guardadas] = await conEspera(signal => Promise.all([guardada ?? getJSON(consulta, { signal }), leerIdsGuardados(signal)]), {
+        // Sobre los rectángulos de carga: el bloque de estado queda debajo de ellos, fuera de la vista.
+        alTardar: texto => { if (turno === consultaActual) conteo.textContent = texto; }
+      });
       if (turno !== consultaActual) return; // Llegó tarde: ya se eligió otro filtro u otra tarjeta.
       if (!guardada) guardarInstantanea(sesion, profile.id, consulta, respuesta);
       const promotions = marcarVencidas(respuesta.promociones);
       listaActual = promotions;
-      idsGuardados = ids;
+      idsGuardados = guardadas.ids;
+      idsVisibles = guardadas.visibles;
       pintarContadorGuardadas();
       for (const promotion of promotions) cards.append(crearOferta(promotion, categoria, hoy, busqueda, intencion));
       const vacio = promotions.length === 0;
@@ -472,6 +501,7 @@ if (profile) {
     } catch (error) {
       if (turno !== consultaActual) return;
       pintarFranja([]);
+      conteo.textContent = '';
       status.textContent = error.message;
       status.className = 'error';
       retry.hidden = false;
@@ -539,7 +569,10 @@ if (profile) {
   // Al cerrar la hoja, el orden vuelve a pedirse a /api/para-ti con lo que quedó guardado.
   async function alCerrarEncuesta({ terminada = false } = {}) {
     delete cards.dataset.previa;
-    if (terminada) preferencias = await getJSON('/api/preferencias');
+    if (terminada) {
+      preferencias = await getJSON('/api/preferencias');
+      fijarCategoriasContador(preferencias);
+    }
     await loadPromotions();
     surveyNotice.hidden = !terminada;
   }

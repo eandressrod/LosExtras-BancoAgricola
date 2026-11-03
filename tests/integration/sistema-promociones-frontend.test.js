@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { abrirListado, abrirDetalle, abrirGuardadas } from './pagina-promociones.js';
+import { abrirListado, abrirDetalle, abrirGuardadas, almacen } from './pagina-promociones.js';
 import { hoyEnElSalvador } from '../../public/js/promocion-vista.js';
 
 const clic = boton => boton.onclick({ preventDefault() {}, stopPropagation() {} });
@@ -115,6 +115,34 @@ test('con todas las tarjetas la tarjeta dice con cuáles aplica y menciona la ot
   assert.equal(oferta.querySelector('.promo-otras').hidden, false);
 });
 
+test('el contador de Guardadas cuenta solo las visibles con la tarjeta y los intereses', async () => {
+  const pedidas = [];
+  const p = await abrirListado({
+    sesion: almacen({ 'los-extras-tarjeta:A': 'cta-a-4' }),
+    guardadas: url => {
+      pedidas.push(url);
+      return { ids: ['tienda', 'dominos-lunes'], promociones: [{ id: 'dominos-lunes' }] };
+    }
+  });
+  const contador = p.obtener('#pr-contador-guardadas');
+  assert.equal(pedidas[0], '/api/guardadas?tarjeta=cta-a-4');
+  assert.equal(contador.hidden, false);
+  assert.equal(contador.textContent, '1');
+});
+
+test('guardar una promoción fuera de los intereses no aumenta el contador', async () => {
+  const p = await abrirListado({
+    preferencias: () => ({ completed: true, categories: ['Restaurantes'] }),
+    responder: () => [{ id: 'tienda', category: 'Compras', canUse: true }],
+    guardadas: { ids: ['dominos-lunes'], promociones: [{ id: 'dominos-lunes' }] }
+  });
+  assert.equal(p.obtener('#pr-contador-guardadas').textContent, '1');
+  p.contexto.fetch = async () => respuesta();
+  await clic(p.cards.hijos[0].querySelector('.guardar-promo'));
+  assert.equal(p.cards.hijos[0].querySelector('.guardar-promo').textContent, 'Quitar');
+  assert.equal(p.obtener('#pr-contador-guardadas').textContent, '1');
+});
+
 test('el icono de Guardadas de la cabecera cuenta las guardadas y se actualiza al guardar', async () => {
   const p = await abrirListado();
   const contador = p.obtener('#pr-contador-guardadas');
@@ -123,6 +151,51 @@ test('el icono de Guardadas de la cabecera cuenta las guardadas y se actualiza a
   await clic(p.cards.hijos[0].querySelector('.guardar-promo'));
   assert.equal(contador.textContent, '1');
   assert.equal(contador.hidden, false);
+});
+
+test('SCRUM-138 un doble toque en Guardar envía un solo POST y el contador sube en 1', async () => {
+  const p = await abrirListado();
+  const boton = p.cards.hijos[0].querySelector('.guardar-promo');
+  const contador = p.obtener('#pr-contador-guardadas');
+  const metodos = [];
+  let continuar;
+  const espera = new Promise(resolve => { continuar = resolve; });
+  p.contexto.fetch = async (_url, init = {}) => {
+    metodos.push(init.method);
+    await espera;
+    return respuesta();
+  };
+  const primero = clic(boton);
+  const segundo = clic(boton);
+  continuar();
+  await Promise.all([primero, segundo]);
+  assert.deepEqual(metodos, ['POST']);
+  assert.equal(contador.textContent, '1');
+  assert.equal(boton.dataset.guardada, 'si');
+});
+
+test('SCRUM-138 un doble toque en el detalle envía un solo POST', async () => {
+  let esperar = false;
+  const posts = [];
+  let continuar;
+  const espera = new Promise(resolve => { continuar = resolve; });
+  const p = await abrirDetalle({
+    search: '?id=tienda',
+    fetch: async (_url, init = {}) => {
+      if (init.method !== 'POST') return { ok: true, status: 200, json: async () => ({ ids: [] }) };
+      posts.push(init.method);
+      if (esperar) await espera;
+      return { ok: true, status: 200, json: async () => ({}) };
+    }
+  });
+  esperar = true;
+  const boton = p.obtener('#guardar-promo');
+  const primero = clic(boton);
+  const segundo = clic(boton);
+  continuar();
+  await Promise.all([primero, segundo]);
+  assert.deepEqual(posts, ['POST']);
+  assert.equal(boton.textContent, 'Quitar');
 });
 
 test('el detalle muestra la categoría con su acento, vence pronto y las otras tarjetas propias', async () => {

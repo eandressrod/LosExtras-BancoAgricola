@@ -120,14 +120,28 @@ test('una tarjeta ajena, vacía o repetida no se puede usar en Guardadas', async
   assert.equal((await pedir('/api/guardadas?tarjeta=cta-a-3&tarjeta=cta-a-4', 'GET', cookie)).status, 400);
 });
 
-test('una exclusiva de otra tarjeta queda guardada pero no se muestra como utilizable', async () => {
+test('SCRUM-140 sin ?tarjeta=, Guardadas muestra la promo que solo aplica a la otra tarjeta propia', async () => {
   reiniciarGuardadasMock();
   const cookie = await cookieDe('demo.basica', 'Basica2026');
   assert.equal((await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'siman-black' })).status, 200);
+  assert.equal((await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'tienda' })).status, 200);
   const lista = await (await pedir('/api/guardadas', 'GET', cookie)).json();
-  assert.deepEqual(lista.ids, ['siman-black']);
+  assert.deepEqual(lista.ids, ['siman-black', 'tienda']);
+  assert.equal(lista.promociones.length, lista.ids.length);
+  assert.equal(lista.promociones.some(promo => promo.id === 'siman-black'), true);
+  assert.equal(lista.promociones.some(promo => promo.id === 'tienda'), true);
+});
+
+test('una exclusiva que no aplica a ninguna tarjeta propia se rechaza y no queda guardada', async () => {
+  reiniciarGuardadasMock();
+  const cookie = await cookieDe('h19.usuario.001', 'H19Prueba2026');
+  const intento = await pedir('/api/guardadas', 'POST', cookie, { promocionId: 'siman-black' });
+  assert.equal(intento.status, 403);
+  const error = await intento.json();
+  assert.match(error.error, /Esta promoción no aplica a tus tarjetas/);
+  const lista = await (await pedir('/api/guardadas', 'GET', cookie)).json();
+  assert.deepEqual(lista.ids, []);
   assert.deepEqual(lista.promociones, []);
-  assert.equal(lista.sinCoincidencias, true);
 });
 
 test('QA-AUD-03 al cambiar intereses en Mis preferencias, GET /api/guardadas informa que la causa es intereses y no la tarjeta', async () => {

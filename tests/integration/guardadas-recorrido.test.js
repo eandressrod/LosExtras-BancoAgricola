@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import { abrirDetalle, abrirListado, abrirGuardadas, almacen } from './pagina-promociones.js';
 import { textoAplica } from '../../public/js/promocion-vista.js';
 import { cardName } from '../../public/js/comun.js';
-import { tarjetaActiva } from '../../public/js/tarjeta-elegida.js';
+import { tarjetaActiva, descripcionTarjetas } from '../../public/js/tarjeta-elegida.js';
 
 const clic = boton => boton.onclick({ preventDefault() {}, stopPropagation() {} });
 
@@ -143,6 +143,76 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
   assert.deepEqual(consultas, ['cta-a-4']);
   assert.equal(cards.hijos[0].querySelector('a').href, '/detalle.html?id=siman-black&desde=guardadas');
   assert.equal(cards.hijos[0].querySelector('.promo-benefit').textContent, '30 % de descuento');
+});
+
+test('SCRUM-140 sin tarjeta elegida, Guardadas no consulta una sola tarjeta', async () => {
+  // SCRUM-129: la tarjeta se llena con tarjeta-promocion.js; se carga junto con la página.
+  const leer = async archivo => (await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8'))
+    .replace(/^import[^\n]+\n/gm, '')
+    .replace(/^export /gm, '');
+  const fuente = (await leer('tarjeta-promocion.js')) + '\n' + (await leer('guardadas.js'));
+  const consultas = [];
+  const sesion = almacen();
+  const nuevaTarjeta = () => {
+    const partes = new Map();
+    return { querySelector(selector) {
+      if (!partes.has(selector)) partes.set(selector, { hidden: false, textContent: '', href: '', dataset: {}, setAttribute() {} });
+      return partes.get(selector);
+    } };
+  };
+  const cards = { hijos: [], append(nodo) { this.hijos.push(nodo); }, replaceChildren() { this.hijos = []; } };
+  const badge = { hidden: false, textContent: '' };
+  const elemento = () => ({ hidden: true, textContent: '', className: '', addEventListener() {} });
+  const tarjetas = [
+    { id: 'cta-a-3', tipoTarjeta: 'basica', predeterminada: true },
+    { id: 'cta-a-4', tipoTarjeta: 'black', predeterminada: false }
+  ];
+  const promociones = [
+    { id: 'mcdonalds-1', merchant: "McDonald's", benefit: '2x1', applicableCard: 'basica' },
+    { id: 'mcdonalds-2', merchant: "McDonald's", benefit: 'combo', applicableCard: 'basica' },
+    { id: 'tienda', merchant: 'Siman', benefit: '15 % de descuento', applicableCard: 'basica' }
+  ];
+  await vm.runInNewContext(`(async () => { ${fuente} })()`, {
+    requireSession: async () => ({ id: 'A', nombre: 'Usuario A' }),
+    almacenSesion: () => sesion,
+    cardName,
+    tarjetaActiva,
+    descripcionTarjetas,
+    getJSON: async url => {
+      assert.equal(url, '/api/tarjetas');
+      return tarjetas;
+    },
+    leerTarjetaElegida: (storage, perfilId) => storage.getItem('los-extras-tarjeta:' + perfilId),
+    consultarGuardadas: async tarjetaId => {
+      consultas.push(tarjetaId);
+      return { ids: promociones.map(promo => promo.id), promociones, sinCoincidencias: false };
+    },
+    marcarBoton() {},
+    alPulsarGuardar() {},
+    volverConHistorial() {},
+    crearAviso: () => ({ mostrar() {}, cerrar() {} }),
+    textoVigencia: () => '',
+    textoVencePronto: () => '',
+    hoyEnElSalvador: () => '2026-11-03',
+    textoOtrasTarjetas: () => '',
+    textoAplica,
+    mostrarImagen() {},
+    mostrarCondiciones() {},
+    mostrarDias() {},
+    document: { querySelector(selector) {
+      if (selector === '#cards') return cards;
+      if (selector === '#session-profile') return badge;
+      if (selector === '#promotion-card') return { content: { cloneNode: nuevaTarjeta } };
+      return elemento();
+    } }
+  });
+  assert.deepEqual(consultas, [null]);
+  assert.equal(badge.textContent, 'Usuario A · Básica y Black');
+  assert.deepEqual(cards.hijos.map(oferta => oferta.querySelector('a').href), [
+    '/detalle.html?id=mcdonalds-1&desde=guardadas',
+    '/detalle.html?id=mcdonalds-2&desde=guardadas',
+    '/detalle.html?id=tienda&desde=guardadas'
+  ]);
 });
 
 test('QA-AUD-03 el estado vacío de Guardadas distingue entre falta de coincidencia por intereses y por tarjeta', async () => {
