@@ -117,6 +117,8 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
     },
     marcarBoton() {},
     alPulsarGuardar() {},
+    // SCRUM-142: la flecha vuelve por el historial; volver.js tiene sus pruebas.
+    volverConHistorial() {},
     crearAviso: () => ({ mostrar() {}, cerrar() {} }),
     textoVigencia: () => '',
     textoAplica,
@@ -198,6 +200,7 @@ test('SCRUM-146 quitar en Guardadas avisa y Deshacer vuelve a guardar la promoci
     tarjetaActiva,
     getJSON: async () => [{ id: 'cta-a-3', tipoTarjeta: 'basica', predeterminada: true }],
     leerTarjetaElegida: () => null,
+    volverConHistorial() {},
     crearAviso: () => aviso,
     textoVigencia: () => '',
     textoAplica,
