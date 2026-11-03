@@ -119,6 +119,7 @@ test('Guardadas consulta la tarjeta elegida en la sesión', async () => {
     alPulsarGuardar() {},
     // SCRUM-142: la flecha vuelve por el historial; volver.js tiene sus pruebas.
     volverConHistorial() {},
+    crearAviso: () => ({ mostrar() {}, cerrar() {} }),
     textoVigencia: () => '',
     textoAplica,
     mostrarImagen() {},
@@ -170,4 +171,68 @@ test('QA-AUD-03 el estado vacío de Guardadas distingue entre falta de coinciden
   );
   assert.equal(porTarjeta.obtener('#empty-preferences').hidden, true);
   assert.equal(porTarjeta.obtener('#empty-action').hidden, false);
+});
+
+test('SCRUM-146 quitar en Guardadas avisa y Deshacer vuelve a guardar la promoción', async () => {
+  const leer = async archivo => (await readFile(new URL(`../../public/js/${archivo}`, import.meta.url), 'utf8'))
+    .replace(/^import[^\n]+\n/gm, '')
+    .replace(/^export /gm, '');
+  const metodos = [];
+  let promociones = [{ id: 'tienda', merchant: 'Siman', benefit: '15 % de descuento', applicableCard: 'basica', category: 'Compras' }];
+  const aviso = { mostrados: [], mostrar(datos) { this.mostrados.push(datos); }, cerrar() {} };
+  const cards = { hijos: [], append(nodo) { this.hijos.push(nodo); }, replaceChildren() { this.hijos = []; } };
+  const nuevaTarjeta = () => {
+    const partes = new Map();
+    return { querySelector(selector) {
+      if (!partes.has(selector)) {
+        const nodo = { hidden: false, textContent: '', href: '', dataset: {}, className: '', disabled: false, setAttribute() {}, focus() {} };
+        if (selector === '.guardar-promo') nodo.parentElement = { querySelector: () => ({ textContent: '' }) };
+        partes.set(selector, nodo);
+      }
+      return partes.get(selector);
+    } };
+  };
+  const elemento = () => ({ hidden: true, textContent: '', className: '', addEventListener() {} });
+  await vm.runInNewContext(`(async () => { ${await leer('guardar-promo.js')}\n${await leer('guardadas.js')} })()`, {
+    requireSession: async () => ({ id: 'A', nombre: 'Usuario A' }),
+    almacenSesion: () => almacen(),
+    cardName,
+    tarjetaActiva,
+    getJSON: async () => [{ id: 'cta-a-3', tipoTarjeta: 'basica', predeterminada: true }],
+    leerTarjetaElegida: () => null,
+    volverConHistorial() {},
+    crearAviso: () => aviso,
+    textoVigencia: () => '',
+    textoAplica,
+    mostrarImagen() {},
+    mostrarCondiciones() {},
+    mostrarDias() {},
+    fetch: async (_url, init = {}) => {
+      const metodo = init.method || 'GET';
+      metodos.push(metodo);
+      if (metodo === 'DELETE') {
+        promociones = [];
+        return { ok: true, status: 200, json: async () => ({ guardada: false }) };
+      }
+      if (metodo === 'POST') {
+        promociones = [{ id: 'tienda', merchant: 'Siman', benefit: '15 % de descuento', applicableCard: 'basica', category: 'Compras' }];
+        return { ok: true, status: 200, json: async () => ({ guardada: true }) };
+      }
+      return { ok: true, status: 200, json: async () => ({ ids: promociones.map(promo => promo.id), promociones, sinCoincidencias: false }) };
+    },
+    document: { querySelector(selector) {
+      if (selector === '#cards') return cards;
+      if (selector === '#promotion-card') return { content: { cloneNode: nuevaTarjeta } };
+      return elemento();
+    } }
+  });
+  const boton = cards.hijos[0].querySelector('.guardar-promo');
+  await boton.onclick({ preventDefault() {}, stopPropagation() {} });
+  assert.ok(metodos.includes('DELETE'));
+  assert.equal(aviso.mostrados[0].texto, 'Promoción quitada de Guardadas.');
+  await aviso.mostrados[0].alDeshacer();
+  assert.equal(metodos.at(-2), 'POST');
+  assert.equal(cards.hijos.length, 1);
+  assert.equal(cards.hijos[0].querySelector('a').href, '/detalle.html?id=tienda&desde=guardadas');
+  assert.equal(aviso.mostrados.length, 1);
 });

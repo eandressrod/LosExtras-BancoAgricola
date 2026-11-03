@@ -258,6 +258,7 @@ export async function abrirGuardadas(opciones = {}) {
       consultas.push(url);
       return null;
     },
+    crearAviso: () => ({ mostrar() {}, cerrar() {} }),
     consultarGuardadas: async (tarjetaId, comercio) => {
       consultas.push(`/api/guardadas?tarjeta=${tarjetaId ?? ''}&comercio=${comercio ?? ''}`);
       return responderGuardadas(tarjetaId, comercio);
