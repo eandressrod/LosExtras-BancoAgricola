@@ -35,8 +35,12 @@ const fuente = async archivo => {
   // Primero elimina imports multilínea: import { ... } from '...'; que abarcan varias líneas.
   const sinMultilinea = texto.replace(/^import\s*\{[^}]*\}\s*from\s*['"][^'"]+['"]\s*;?\s*\n/gms, '');
   // Luego elimina imports de una sola línea que puedan haber quedado.
-  return sinMultilinea.replace(/^import[^\n]+\n/gm, '');
+  return sinMultilinea.replace(/^import[^\n]+\n/gm, '').replace(/^export /gm, '');
 };
+// SCRUM-129: las páginas comparten la tarjeta y el Guardar; se cargan junto con la página, con la misma vista de prueba.
+// Guardadas reemplaza el Guardar por dobles propios, así que solo recibe la tarjeta.
+const conCompartidos = async (archivo, { guardar = true } = {}) =>
+  [await fuente('tarjeta-promocion.js'), guardar ? await fuente('guardar-promo.js') : '', await fuente(archivo)].join('\n');
 const vista = {
   textoVigencia: () => '', textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, textoAplica, mostrarDias,
   mostrarImagen: () => {}, mostrarCondiciones: () => {}, mostrarPasos: () => {}, mostrarRestricciones: () => {}
@@ -96,6 +100,7 @@ function navegador({ search = '', hash = '', estado = null, perfil = 'A', sesion
     location,
     history,
     volverConHistorial: enlace => { volverPorHistorial.push(enlace); },
+    volverAlLogin: () => location.replace('/index.html'),
     addEventListener: (tipo, accion) => { ventana[tipo] = accion; },
     setTimeout: (fn, _ms) => { ++timerIdActual; Promise.resolve().then(() => fn()); return timerIdActual; },
     clearTimeout: (_id) => { /* no se puede cancelar una microtarea ya encolada */ },
@@ -180,7 +185,7 @@ export async function abrirListado(opciones = {}) {
       return Array.isArray(datos) ? { version: 'prueba', estrategia: 'base', vacio: datos.length ? null : 'filtros', promociones: datos } : datos;
     }
   });
-  await vm.runInNewContext(`(async () => { ${await fuente('promociones.js')} })()`, nav.contexto);
+  await vm.runInNewContext(`(async () => { ${await conCompartidos('promociones.js')} })()`, nav.contexto);
   const chips = () => [todas, ...filtros.hijos];
   const pulsados = lista => lista.filter(boton => boton.attributes['aria-pressed'] === 'true').map(boton => boton.textContent);
   // Envuelve obtener para que input() espere a que las microtareas del debounce completen
@@ -224,7 +229,7 @@ export async function abrirDetalle(opciones = {}) {
       return { id: 'tienda', merchant: 'Siman', benefit: black ? '25 % de descuento' : '15 % de descuento', applicableCard: black ? 'black' : 'basica', ...opciones.promocion };
     }
   });
-  await vm.runInNewContext(`(async () => { ${await fuente('detalle.js')} })()`, nav.contexto);
+  await vm.runInNewContext(`(async () => { ${await conCompartidos('detalle.js')} })()`, nav.contexto);
   return { ...nav, consultas, volver: () => nav.obtener('#back-to-list').href };
 }
 
@@ -277,7 +282,7 @@ export async function abrirGuardadas(opciones = {}) {
     tarjetaActiva: (lista, id) => lista.find(t => t.id === id) ?? lista.find(t => t.predeterminada) ?? lista[0] ?? null,
     cardName
   });
-  await vm.runInNewContext(`(async () => { ${await fuente('guardadas.js')} })()`, nav.contexto);
+  await vm.runInNewContext(`(async () => { ${await conCompartidos('guardadas.js', { guardar: false })} })()`, nav.contexto);
   const esperarMicrotareas = () => new Promise(r => setImmediate(r));
   const obtenerConFlush = selector => {
     const el = nav.obtener(selector);

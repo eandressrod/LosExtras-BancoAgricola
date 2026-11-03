@@ -26,7 +26,7 @@ function plantilla(selectores) {
   return { partes, querySelector: selector => partes.get(selector) ?? null };
 }
 const promo = { id: 'tienda', merchant: 'Siman', benefit: '15 % de descuento', description: 'Artículos seleccionados', category: 'Compras',
-  categoryName: 'Compras', applicableCard: 'basica', exclusive: false, razon: { texto: 'Por tu interés en Compras' }, vencida: true };
+  categoryName: 'Compras', applicableCard: 'basica', mejorBeneficio: { tipoTarjeta: 'basica' }, exclusive: false, razon: { texto: 'Por tu interés en Compras' }, vencida: true };
 
 test('SCRUM-129 la misma función llena la tarjeta del listado y la de Guardadas', () => {
   const listado = plantilla([...COMUNES, ...SOLO_LISTADO]);

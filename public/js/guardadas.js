@@ -1,6 +1,6 @@
 import { requireSession, almacenSesion, cardName, getJSON } from './comun.js';
-import { textoVigencia, textoAplica, mostrarImagen, mostrarCondiciones, mostrarDias } from './promocion-vista.js';
-import { consultarGuardadas, marcarBoton, alPulsarGuardar } from './guardar-promo.js';
+import { llenarTarjetaPromocion } from './tarjeta-promocion.js';
+import { consultarGuardadas, marcarBoton, cambiarGuardada, alPulsarGuardar } from './guardar-promo.js';
 import { leerTarjetaElegida, tarjetaActiva } from './tarjeta-elegida.js';
 import { volverConHistorial } from './volver.js';
 import { crearAviso } from './aviso-deshacer.js';
@@ -49,30 +49,8 @@ function pintarVacio(datos, visibles) {
 
 function tarjeta(promotion, tarjetaId) {
   const card = document.querySelector('#promotion-card').content.cloneNode(true);
-  const link = card.querySelector('a');
   const extra = busqueda ? '&comercio=' + encodeURIComponent(busqueda) : '';
-  link.href = '/detalle.html?id=' + encodeURIComponent(promotion.id) + '&desde=guardadas' + extra;
-  link.setAttribute('aria-label', `${promotion.merchant}: ${promotion.benefit}. Ver promoción`);
-  card.querySelector('h2').textContent = promotion.merchant;
-  card.querySelector('.promo-benefit').textContent = promotion.benefit;
-  card.querySelector('.promo-description').textContent = promotion.description;
-  card.querySelector('.promo-category').textContent = promotion.categoryName || promotion.category;
-  card.querySelector('.promo-validity').textContent = textoVigencia(promotion);
-  const aplica = card.querySelector('.promo-applicability');
-  const { texto: textoTarjetas, tarjeta } = textoAplica(promotion);
-  aplica.textContent = textoTarjetas;
-  aplica.dataset.tarjeta = tarjeta;
-  // Sistema visual: acento por categoría y exclusivas Black en oscuro, como en Para ti.
-  const articulo = card.querySelector('article');
-  articulo.dataset.categoria = promotion.category ?? '';
-  if (promotion.exclusive) articulo.dataset.exclusiva = 'si';
-  const badge = card.querySelector('.promo-exclusive');
-  badge.hidden = !promotion.exclusive;
-  badge.textContent = promotion.exclusive ? 'Exclusiva Black' : '';
-  mostrarImagen(card.querySelector('.promo-photo'), promotion.imageUrl, promotion.imageAlt);
-  mostrarImagen(card.querySelector('.merchant-logo'), promotion.logoUrl);
-  mostrarDias(card.querySelector('.promo-cuando'), promotion);
-  mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
+  llenarTarjetaPromocion(card, promotion, { href: '/detalle.html?id=' + encodeURIComponent(promotion.id) + '&desde=guardadas' + extra });
   const boton = card.querySelector('.guardar-promo');
   marcarBoton(boton, true);
   alPulsarGuardar(boton, promotion.id, async guardada => {
@@ -81,13 +59,8 @@ function tarjeta(promotion, tarjetaId) {
       texto: 'Promoción quitada de Guardadas.',
       alDeshacer: async () => {
         try {
-          const response = await fetch('/api/guardadas', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ promocionId: promotion.id })
-          });
-          if (response.status === 401) { location.replace('/index.html'); return; }
-          if (!response.ok) throw new Error('No se pudo actualizar. Intenta de nuevo.');
+          // Tras quitar, el botón quedó en «Guardar»: volver a pulsarlo la guarda otra vez.
+          if (await cambiarGuardada(boton, promotion.id) === null) return;
           await loadSaved(tarjetaId);
           boton.focus?.();
         } catch (error) {
