@@ -112,6 +112,7 @@ function crearOferta(promotion, categoria, hoy, busqueda, intencion) {
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
   const boton = card.querySelector('.guardar-promo');
   const error = card.querySelector('.guardar-error');
+  boton.dataset.promocion = promotion.id;
   marcarGuardada(boton, idsGuardados.includes(promotion.id));
   boton.onclick = event => {
     event.preventDefault();
@@ -389,6 +390,15 @@ if (profile) {
       return [];
     }
   }
+
+  // SCRUM-142: al volver con Atrás o «Volver al listado», la página se restaura tal como estaba; las guardadas pudieron
+  // cambiar en el detalle o en Guardadas, así que se releen.
+  addEventListener('pageshow', async event => {
+    if (!event.persisted) return;
+    idsGuardados = await leerIdsGuardados();
+    pintarContadorGuardadas();
+    for (const boton of document.querySelectorAll('.guardar-promo')) marcarGuardada(boton, idsGuardados.includes(boton.dataset.promocion));
+  });
 
   // Categorías vigentes (H5) y tarjetas propias (H16) se cargan juntas; si algo falla, Reintentar.
   async function prepararPagina() {
