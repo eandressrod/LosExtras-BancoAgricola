@@ -333,12 +333,13 @@ if (profile) {
     try {
       const response = await fetch('/api/guardadas', { cache: 'no-store' });
       if (response.status === 401) { volverAlLogin(); return []; }
-      if (!response.ok) throw new Error('No se pudieron cargar las promociones guardadas.');
+      if (!response.ok) throw new Error();
       const datos = await response.json();
       if (aviso) aviso.textContent = '';
       return datos.ids || [];
-    } catch (error) {
-      if (aviso) aviso.textContent = error.message;
+    } catch {
+      // Sin conexión, fetch rechaza con un texto técnico del navegador: siempre se muestra el propio.
+      if (aviso) aviso.textContent = 'No se pudieron cargar las promociones guardadas.';
       return [];
     }
   }

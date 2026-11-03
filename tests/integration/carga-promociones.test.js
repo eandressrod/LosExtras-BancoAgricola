@@ -39,6 +39,12 @@ test('una respuesta antigua no retira el aro de la selección más reciente', as
   assert.equal(p.obtener('#promotions-loading').hidden, true);
 });
 
+// SCRUM-143: sin conexión, fetch rechaza con un texto técnico en inglés que no debe llegar a la pantalla.
+test('sin conexión las guardadas no muestran el texto técnico del navegador', async () => {
+  const p = await abrirListado({ fetch: async () => { throw new TypeError('Failed to fetch'); } });
+  assert.equal(p.obtener('#saved-status').textContent, 'No se pudieron cargar las promociones guardadas.');
+});
+
 // H21 (ADR-010): la encuesta es una hoja sobre la lista real. La hoja se abre sola solo la primera vez (marca del servidor);
 // después queda un aviso en la lista hasta cerrarlo una vez, y la encuesta sigue disponible desde «Mis preferencias».
 const PRIMERA_VEZ={hojaMostrada:false,avisoCerrado:false};
