@@ -11,6 +11,8 @@ export function avisoDiscreto(pathname, leyendoMensaje) {
 }
 
 const SEGUNDO_PLANO = 'bancoagricola-app-oculta';
+// Tiempo fuera de la app que cierra la sesión al volver.
+const LIMITE_SEGUNDO_PLANO_MS = 20000;
 
 export function leerSegundoPlano(id, storage) {
   try {
@@ -30,5 +32,5 @@ export function limpiarSegundoPlano(id, storage) {
 }
 
 export function vencioSegundoPlano(desde, ahora = Date.now()) {
-  return Number.isFinite(desde) && ahora-desde>=20000;
+  return Number.isFinite(desde) && ahora-desde>=LIMITE_SEGUNDO_PLANO_MS;
 }

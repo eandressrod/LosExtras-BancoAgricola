@@ -1,17 +1,8 @@
-import { obtenerRepositorio } from './repositorios/index.js';
 import { CATEGORIAS_PERMITIDAS } from './servicios/preferencias.js';
 
 // Los filtros explícitos viven con el motor para que el backend y el cliente usen la misma copia.
 export { filtrarPorCategoria, filtrarDisponiblesHoy, filtrarPorComercio } from '../public/js/motor/filtros.js';
 import { ordenarBeneficios } from '../public/js/motor/elegibilidad.js';
-
-export async function listarPromociones() {
-  return obtenerRepositorio().listarPromociones();
-}
-
-export async function buscarPromocion(id) {
-  return obtenerRepositorio().buscarPromocion(id);
-}
 
 const fechaLocal = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/El_Salvador', year: 'numeric', month: '2-digit', day: '2-digit' });
 

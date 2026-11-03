@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import promociones from '../../api/promociones.js';
 import preferencias from '../../api/preferencias.js';
-import { repositorioMock } from '../../backend/repositorios/mock.js';
+import { repositorioMock } from '../../backend/repositorios/catalogo.mock.js';
 import { obtenerRepositorioPreferencias } from '../../backend/repositorios/index.js';
 import { crearToken } from '../../backend/servicios/sesion.js';
 import { soloH4 } from '../promociones-h4.js';

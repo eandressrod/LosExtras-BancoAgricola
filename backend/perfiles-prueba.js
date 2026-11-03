@@ -1,4 +1,4 @@
-// Datos ficticios locales (DATA_SOURCE=mock) para pruebas y desarrollo sin claves.
+// Perfiles de prueba locales (DATA_SOURCE=mock) para pruebas y desarrollo sin claves.
 // Reflejan las migraciones de supabase/; con DATA_SOURCE=supabase los usuarios se leen de la base.
 // Accesos ficticios: hash para validación y clave de prueba para el selector autorizado del login.
 import datosMenu from './datos-menu.json' with { type: 'json' };
@@ -10,9 +10,4 @@ export const perfiles = [
   { id: 'B', clavePrueba:'Black2026', promocionesAbiertas:false, nombre: 'Usuario B', tipoTarjeta: 'black', usuarioAcceso: 'demo.black',
     contrasenaHash: 'scrypt$_19-BdYxD0xaRE5syARVuQ$6rEmOsgu4UhK7kq2oJbz3anp2elDiUrX93jY8Um9B2k' },
   ...datosMenu.perfiles
-];
-export const promociones = [
-  { id: 'restaurante', merchant: 'Restaurante', category: 'Restaurantes', benefit: '10 % de descuento', description: 'Descuento en una comida.', payment: 'Tarjeta de débito', restrictions: 'Una compra por usuario. No acumulable con otras ofertas.' },
-  { id: 'tienda', merchant: 'Tienda', category: 'Compras', benefit: '15 % de descuento', description: 'Descuento en artículos seleccionados.', payment: 'Tarjeta de crédito', restrictions: 'Solo artículos seleccionados. No incluye envío.' },
-  { id: 'cine', merchant: 'Cine', category: 'Entretenimiento', benefit: '2 entradas por el precio de 1', description: 'Beneficio para una función.', payment: 'Tarjeta de débito o crédito', restrictions: 'Sujeto a disponibilidad. No aplica a funciones especiales.' }
 ];

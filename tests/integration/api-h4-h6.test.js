@@ -4,7 +4,7 @@ import promociones from '../../api/promociones.js';
 import detalle from '../../api/promocion.js';
 import preferencias from '../../api/preferencias.js';
 import { crearToken } from '../../backend/servicios/sesion.js';
-import { crearRepositorioSupabase } from '../../backend/repositorios/supabase.js';
+import { crearRepositorioSupabase } from '../../backend/repositorios/catalogo.supabase.js';
 import { soloH4 } from '../promociones-h4.js';
 
 process.env.DATA_SOURCE = 'mock';

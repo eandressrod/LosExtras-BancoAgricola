@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { HOSTS_LOCALES } from './hosts-locales.js';
 
 let client;
 
@@ -12,7 +13,7 @@ export function leerConfiguracionSupabase(env = process.env) {
   try { parsed = new URL(url); } catch {
     throw new Error('SUPABASE_URL debe ser una URL válida.');
   }
-  const local = ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname);
+  const local = HOSTS_LOCALES.includes(parsed.hostname);
   if (parsed.protocol !== 'https:' && !(local && parsed.protocol === 'http:')) {
     throw new Error('SUPABASE_URL debe utilizar HTTPS fuera del desarrollo local.');
   }

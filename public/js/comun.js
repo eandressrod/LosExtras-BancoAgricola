@@ -2,10 +2,8 @@ import { actualizarSesion, iniciarInactividad, avisarCierre, expirarSesion } fro
 import { leerSegundoPlano, limpiarSegundoPlano, vencioSegundoPlano } from '../pwa/inactividad-modelo.js';
 import { olvidarInstantaneas } from './instantanea.js';
 import { limpiarEleccion } from './cerca/origen.js';
-export const categories = ['Restaurantes', 'Compras', 'Entretenimiento'];
 const CARD_NAMES = { basica: 'Básica', black: 'Black' };
 const LOGIN_HINT_KEY = 'los-extras-sesion-iniciada';
-const PREFERENCES_KEY = 'los-extras-preferencias';
 const CARD_CHOICE_PREFIX = 'los-extras-tarjeta:';
 
 export function readStorage(storage, key) {
@@ -146,19 +144,6 @@ export async function logout() {
   if (!response?.ok) throw new Error('No se pudo cerrar la sesión. Revisa tu conexión e intenta de nuevo.');
   forgetLogin();
   avisarCierre();
-}
-
-// Preferencias locales separadas por perfil: el otro perfil no hereda la encuesta.
-const preferencesKey = profileId => `${PREFERENCES_KEY}:${profileId}`;
-
-export function loadPreferences(profileId) {
-  try {
-    const saved = JSON.parse(readStorage(localStorage, preferencesKey(profileId)));
-    if (saved?.completed === true && Array.isArray(saved.categories)) {
-      return { completed: true, categories: saved.categories.filter(category => categories.includes(category)) };
-    }
-  } catch { /* Un dato inválido deja la encuesta pendiente. */ }
-  return { completed: false, categories: [] };
 }
 
 export async function getJSON(url) {

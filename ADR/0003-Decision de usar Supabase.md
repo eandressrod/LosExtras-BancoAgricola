@@ -48,7 +48,7 @@ Mantener estables los campos y comprobar la equivalencia entre adaptadores sigue
 ## Evidencia y referencias
 
 - Decisión del equipo: «Base de Supabase preparada», 7 de octubre; «Recomendación de persistencia» y «Base Supabase y entorno TDD preparados», 8 de octubre de 2026. Su evidencia remota corresponde a esas fechas.
-- [Contrato](../backend/repositorios/contrato.js), [selección de repositorios](../backend/repositorios/index.js), [adaptador mock](../backend/repositorios/mock.js) y [adaptador Supabase](../backend/repositorios/supabase.js).
+- [Contrato](../backend/repositorios/contrato.js), [selección de repositorios](../backend/repositorios/index.js), [adaptador mock](../backend/repositorios/catalogo.mock.js) y [adaptador Supabase](../backend/repositorios/catalogo.supabase.js).
 - [Configuración privada del cliente](../backend/config/supabase.js) y [adaptador de accesos con RPC](../backend/repositorios/accesos.supabase.js).
 - [Migraciones SQL](../supabase/migrations/) y [guía de desarrollo](../docs/GUIA_DESARROLLO.md).
 
