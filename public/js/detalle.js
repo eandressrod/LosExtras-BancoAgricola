@@ -3,6 +3,7 @@ import { textoVigencia, textoVencePronto, hoyEnElSalvador, textoOtrasTarjetas, t
 import { leerCategoria, leerHoy, leerBusqueda, leerIntencion, estadoNavegacion, urlListado, urlDetalle } from './filtro-categoria.js';
 import { leerTarjetaElegida, conTarjeta } from './tarjeta-elegida.js';
 import { mostrarDonde } from './cerca/donde.js';
+import { volverConHistorial } from './volver.js';
 
 const profile = await requireSession();
 if (profile) {
@@ -16,6 +17,7 @@ if (profile) {
   const busqueda = leerBusqueda(location.search, history.state, profile.id);
   const intencion = leerIntencion(location.search, history.state, profile.id);
   const back = document.querySelector('#back-to-list');
+  volverConHistorial(back);
   const retornoGuardadas = '/guardadas.html' + (busqueda ? '?comercio=' + encodeURIComponent(busqueda) : '');
   const destino = id ? urlDetalle(id, categoria, hoy, busqueda, intencion) + (desdeGuardadas ? '&desde=guardadas' : '') : location.href;
   history.replaceState(estadoNavegacion(profile.id, categoria), '', destino);
