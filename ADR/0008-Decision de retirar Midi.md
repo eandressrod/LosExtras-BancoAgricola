@@ -2,7 +2,7 @@
 
 - Estado: aceptada.
 - Fecha del registro y de la decisión: 22 de octubre de 2026.
-- Decide: Product Owner operativo y equipo, después del taller de deuda técnica de la sesión 23.
+- Decide: arquitecto y equipo, después del taller de deuda técnica de la sesión 23.
 - Clasificación: puerta de dos vías mientras las funciones `midi_*` sigan en la base: el código puede recuperarse de Git. Cuando una migración posterior las retire, volver a Midi exigirá recrearlas.
 - Sustituye: las partes de [ADR-006](<0006-Decision de usar una fuente unica para el catalogo.md>) que mantenían opcionales las columnas nuevas para que Midi siguiera creando filas.
 

@@ -2,7 +2,7 @@
 
 - Estado: aceptada.
 - Fecha del registro y de la decisión: 20 de octubre de 2026.
-- Decide: Product Owner operativo.
+- Decide: arquitecto del equipo.
 - Clasificación: puerta de dos vías: cada fase tiene interruptor y la estrategia base funciona sola.
 - Fuente de diseño: «Algoritmo de promociones personalizadas · Beta» (18 de octubre de 2026).
 - Historias relacionadas en Jira: H21, H22, H23 (principales); H24 (catálogo), H20, H25, H26, H27, H8 (mapa). Jira es la fuente de estados y responsables.

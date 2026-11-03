@@ -1,16 +1,16 @@
 # ADR-011: Dar a Promociones un sistema visual propio, separado de las demás interfaces
 
-- Estado: aceptada. Aprobada por el PO operativo y fusionada en main con el [PR 29](https://github.com/eandressrod/LosExtras-BancoAgricola/pull/29) el 25 de octubre de 2026.
+- Estado: aceptada. Aprobada por el arquitecto y fusionada en main con el [PR 29](https://github.com/eandressrod/LosExtras-BancoAgricola/pull/29) el 25 de octubre de 2026.
 - Fecha del registro: 23 de octubre de 2026.
-- Fecha de la decisión: 23 de octubre de 2026. El PO operativo rechazó el primer tramo (PR 28, cerrado sin merge) y pidió rehacerlo desde cero.
-- Decide: PO operativo (alcance y dirección) y equipo de desarrollo (forma técnica).
+- Fecha de la decisión: 23 de octubre de 2026. El arquitecto rechazó el primer tramo (PR 28, cerrado sin merge) y pidió rehacerlo desde cero.
+- Decide: arquitecto (alcance y dirección) y equipo de desarrollo (forma técnica).
 - Clasificación: puerta de dos vías.
 
 ## Contexto
 
 H22 (CDA 11, [SCRUM-127](https://somos-agilistas.atlassian.net/browse/SCRUM-127)) pide un diseño propio de la sección Promociones: armonioso, coherente con la marca, sin replicar la pantalla estándar del banco y sin aspecto genérico.
 
-Un primer tramo aplicó las reglas generales de la guía de UI, con objetivos de 48 px y botones anchos. El PO lo rechazó: los botones eran demasiado grandes, las tarjetas se veían secas y faltaba el carrusel. Pidió:
+Un primer tramo aplicó las reglas generales de la guía de UI, con objetivos de 48 px y botones anchos. El arquitecto lo rechazó: los botones eran demasiado grandes, las tarjetas se veían secas y faltaba el carrusel. Pidió:
 
 - rehacer el sistema completo con las mejores técnicas;
 - ignorar las reglas de tamaño de las demás interfaces;
@@ -45,7 +45,7 @@ Decidió además:
 
 ## Revisión del 24 de octubre de 2026 (versión 3)
 
-Tras revisar la versión 2, el PO operativo decidió simplificar la pantalla:
+Tras revisar la versión 2, el arquitecto decidió simplificar la pantalla:
 
 - **Todas las tarjetas.** Para ti considera todas las tarjetas propias y la tarjeta pasa a ser un filtro (comentario 10031 en SCRUM-116; backend en SCRUM-133). Por eso la cabecera **deja de cambiar de color por tarjeta** y queda siempre amarilla.
 - **Menos controles a la vista.** Tarjeta, categoría y «Solo lo que aplica hoy» se mueven a una hoja **Filtros**. Sobre la lista solo quedan las píldoras de los filtros activos. Guardadas y Mis preferencias pasan a iconos de la cabecera. La fila fija de chips y el selector de tarjetas visible se retiran.
@@ -59,11 +59,11 @@ Los puntos 2 y 3 de la decisión original («cabecera según la tarjeta» y «ch
 
 | Alternativa | Por qué no |
 | --- | --- |
-| Ajustar el tramo del PR 28 | El PO pidió empezar de cero; el problema era de dirección, no de detalle. |
+| Ajustar el tramo del PR 28 | El arquitecto pidió empezar de cero; el problema era de dirección, no de detalle. |
 | Sistema global para toda la app | Cambiaría login, menú y encuesta, fuera del alcance de SCRUM-127. |
 | Renombrar todas las clases a `pr-*` | Rompería pruebas, e2e y la rama del motor sin cambiar lo que se ve. |
 | Biblioteca de carrusel o de componentes | Contradice el stack acordado (ADR-002); el carrusel cabe en unas 150 líneas probadas. |
-| Carrusel de promociones destacadas | Repetiría las primeras tarjetas de la lista; el PO eligió avisos. |
+| Carrusel de promociones destacadas | Repetiría las primeras tarjetas de la lista; el arquitecto eligió avisos. |
 
 ## Consecuencias
 
@@ -75,7 +75,7 @@ Los puntos 2 y 3 de la decisión original («cabecera según la tarjeta» y «ch
 
 **Negativas o pendientes**
 
-- **Criterio de tamaño:** el CDA 11 de H22 dice «objetivos de 48 dp». Los controles visibles son más pequeños por decisión del PO y su área táctil se amplía con pseudoelementos donde es posible. Conviene que el PO ajuste el texto del CDA en Jira.
+- **Criterio de tamaño:** el CDA 11 de H22 dice «objetivos de 48 dp». Los controles visibles son más pequeños por decisión del arquitecto y su área táctil se amplía con pseudoelementos donde es posible. Conviene que el PO ajuste el texto del CDA en Jira.
 - **Navegadores:** `:has()`, `color-mix()` y `overflow-x: clip` requieren Safari 16+ y Chrome 105+.
 - **Comprobaciones pendientes:** falta probar con lector de pantalla y en un iPhone físico.
 
@@ -94,4 +94,4 @@ Es de dos vías: quitar `body.pr` y el CSS del sistema devuelve las pantallas a 
   - `tests/unit/promocion-vista.test.js`;
   - `tests/integration/sistema-promociones-frontend.test.js`.
 
-Este registro documenta la decisión. No acredita la aprobación del PO, el merge ni la DoD de H22.
+Este registro documenta la decisión. No acredita la DoD de H22.

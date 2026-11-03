@@ -3,7 +3,7 @@
 - Estado: aceptada. Se implementa en la Entrega 1 de H24 ([SCRUM-123](https://somos-agilistas.atlassian.net/browse/SCRUM-123), [PR #21](https://github.com/eandressrod/LosExtras-BancoAgricola/pull/21)), pendiente de merge.
 - Fecha del registro: 20 de octubre de 2026.
 - Fecha de la decisión: del 18 al 20 de octubre de 2026. El 18 se diseñó el algoritmo, el 19 se refinó H24 en Jira y el 20 se fijó el contrato en el PR #21.
-- Decide: Product Owner operativo y equipo. La forma técnica del contrato la propuso el desarrollador de H24.
+- Decide: arquitecto y equipo de desarrollo. La forma técnica del contrato la propuso el desarrollador de H24.
 - Clasificación: puerta de una vía dentro del plazo del proyecto. La forma de los datos la consumen H8, H20 a H23 y H25 a H27.
 
 ## Contexto
