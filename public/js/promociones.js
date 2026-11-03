@@ -636,6 +636,12 @@ if (profile) {
   todayFilter.addEventListener('click', () => cambiarHoy(!hoy));
   exitToday.addEventListener('click', () => cambiarHoy(false));
   searchInput.addEventListener('input', () => buscarComercio(searchInput.value));
+  // SCRUM-152: la tecla Buscar del teclado quita el foco para cerrarlo; la lista ya se filtra al escribir.
+  searchInput.addEventListener('keydown', evento => {
+    if (evento.key !== 'Enter') return;
+    evento.preventDefault();
+    searchInput.blur();
+  });
   clearSearch.addEventListener('click', () => buscarComercio(''));
   clearSearchEmpty.addEventListener('click', () => buscarComercio(''));
   retry.addEventListener('click', cargar);

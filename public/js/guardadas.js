@@ -188,6 +188,12 @@ if (profile) {
   }
 
   if (searchInput) searchInput.addEventListener('input', () => actualizarBusqueda(searchInput.value));
+  // SCRUM-152: la tecla Buscar del teclado quita el foco para cerrarlo; la lista ya se filtra al escribir.
+  if (searchInput) searchInput.addEventListener('keydown', evento => {
+    if (evento.key !== 'Enter') return;
+    evento.preventDefault();
+    searchInput.blur();
+  });
   if (clearSearch) clearSearch.addEventListener('click', () => actualizarBusqueda(''));
   if (clearSearchEmpty) clearSearchEmpty.addEventListener('click', () => actualizarBusqueda(''));
   document.querySelector('#retry').addEventListener('click', () => loadSaved(tarjetaId));
