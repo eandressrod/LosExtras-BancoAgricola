@@ -26,11 +26,13 @@
     <link rel="modulepreload" href="/js/carga-tiempo.js">
     <link rel="modulepreload" href="/js/cerca/origen.js">
     <link rel="modulepreload" href="/js/comun.js">
+    <link rel="modulepreload" href="/js/aviso-deshacer.js">
     <link rel="modulepreload" href="/js/guardar-promo.js">
     <link rel="modulepreload" href="/js/instantanea.js">
     <link rel="modulepreload" href="/js/promocion-vista.js">
     <link rel="modulepreload" href="/js/tarjeta-elegida.js">
     <link rel="modulepreload" href="/js/transiciones.js">
+    <link rel="modulepreload" href="/js/volver.js">
     <link rel="modulepreload" href="/pwa/inactividad-modelo.js">
     <link rel="modulepreload" href="/pwa/inactividad.js">
   </head>
@@ -70,6 +72,7 @@
         <p id="empty-action" hidden><a class="button secondary" href="/promociones.html">Ver el listado</a></p>
       </section>
       <div id="cards" class="promo-list"></div>
+      <div id="pr-aviso" class="pr-aviso" role="status" hidden><p class="pr-aviso__texto"></p><button type="button" class="pr-aviso__accion">Deshacer</button></div>
       <template id="promotion-card">
         <article class="promo-item">
           <a class="promo-card">
