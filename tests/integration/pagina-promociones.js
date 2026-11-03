@@ -152,6 +152,7 @@ export async function abrirListado(opciones = {}) {
   const tarjetas = opciones.tarjetas ?? (() => TARJETAS[perfil] ?? []);
   const responder = opciones.responder ?? (url => PROMOS[parametro(url, 'categoria') ?? 'todas']);
   Object.assign(nav.contexto, {
+    fetch: opciones.fetch,
     registrarAperturaPromociones: async () => { pedidas.aperturas++; return { promocionesAbiertas: true, hojaMostrada: true, avisoCerrado: true, ...opciones.marcas }; },
     marcarEncuesta: async marca => { marcasEnviadas.push(marca); },
     abrirEncuestaHoja: datos => { hojas.push(datos); },
