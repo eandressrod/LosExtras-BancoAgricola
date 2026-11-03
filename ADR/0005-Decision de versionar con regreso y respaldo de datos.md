@@ -2,7 +2,7 @@
 
 - Estado: aceptada.
 - Fecha del registro y de la decisión: 20 de octubre de 2026.
-- Decide: Product Owner operativo.
+- Decide: arquitecto del equipo.
 - Clasificación: puerta de dos vías: el mecanismo puede sustituirse sin migrar datos, aunque mientras rija limita las migraciones a cambios aditivos.
 - Fuente técnica: sección «Versiones, regreso y respaldo de datos» de `docs/GUIA_DESARROLLO.md`; `scripts/respaldo.js`, `scripts/respaldo-datos.js`, `.github/workflows/respaldo.yml`, `supabase/versiones.json`.
 

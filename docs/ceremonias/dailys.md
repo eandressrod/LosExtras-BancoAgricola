@@ -8,7 +8,7 @@ Corte: 2 de noviembre de 2026.
 - **Muchas ceremonias y acuerdos se dieron en clase y en persona, y no se anotaban.** Este registro se reconstruyó después, con:
   - los commits y PR de GitHub;
   - los cambios de Jira;
-  - las decisiones del PO.
+  - las decisiones registradas en Jira y en los ADR.
 - **Hecho** sale de los commits y PR desde la daily anterior. **Sigue** sale del trabajo siguiente o del reparto acordado.
 - **Inferencias:** lo escrito en *cursiva* no dejó commit ese día. Se infiere de la historia asignada a la persona y de lo que entregó después.
 
@@ -150,8 +150,8 @@ Ese día también se hicieron la review y la retro del Sprint 2, en clase.
 
 ## Planning · lunes 19-oct
 
-- El PO enfoca el sprint en el motor beta: fases 1–2 y encuesta de 3 pasos.
-- El PO asigna responsables y el Sprint 3 en Jira.
+- El arquitecto enfoca el sprint en el motor beta: fases 1–2 y encuesta de 3 pasos.
+- El arquitecto asigna responsables y el Sprint 3 en Jira.
 - Se descartan H9, H12, H14, H15 y H18.
 - El catálogo solo se amplía mediante H24.
 
@@ -200,7 +200,7 @@ Sus observaciones están en las fichas de validación externa 1 y 2.
 | Sara | PR #27 fusionado (SCRUM-113 y 114) | *Revisión de PR asignados* | — |
 | Sam | H23: corregir desde la tarjeta y deshacer; SCRUM-109 (tarjetas propias en Perfil); SCRUM-110 (#33, fusionado hoy) | #34 y #35 | #34 y #35 con conflictos con main tras los merges del 26–27 oct |
 
-**Decisiones del PO desde el viernes:**
+**Decisiones desde el viernes:**
 - **24-oct:**
   - Tarjetas mezcladas.
   - «Disponibles hoy» pasa a Filtros.
@@ -211,7 +211,7 @@ Sus observaciones están en las fichas de validación externa 1 y 2.
 - **26-oct:**
   - Cerca de ti mezcla distancia e interés con el mismo peso.
   - «Listo» exige al menos una categoría.
-  - El PO reporta 5 bugs de Promociones, arreglados en #41.
+  - El arquitecto reporta 5 bugs de Promociones, arreglados en #41.
 
 ## Daily · viernes 30-oct · cierre del Sprint 3 en persona
 

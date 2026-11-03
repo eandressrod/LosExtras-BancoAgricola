@@ -2,7 +2,7 @@
 
 - Estado: aceptada.
 - Fecha del registro y de la decisión: 23 de octubre de 2026.
-- Decide: Product Owner operativo, al planificar H21 ([SCRUM-71](https://somos-agilistas.atlassian.net/browse/SCRUM-71)).
+- Decide: arquitecto del equipo, al planificar H21 ([SCRUM-71](https://somos-agilistas.atlassian.net/browse/SCRUM-71)).
 - Clasificación: puerta de dos vías. La parte 1 no cambia el backend; la persistencia de la parte 2 sería una migración aditiva ([ADR-005](<0005-Decision de versionar con regreso y respaldo de datos.md>)).
 - Relacionado: [ADR-004](<0004-Decision de usar un motor de promociones recomendadas.md>) (señales declaradas), [ADR-009](<0009-Decision de implementar el motor beta de Para ti.md>) (registro de señales y vista previa) y los principios UX/UI registrados en el [comentario de SCRUM-71](https://somos-agilistas.atlassian.net/browse/SCRUM-71?focusedCommentId=10029).
 

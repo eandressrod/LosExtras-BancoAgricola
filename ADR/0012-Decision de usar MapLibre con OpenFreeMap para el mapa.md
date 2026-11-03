@@ -3,7 +3,7 @@
 - Estado: propuesta. Investigación registrada en SCRUM-11 (comentario 10038), pendiente de la prueba en celulares reales y de la aprobación del PO.
 - Fecha del registro: 25 de octubre de 2026.
 - Fecha de la decisión: 25 de octubre de 2026.
-- Decide: PO operativo (alcance) y equipo de desarrollo (forma técnica).
+- Decide: arquitecto (alcance) y equipo de desarrollo (forma técnica).
 - Clasificación: puerta de dos vías.
 
 ## Contexto

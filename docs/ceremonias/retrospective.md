@@ -174,7 +174,7 @@ Es la primera retro con historias: el Sprint 0 solo preparó el repositorio y el
   - En la re-verificación, las dos personas dijeron que todo se veía muy bien.
 - TDD visible: commits de prueba en rojo antes del arreglo en H24, H25 y en los bugs de la auditoría.
 - Las decisiones técnicas quedaron en ADR y las de producto en comentarios de Jira.
-- El PO decidió rápido sobre el alcance: tarjetas mezcladas, H26 descartada y «Disponibles hoy» a Filtros, todo el 24 de octubre.
+- El arquitecto decidió rápido sobre el alcance: tarjetas mezcladas, H26 descartada y «Disponibles hoy» a Filtros, todo el 24 de octubre.
 
 ## 3. Qué no salió bien
 

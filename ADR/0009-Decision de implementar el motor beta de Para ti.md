@@ -2,7 +2,7 @@
 
 - Estado: aceptada.
 - Fecha del registro y de la decisión: 22 de octubre de 2026.
-- Decide: Product Owner operativo, al planificar las subtareas 2 y 3 de H22 ([SCRUM-128](https://somos-agilistas.atlassian.net/browse/SCRUM-128) y [SCRUM-133](https://somos-agilistas.atlassian.net/browse/SCRUM-133)).
+- Decide: arquitecto del equipo, al planificar las subtareas 2 y 3 de H22 ([SCRUM-128](https://somos-agilistas.atlassian.net/browse/SCRUM-128) y [SCRUM-133](https://somos-agilistas.atlassian.net/browse/SCRUM-133)).
 - Clasificación: puerta de dos vías en el código (endpoint, ubicación del motor, helper de sesión e instantánea). La tabla `senales_usuario` es aditiva ([ADR-005](<0005-Decision de versionar con regreso y respaldo de datos.md>)); retirarla exigiría una migración posterior.
 - Relacionado: [ADR-004](<0004-Decision de usar un motor de promociones recomendadas.md>) (diseño del motor), [ADR-006](<0006-Decision de usar una fuente unica para el catalogo.md>) (catálogo), [ADR-007](<0007-Decision de aceptar deuda tecnica hasta la feria.md>) y el [taller de deuda técnica](<../docs/TALLER_DEUDA_TECNICA.md>).
 

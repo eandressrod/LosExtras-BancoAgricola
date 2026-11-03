@@ -2,7 +2,7 @@
 
 - Estado: aceptada.
 - Fecha del registro y de la decisión: 22 de octubre de 2026.
-- Decide: Product Owner operativo y equipo, en el taller de deuda técnica de la sesión 23. Incorpora las observaciones del equipo Alambre Ágiles.
+- Decide: arquitecto y equipo, en el taller de deuda técnica de la sesión 23. Incorpora las observaciones del equipo Alambre Ágiles.
 - Clasificación: puerta de dos vías: la deuda puede pagarse después de la feria sin cambiar contratos de la API ni datos.
 - Fuente: [inventario del taller](<../docs/TALLER_DEUDA_TECNICA.md>), hallazgos 6 y 7.
 

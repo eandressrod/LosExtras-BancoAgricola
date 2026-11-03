@@ -36,7 +36,7 @@ La encuesta de esa versión:
 
 ## 4. Decisiones tomadas
 
-Las tomó el PO operativo entre el 23 y el 26 de octubre de 2026, y quedaron en Jira y en el ADR-010. Algunas responden a las observaciones; las demás salieron de la investigación de UX y de la revisión del PO.
+Las tomó el arquitecto entre el 23 y el 26 de octubre de 2026, y quedaron en Jira y en el ADR-010. Algunas responden a las observaciones; las demás salieron de la investigación de UX y de la revisión del arquitecto.
 
 | Decisión | Origen | Registro |
 | --- | --- | --- |

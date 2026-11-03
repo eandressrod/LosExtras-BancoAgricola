@@ -44,7 +44,7 @@ Resultado: le costó completar las dos tareas. Para hacerlo había que combinar 
 
 ## 5. Decisiones tomadas
 
-Las tomó el PO operativo entre el 23 y el 25 de octubre de 2026, y quedaron en Jira y en el ADR-011. Algunas responden a las observaciones; las demás salieron de la revisión del propio PO sobre el diseño.
+Las tomó el arquitecto entre el 23 y el 25 de octubre de 2026, y quedaron en Jira y en el ADR-011. Algunas responden a las observaciones; las demás salieron de la revisión del propio arquitecto sobre el diseño.
 
 | Decisión | Origen | Registro |
 | --- | --- | --- |
@@ -55,8 +55,8 @@ Las tomó el PO operativo entre el 23 y el 25 de octubre de 2026, y quedaron en 
 | Para ti muestra lo mejor de **todas** las tarjetas, y la tarjeta pasa a ser un filtro opcional | O-2 | SCRUM-116, comentario 10031 |
 | Menos controles: tarjeta, categoría y «Disponibles hoy» se mueven a una hoja **Filtros** | O-2 | SCRUM-67, comentario 10033 |
 | **Mis preferencias** como icono fijo de la cabecera y, dentro, «Personalizar en 3 pasos» para rehacer la encuesta | O-3 | ADR-011 (revisión v3) · ADR-010 |
-| Rehacer el sistema visual desde cero (se cerró sin merge el PR 28); cabecera amarilla, fondo blanco y paleta de compras | Revisión del PO | ADR-011 |
-| Se descarta la sección A domicilio (H26) por redundante | Revisión del PO | SCRUM-119, comentario 10036 |
+| Rehacer el sistema visual desde cero (se cerró sin merge el PR 28); cabecera amarilla, fondo blanco y paleta de compras | Revisión del arquitecto | ADR-011 |
+| Se descarta la sección A domicilio (H26) por redundante | Revisión del arquitecto | SCRUM-119, comentario 10036 |
 
 ## 6. Antes y después
 

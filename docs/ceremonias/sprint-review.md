@@ -4,7 +4,7 @@ Fuentes:
 - Jira (proyecto SCRUM);
 - GitHub (`eandressrod/LosExtras-BancoAgricola`);
 - los ADR del repositorio;
-- las decisiones del PO registradas en comentarios de Jira;
+- las decisiones registradas en comentarios de Jira;
 - las fichas de validación externa.
 
 Corte de datos: 2 de noviembre de 2026.
@@ -34,7 +34,7 @@ Corte de datos: 2 de noviembre de 2026.
 ## 3. Demo (recorrido mostrado)
 1. Login con el perfil … → menú → …
 
-## 4. Decisiones del PO y cambios al backlog
+## 4. Decisiones y cambios al backlog
 | Fecha | Decisión | Dónde quedó registrada |
 |---|---|---|
 
@@ -185,7 +185,7 @@ Sprint 3: motor de promociones beta (H21, H22 y H23), catálogo (H24), «Hoy bus
 
 | Historia / bug | Responsable | Motivo | Qué pasa ahora |
 |---|---|---|---|
-| H23 · Corregir lo que me recomiendan y deshacer (SCRUM-117) | Sam | Decisión del PO del 30-oct, al ver que el equipo iba atrasado con los 18 bugs de producción y los 38 «En revisión». Es una capacidad nueva y grande, tenía conflictos con main en 9 archivos y una migración sin aplicar, y del 2 al 5 de noviembre solo hay estabilización. | PR #35 cerrado sin fusionar; la rama se conserva; etiqueta `descartada-feria`, vuelve al backlog |
+| H23 · Corregir lo que me recomiendan y deshacer (SCRUM-117) | Sam | Decisión del 30-oct, al ver que el equipo iba atrasado con los 18 bugs de producción y los 38 «En revisión». Es una capacidad nueva y grande, tenía conflictos con main en 9 archivos y una migración sin aplicar, y del 2 al 5 de noviembre solo hay estabilización. | PR #35 cerrado sin fusionar; la rama se conserva; etiqueta `descartada-feria`, vuelve al backlog |
 | H20 · Revisar mis intereses y deshacer cambios (SCRUM-70) | Sara | Misma decisión del 30-oct que H23: con el atraso en los bugs, se priorizó estabilizar. Es una capacidad nueva, no tenía avance en el código y del 2 al 5 de noviembre solo hay estabilización. | Etiqueta `descartada-feria`; backlog |
 | H24 · Catálogo variado (SCRUM-115) | David | Se entregó la parte 1 (contratos y esqueleto, SCRUM-123, PR #21). Faltan la muestra, la carga por lotes, las imágenes y el validador. | Pasa al Sprint 4 |
 | SCRUM-112 · La API acepta guardar una promoción que no aplica a ninguna tarjeta | German | PR #38 con cambios pedidos en la revisión del 31-oct | Pasa al Sprint 4 |
@@ -201,7 +201,7 @@ Recorrido mostrado *(el mismo que se preparó)*:
 5. Pestañas Cerca de ti (mapa y distancia) y Explorar.
 6. Detalle: días con reloj, «Cómo usarla», restricciones y mapa; Guardar y abrir Guardadas.
 
-## 4. Decisiones del PO y cambios al backlog
+## 4. Decisiones y cambios al backlog
 
 | Fecha | Decisión | Dónde quedó registrada |
 |---|---|---|
@@ -283,7 +283,7 @@ Recorrido mostrado *(el mismo que se preparó)*:
    - mensaje propio sin conexión;
    - aviso cuando Para ti tarda.
 
-## 4. Decisiones del PO y cambios al backlog
+## 4. Decisiones y cambios al backlog
 
 | Fecha | Decisión | Dónde quedó registrada |
 |---|---|---|
