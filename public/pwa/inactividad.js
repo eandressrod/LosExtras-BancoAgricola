@@ -132,9 +132,13 @@ function revisar() {
   if (estado.estado === 'aviso') {
     if (avisoDiscreto(location.pathname, document.body.dataset?.lecturaMensaje === 'true')) {
       if (dialogo.open) dialogo.close();
-      // Un botón fuera de un diálogo modal sería inerte aunque su popover fuese visible.
-      const contenedor = document.querySelector?.('#menu-dialog[open]') || document.body;
-      if (aviso.parentNode !== contenedor) contenedor.append(aviso);
+      // Un botón fuera de un diálogo modal (mensajes, Filtros, hojas de Cerca de ti) sería inerte aunque su popover fuese visible.
+      const contenedor = document.querySelector?.('dialog[open]:not(.pwa-privacidad)') || document.body;
+      if (aviso.parentNode !== contenedor) {
+        contenedor.append(aviso);
+        // Moverlo lo retira de la capa superior: si ya se mostraba, se vuelve a mostrar.
+        if (!aviso.hidden) aviso.showPopover?.();
+      }
       cuentaDiscreta.textContent = `${estado.segundos} s`;
       if (aviso.hidden) { aviso.hidden = false; aviso.showPopover?.(); }
     } else {

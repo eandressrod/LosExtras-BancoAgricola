@@ -5,17 +5,21 @@ import vm from 'node:vm';
 import { estadoInactividad, plazoLocal, avisoDiscreto } from '../../public/pwa/inactividad-modelo.js';
 import * as modelo from '../../public/pwa/inactividad-modelo.js';
 const source = (await readFile(new URL('../../public/pwa/inactividad.js',import.meta.url),'utf8')).replace(/^import[^\n]+\n/gm,'').replaceAll('export function','function');
-function pagina({ pathname='/menu.html', lecturaMensaje=false, fallaActividad=false, sesionVencida=false, conDialogo=false } = {}) {
+function pagina({ pathname='/menu.html', lecturaMensaje=false, fallaActividad=false, sesionVencida=false, conDialogo=false, hojaAbierta=false } = {}) {
   let tiempo = 0; let intervalo; let destino = ''; const llamadas = []; const opciones = []; const tareas = new Map(); let id = 0;
   const eventos = {}; const nodos = []; const atributos = new Set();
   const crear = tag => {
     const e = { tag, hidden:false, open:false, disabled:false, children:[], eventos:{}, textContent:'',
       append(...children) { this.children.push(...children); }, replaceChildren(...children) { this.children=children; },
-      setAttribute() {}, addEventListener(t,f) { this.eventos[t]=f; }, showModal() { this.open=true; }, close() { this.open=false; } };
+      setAttribute() {}, addEventListener(t,f) { this.eventos[t]=f; }, showModal() { this.open=true; }, close() { this.open=false; },
+      showPopover() { this.popoverVisible=true; }, hidePopover() { this.popoverVisible=false; } };
     nodos.push(e); return e;
   };
-  const dialogoLectura={append(n){n.parentNode=this;}};
-  const document = { hidden:false, querySelector:()=>conDialogo?dialogoLectura:null, createElement:crear, body:{dataset:{lecturaMensaje:String(lecturaMensaje)},append(n){n.parentNode=this;}}, documentElement:{setAttribute(k){atributos.add(k);},removeAttribute(k){atributos.delete(k);}},addEventListener(t,f){eventos[t]=f;} };
+  // Mover un popover de contenedor lo retira de la capa superior.
+  const mover=(contenedor,n)=>{n.parentNode=contenedor;n.popoverVisible=false;};
+  const dialogoLectura={append(n){mover(this,n);}};
+  const hoja={abierta:hojaAbierta,append(n){mover(this,n);}};
+  const document = { hidden:false, querySelector:selector=>conDialogo?dialogoLectura:hoja.abierta&&selector.startsWith('dialog[open]')?hoja:null, createElement:crear, body:{dataset:{lecturaMensaje:String(lecturaMensaje)},append(n){mover(this,n);}}, documentElement:{setAttribute(k){atributos.add(k);},removeAttribute(k){atributos.delete(k);}},addEventListener(t,f){eventos[t]=f;} };
   const valores=new Map();const storage = {getItem:k=>valores.get(k)??null,setItem:(k,v)=>valores.set(k,v),removeItem:k=>valores.delete(k)};
   const estado = {id:'sesion',ahora:0,inactivaEn:120000,expiraEn:7200000};
   const context = {...modelo,document,localStorage:storage,sessionStorage:storage,Date:{now:()=>tiempo},Math,Number,JSON,
@@ -28,7 +32,7 @@ function pagina({ pathname='/menu.html', lecturaMensaje=false, fallaActividad=fa
       return {ok:!fallaActividad,status:sesionVencida?401:200,json:async()=>({perfil:{id:'A'},sesion:{...estado,ahora:tiempo,inactivaEn:tiempo+120000}})};}
   };
   vm.runInNewContext(source+'\nactualizarSesion('+JSON.stringify(estado)+'); iniciarInactividad();',context);
-  return {document,storage,dialogoLectura,eventos,nodos,atributos,llamadas,opciones,get destino(){return destino;},reloj(ms){tiempo=ms;},avanzar(ms){tiempo=ms;intervalo();},finalizarSalida(){for(const fn of tareas.values())fn();tareas.clear();},async enviarActividad(){await eventos.pointerdown({isTrusted:true});for(const [key,fn] of tareas){tareas.delete(key);await fn();}},async ejecutar(t){await eventos[t]();},dialogo:()=>nodos.find(n=>n.className==='pwa-sesion')};
+  return {document,storage,dialogoLectura,hoja,eventos,nodos,atributos,llamadas,opciones,get destino(){return destino;},reloj(ms){tiempo=ms;},avanzar(ms){tiempo=ms;intervalo();},finalizarSalida(){for(const fn of tareas.values())fn();tareas.clear();},async enviarActividad(){await eventos.pointerdown({isTrusted:true});for(const [key,fn] of tareas){tareas.delete(key);await fn();}},async ejecutar(t){await eventos[t]();},dialogo:()=>nodos.find(n=>n.className==='pwa-sesion')};
 }
 
 test('volver al detalle antes de veinte segundos hace fade a la misma vista', async () => {
@@ -164,6 +168,22 @@ test('el botón de extensión permanece dentro del diálogo de mensajes y no se 
   const aviso=p.nodos.find(n=>n.className==='pwa-aviso-lectura');
   assert.equal(aviso.parentNode,p.dialogoLectura);
   await aviso.children[3].eventos.click();assert.equal(aviso.hidden,true);
+});
+
+// SCRUM-137: Filtros y las hojas de Cerca de ti se abren con showModal(); fuera de ellas el botón sería inerte.
+test('con una hoja modal abierta el aviso entra en ella y Extender sesión responde', async () => {
+  const p=pagina({pathname:'/promociones.html',hojaAbierta:true});p.avanzar(100000);
+  const aviso=p.nodos.find(n=>n.className==='pwa-aviso-lectura');
+  assert.equal(aviso.parentNode,p.hoja);
+  await aviso.children[3].eventos.click();for(let i=0;i<6;i++)await Promise.resolve();
+  assert.equal(aviso.hidden,true);assert.deepEqual(p.llamadas,['/api/auth/actividad']);
+});
+
+test('al cerrar la hoja el aviso vuelve a la página y sigue visible', () => {
+  const p=pagina({pathname:'/promociones.html',hojaAbierta:true});p.avanzar(100000);
+  const aviso=p.nodos.find(n=>n.className==='pwa-aviso-lectura');
+  p.hoja.abierta=false;p.avanzar(101000);
+  assert.equal(aviso.parentNode,p.document.body);assert.equal(aviso.popoverVisible,true);
 });
 
 test('al dejar de leer mensajes vuelve el aviso habitual; regresar vencido nunca revela contenido', async () => {
