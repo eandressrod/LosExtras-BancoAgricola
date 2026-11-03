@@ -10,7 +10,7 @@ Los datos mock reflejan la misma estructura y contienen once cuentas y trece tar
 
 El [registro de integración de UI, menú y PWA](INTEGRACION_UI_PWA.md) explica el incremento del 15 de octubre de 2026, su convivencia con H5/H16, los conflictos resueltos y las verificaciones realizadas.
 
-El despliegue conserva 12 entradas de función para Vercel Hobby: mensajes, metas y apertura de Promociones comparten `api/recursos.js` mediante rewrites; sus handlers están en `backend/handlers/`. Las URL de la aplicación y las validaciones de sesión no cambian. El servidor local utiliza la misma entrada compartida.
+El despliegue conserva 12 entradas de función para Vercel Hobby: mensajes, metas y apertura de Promociones comparten `api/recursos.js` mediante rewrites; sus handlers están en `backend/handlers/`. Las URL de la aplicación y las validaciones de sesión no cambian. El servidor local (`scripts/dev.js`) deriva sus rutas y cabeceras de los archivos de `api/` y de `vercel.json` (`scripts/rutas-locales.js`). Un endpoint nuevo con archivo propio en `api/` no exige tocar nada más; uno agrupado necesita su handler en `api/recursos.js` (`RUTAS_RECURSOS`) y su rewrite en `vercel.json`, y una prueba avisa si falta alguno. Todos los handlers con sesión usan `exigirPerfil` (`backend/http.js`).
 
 ## H13 · Instalación en Android/iOS y sesión por inactividad
 

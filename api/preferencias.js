@@ -1,8 +1,6 @@
-import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
-import { leerCookie } from '../backend/servicios/sesion.js';
 import { validarYGuardarPreferencias } from '../backend/servicios/preferencias.js';
 import { obtenerRepositorioAccesos, obtenerRepositorioPreferencias, obtenerRepositorioSenales } from '../backend/repositorios/index.js';
-import { responderJson, metodoNoPermitido } from '../backend/http.js';
+import { exigirPerfil, responderJson, metodoNoPermitido } from '../backend/http.js';
 
 // Endpoint para guardar las categorías de interés del usuario autenticado (H3).
 // Solo acepta POST; la identidad del propietario siempre proviene del token de sesión.
@@ -14,8 +12,8 @@ export default {
     
     try {
       const repoAccesos = obtenerRepositorioAccesos();
-      const perfil = await perfilDeSesion(leerCookie(request), repoAccesos);
-      if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
+      const { perfil, respuesta } = await exigirPerfil(request, repoAccesos);
+      if (respuesta) return respuesta;
 
       const repoPreferencias = obtenerRepositorioPreferencias();
 

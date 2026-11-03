@@ -1,15 +1,13 @@
 import { obtenerRepositorioAccesos, obtenerRepositorioProductosMenu } from '../repositorios/index.js';
-import { perfilDeSesion } from '../servicios/autenticacion.js';
-import { leerCookie } from '../servicios/sesion.js';
-import { responderJson, responderSinContenido, metodoNoPermitido } from '../http.js';
+import { exigirPerfil, responderJson, responderSinContenido, metodoNoPermitido } from '../http.js';
 import { validarMeta, validarId, errorDatos } from '../servicios/productos-menu.js';
 
 export function crearHandlerMetas(repos = { accesos: obtenerRepositorioAccesos, productos: obtenerRepositorioProductosMenu }) {
   return { async fetch(request) {
     if (!['GET', 'POST', 'PATCH', 'DELETE'].includes(request.method)) return metodoNoPermitido('GET, POST, PATCH, DELETE');
     try {
-      const perfil = await perfilDeSesion(leerCookie(request), repos.accesos());
-      if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
+      const { perfil, respuesta } = await exigirPerfil(request, repos.accesos());
+      if (respuesta) return respuesta;
       const repo = repos.productos();
       if (request.method === 'GET') return responderJson(await repo.listarMetas(perfil.id));
       const cuerpo = await request.json().catch(() => { throw errorDatos('Formato de datos inválido.'); });

@@ -7,8 +7,11 @@ import senales from '../backend/handlers/senales.js';
 import zonas from '../backend/handlers/zonas.js';
 import { responderJson } from '../backend/http.js';
 
+// Recursos agrupados en una sola función de Vercel; cada uno necesita su rewrite en vercel.json.
+export const RUTAS_RECURSOS = { mensajes, metas, 'promociones-apertura': apertura, guardadas, 'para-ti': paraTi, senales, zonas };
+
 // Una entrada de Vercel para varias rutas, conservando sus handlers y contratos.
-export function crearHandlerRecursos(rutas = { mensajes, metas, 'promociones-apertura': apertura, guardadas, 'para-ti': paraTi, senales, zonas }) {
+export function crearHandlerRecursos(rutas = RUTAS_RECURSOS) {
   return { async fetch(request) {
     const url = new URL(request.url);
     const recurso = url.pathname === '/api/recursos'
