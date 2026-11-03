@@ -1,10 +1,8 @@
 import { filtrarPromociones } from '../backend/promociones.js';
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioProductosMenu, obtenerRepositorioPreferencias } from '../backend/repositorios/index.js';
-import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
-import { leerCookie } from '../backend/servicios/sesion.js';
 import { leerConsultaPromociones } from '../backend/servicios/consulta-promociones.js';
 import { aplicarFiltros } from '../public/js/motor/filtros.js';
-import { responderJson, metodoNoPermitido } from '../backend/http.js';
+import { exigirPerfil, responderJson, metodoNoPermitido } from '../backend/http.js';
 
 export function crearHandlerPromociones(repositorios = {
   accesos: obtenerRepositorioAccesos,
@@ -18,8 +16,8 @@ export function crearHandlerPromociones(repositorios = {
         return metodoNoPermitido('GET');
       }
       try {
-        const perfil = await perfilDeSesion(leerCookie(request), repositorios.accesos());
-        if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
+        const { perfil, respuesta } = await exigirPerfil(request, repositorios.accesos());
+        if (respuesta) return respuesta;
         const parametros = new URL(request.url).searchParams;
         const repoPreferencias = repositorios.preferencias();
         const [categorias, propias] = await Promise.all([

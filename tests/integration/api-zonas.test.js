@@ -34,6 +34,7 @@ test('H8 zonas: devuelve la lista fija con su centro, en el orden del catálogo'
 test('H8 zonas: la ruta corta existe en Vercel y en el servidor local', async () => {
   const config = JSON.parse(await readFile(new URL('../../vercel.json', import.meta.url), 'utf8'));
   assert.ok(config.rewrites.some(r => r.source === '/api/zonas' && r.destination === '/api/recursos?recurso=zonas'));
-  const servidor = await readFile(new URL('../../scripts/dev.js', import.meta.url), 'utf8');
-  assert.match(servidor, /'\/api\/zonas': recursos/);
+  const { rutasDesdeVercel, cargarFunciones } = await import('../../scripts/rutas-locales.js');
+  const funciones = await cargarFunciones();
+  assert.equal(rutasDesdeVercel(config, funciones)['/api/zonas'], funciones['/api/recursos']);
 });

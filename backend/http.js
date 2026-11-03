@@ -17,8 +17,7 @@ export function metodoNoPermitido(permitido) {
 }
 
 /**
- * H22: perfil dueño de la sesión o la respuesta 401 lista para devolver. Lo usan los handlers nuevos;
- * los demás pasan a este helper en T3 (SCRUM-130).
+ * Perfil dueño de la sesión o la respuesta 401 lista para devolver. Lo usan todos los handlers con sesión (SCRUM-130).
  * @param {Request} request
  * @param {import('./repositorios/contrato.js').RepositorioAccesos} repoAccesos
  * @returns {Promise<{ perfil: import('./repositorios/contrato.js').PerfilSesion } | { respuesta: Response }>}

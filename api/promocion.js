@@ -1,9 +1,7 @@
 import { filtrarPromociones } from '../backend/promociones.js';
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioProductosMenu } from '../backend/repositorios/index.js';
-import { perfilDeSesion } from '../backend/servicios/autenticacion.js';
-import { leerCookie } from '../backend/servicios/sesion.js';
 import { tarjetasDelUsuario, elegirTarjeta, rechazoDeTarjeta } from '../backend/servicios/tarjetas.js';
-import { responderJson, metodoNoPermitido } from '../backend/http.js';
+import { exigirPerfil, responderJson, metodoNoPermitido } from '../backend/http.js';
 
 export default {
   async fetch(request) {
@@ -14,8 +12,8 @@ export default {
     const id = parametros.get('id');
     if (!id) return responderJson({ error: 'Falta el identificador de la promoción.' }, 400);
     try {
-      const perfil = await perfilDeSesion(leerCookie(request), obtenerRepositorioAccesos());
-      if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
+      const { perfil, respuesta } = await exigirPerfil(request, obtenerRepositorioAccesos());
+      if (respuesta) return respuesta;
       // H16: el detalle usa la tarjeta elegida, siempre que sea del dueño de la sesión.
       const tarjetas = tarjetasDelUsuario(await obtenerRepositorioProductosMenu().listarTarjetas(perfil.id), perfil);
       const eleccion = elegirTarjeta(tarjetas, parametros, perfil.tipoTarjeta);

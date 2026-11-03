@@ -2,10 +2,8 @@ import { filtrarPromociones, leerBusquedaComercio, filtrarPorComercio } from '..
 import { obtenerRepositorio, obtenerRepositorioAccesos, obtenerRepositorioPreferencias, obtenerRepositorioProductosMenu } from '../repositorios/index.js';
 import { obtenerRepositorioGuardadas } from '../repositorios/guardadas.js';
 import { guardarPromocion, quitarPromocion, seleccionarGuardadasVisibles, aplicaATarjetasPropias } from '../servicios/guardadas.js';
-import { perfilDeSesion } from '../servicios/autenticacion.js';
 import { tarjetasDelUsuario, elegirTarjeta, rechazoDeTarjeta } from '../servicios/tarjetas.js';
-import { leerCookie } from '../servicios/sesion.js';
-import { responderJson, metodoNoPermitido } from '../http.js';
+import { exigirPerfil, responderJson, metodoNoPermitido } from '../http.js';
 
 export default {
   async fetch(request) {
@@ -14,8 +12,8 @@ export default {
     }
 
     try {
-      const perfil = await perfilDeSesion(leerCookie(request), obtenerRepositorioAccesos());
-      if (!perfil) return responderJson({ error: 'Inicia sesión para continuar.' }, 401);
+      const { perfil, respuesta } = await exigirPerfil(request, obtenerRepositorioAccesos());
+      if (respuesta) return respuesta;
 
       const repo = obtenerRepositorioGuardadas();
 
