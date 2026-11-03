@@ -111,6 +111,7 @@ function crearOferta(promotion, categoria, hoy, busqueda, intencion) {
   mostrarCondiciones(card.querySelector('.promo-conditions'), promotion, { dias: false });
   const boton = card.querySelector('.guardar-promo');
   const error = card.querySelector('.guardar-error');
+  boton.dataset.promocion = promotion.id;
   marcarGuardada(boton, idsGuardados.includes(promotion.id));
   boton.onclick = event => {
     event.preventDefault();
@@ -387,6 +388,15 @@ if (profile) {
     }
   }
 
+  // SCRUM-142: al volver con Atrás o «Volver al listado», la página se restaura tal como estaba; las guardadas pudieron
+  // cambiar en el detalle o en Guardadas, así que se releen.
+  addEventListener('pageshow', async event => {
+    if (!event.persisted) return;
+    idsGuardados = await leerIdsGuardados();
+    pintarContadorGuardadas();
+    for (const boton of document.querySelectorAll('.guardar-promo')) marcarGuardada(boton, idsGuardados.includes(boton.dataset.promocion));
+  });
+
   // Categorías vigentes (H5) y tarjetas propias (H16) se cargan juntas; si algo falla, Reintentar.
   async function prepararPagina() {
     status.textContent = '';
@@ -594,13 +604,22 @@ if (profile) {
 
   // Las opciones y la vista previa salen de todo lo vigente (Explorar, sin filtros): la lista de Para ti ya está recortada por
   // los intereses guardados y, al repetir la encuesta, solo ofrecería lo que ya se eligió. Si falla, se usa la lista visible.
+  // SCRUM-139: el aviso se retira cuando la hoja ya cubre la lista; si se ocultara antes, la lista subiría bajo el dedo
+  // y un segundo toque abriría la tarjeta de abajo. Mientras se abre, los toques repetidos se ignoran.
+  let abriendoEncuesta = false;
   async function abrirEncuesta() {
-    avisoEncuesta.hidden = true;
+    if (abriendoEncuesta) return;
+    abriendoEncuesta = true;
     let lista = listaActual;
     try {
       lista = (await getJSON(urlSeccion(conTarjeta(urlConsulta(null), filtroTarjeta?.id), 'explorar'))).promociones;
     } catch { /* La hoja funciona con la lista visible. */ }
-    abrirEncuestaHoja({ perfil: profile, lista, categorias, mostrarVistaPrevia, alCerrar: alCerrarEncuesta });
+    try {
+      abrirEncuestaHoja({ perfil: profile, lista, categorias, mostrarVistaPrevia, alCerrar: alCerrarEncuesta });
+      avisoEncuesta.hidden = true;
+    } finally {
+      abriendoEncuesta = false;
+    }
   }
 
   // Aviso de la lista (ADR-010): Empezar abre la hoja; cerrarlo una vez lo guarda y no vuelve.
